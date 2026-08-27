@@ -28,8 +28,8 @@ shorts/*.mp4
 
 # Intermediate / generated outputs (can be regenerated)
 notes/pdf/
-notes/markdown/
 data/normalized_transcript.json
+
 data/raw_transcript.json
 data/reconstructed_transcript.json
 
