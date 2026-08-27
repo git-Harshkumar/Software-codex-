@@ -1,20 +1,16 @@
+# Web server (for Render & production)
+flask>=3.0.0
+gunicorn>=21.2.0
+markdown>=3.6
+
 # Core AI
 google-genai>=0.8.0
 
-# Web platform
-flask>=3.0.0
-markdown>=3.6
-
-# PDF / image generation
+# PDF & image processing
 reportlab>=4.0.0
-matplotlib>=3.8.0
 Pillow>=10.0.0
 
-# Video processing
+# Video & Utilities
 ffmpeg-python>=0.2.0
-
-# Transcript processing
-openai-whisper>=20231117
-
-# Utilities
 python-dotenv>=1.0.0
+

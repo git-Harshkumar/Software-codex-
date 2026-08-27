@@ -238,11 +238,13 @@ def sticky_delete(note_id):
 # ── Run ─────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
     print()
     print("=" * 55)
     print("  LECTURE NOTES PLATFORM")
     print("=" * 55)
-    print("  Open: http://localhost:5000")
+    print(f"  Open: http://localhost:{port}")
     print("=" * 55)
     print()
-    app.run(debug=True, port=5000)
+    app.run(host="0.0.0.0", port=port, debug=False)
+
