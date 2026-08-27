@@ -1,0 +1,1067 @@
+[
+  {
+    "frame": "frame_0.00.jpg",
+    "timestamp": 0.0,
+    "analysis": {
+      "title": "Introduction to Algorithms",
+      "visible_text": [
+        "MIT Massachusetts Institute of Technology",
+        "6.006, Fall 2011",
+        "Introduction to Algorithms",
+        "Erik Demaine",
+        "Lecture 13: Breadth-First Search (BFS)",
+        "MITOPENCOURSEWARE",
+        "MASSACHUSETTS INSTITUTE OF TECHNOLOGY"
+      ],
+      "mathematical_content": [],
+      "diagram": "The image contains no diagrams, graphs, or code. It is a title slide featuring the MIT logo, a stylized/pixelated representation of the MIT Great Dome in the background, and the lecture details.",
+      "explanation": "This is the title slide for Lecture 13 of the MIT course '6.006: Introduction to Algorithms' from Fall 2011. The lecture topic is Breadth-First Search (BFS), and the instructor is Erik Demaine.",
+      "important_points": [
+        "Course: MIT 6.006 (Introduction to Algorithms), Fall 2011",
+        "Lecture: 13",
+        "Topic: Breadth-First Search (BFS)",
+        "Instructor: Erik Demaine"
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_22.00.jpg",
+    "timestamp": 22.0,
+    "analysis": {
+      "title": "",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "The image is completely black and contains no visible educational content, text, diagrams, or equations.",
+      "important_points": [],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_42.00.jpg",
+    "timestamp": 42.0,
+    "analysis": {
+      "title": "",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "A single vertical white chalk line is drawn on the right-hand side of the blackboard, dividing it into two sections.",
+      "explanation": "The image shows an instructor standing in front of a blackboard, holding a piece of chalk and preparing to write. The blackboard is currently blank and shows signs of being recently erased, with a vertical line dividing the board into a larger left column and a smaller right column.",
+      "important_points": [],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_74.00.jpg",
+    "timestamp": 74.0,
+    "analysis": {
+      "title": "Lecture Demonstration on Twisty Puzzles (Rubik's Cubes)",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "A lecturer is standing in front of a blank blackboard, holding and demonstrating a twisty puzzle (Rubik's cube). On the table in front of him are several other twisty puzzles of varying dimensions (including what appears to be a 5x5x5 or larger multi-layered cube, a standard 3x3x3 cube, and others) along with lecture notes/papers. This visual setup is typical for a lecture explaining group theory, permutation groups, combinatorics, or algorithmic problem-solving using Rubik's cubes as a concrete model.",
+      "important_points": [
+        "Physical models of Rubik's cubes of various sizes (e.g., 3x3x3, 5x5x5) are used as hands-on teaching aids.",
+        "The demonstration likely relates to mathematical concepts of symmetry, group theory, or permutation operations."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_96.00.jpg",
+    "timestamp": 96.0,
+    "analysis": {
+      "title": "Graph search",
+      "visible_text": [
+        "Graph search:",
+        "\"explore\" a graph"
+      ],
+      "mathematical_content": [
+        "$t$"
+      ],
+      "diagram": "A diagram of a graph containing a node labeled $t$ inside a circle, with a curved directed line pointing towards it from the left. The source node of this connection is obscured by the instructor.",
+      "explanation": "The instructor is introducing the topic of 'Graph search' on the blackboard, describing it as 'exploring' a graph. A simple graph diagram is being drawn to illustrate nodes and directed edges.",
+      "important_points": [
+        "Graph search is defined conceptually as \"exploring\" a graph.",
+        "Nodes in a graph are visually represented by circles (e.g., node $t$), and connections are represented by lines or arrows (edges)."
+      ],
+      "uncertain_content": [
+        "The middle letters of the word \"explore\" are obscured by the instructor's head.",
+        "The starting node/vertex of the directed edge leading to node $t$ is hidden behind the instructor."
+      ]
+    }
+  },
+  {
+    "frame": "frame_116.00.jpg",
+    "timestamp": 116.0,
+    "analysis": {
+      "title": "Graph Search",
+      "visible_text": [
+        "Graph search;",
+        "\"explore\" a graph"
+      ],
+      "mathematical_content": [
+        "$s$",
+        "$t$"
+      ],
+      "diagram": "A hand-drawn diagram representing graph exploration. It contains two circled nodes (vertices): a start node labeled '$s$' on the left and a target node labeled '$t$' on the right. Three paths (edges) originate from node '$s$': one curved path goes upward and ends abruptly; a second wavy path successfully connects node '$s$' to node '$t$' with an arrowhead indicating direction; a third path goes downward, ending with an arrowhead pointing away from '$s$'.",
+      "explanation": "The diagram visually explains the concept of 'Graph Search' as an exploration process. Starting from a source vertex $s$, the search algorithm explores different paths. Some paths may lead to dead ends or diverge, while others successfully find a route to the target vertex $t$.",
+      "important_points": [
+        "Graph search is conceptualized as 'exploring' a graph.",
+        "The search starts from a designated source node, labeled $s$.",
+        "A typical goal of graph search is to find a path from the start node $s$ to a destination/target node, labeled $t$.",
+        "Multiple paths can be explored, but not all of them will successfully connect to the target node $t$."
+      ],
+      "uncertain_content": [
+        "The word 'graph' at the top-right of the chalkboard is cut off at the edge of the frame, showing only 'grap'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_136.00.jpg",
+    "timestamp": 136.0,
+    "analysis": {
+      "title": "Graph Theory Recall",
+      "visible_text": [
+        "Recall:",
+        "graph"
+      ],
+      "mathematical_content": [
+        "$G = (V, E)$"
+      ],
+      "diagram": "",
+      "explanation": "The lecturer is writing the standard definition of a graph on the blackboard, denoted as $G = (V, E)$, where $V$ represents the set of vertices (nodes) and $E$ represents the set of edges.",
+      "important_points": [
+        "A graph $G$ is defined as an ordered pair containing a set of vertices $V$ and a set of edges $E$."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_166.00.jpg",
+    "timestamp": 166.0,
+    "analysis": {
+      "title": "Graph Theory Definition Recall",
+      "visible_text": [
+        "Recall: graph G=(V,E)",
+        "V = [obscured] of vertices",
+        "E = [obscured] of edges",
+        "[obscured symbol] unordered pa[writing in progress]"
+      ],
+      "mathematical_content": [
+        "$G = (V, E)$",
+        "$V$",
+        "$E$"
+      ],
+      "diagram": "None",
+      "explanation": "The image shows an instructor writing the fundamental definition of a graph on a blackboard. A graph $G$ is defined as a pair consisting of a set of vertices $V$ and a set of edges $E$, where the edges are represented as unordered pairs of vertices.",
+      "important_points": [
+        "A graph $G$ is formally defined as $G = (V, E)$.",
+        "$V$ represents the set of vertices.",
+        "$E$ represents the set of edges.",
+        "Edges in an undirected graph are defined as unordered pairs of vertices."
+      ],
+      "uncertain_content": [
+        "The words between the equals signs and 'of vertices'/'of edges' are obscured by the instructor's head and shoulder, though they are contextually likely 'set'.",
+        "The symbol at the start of the fourth line (likely '$\\subseteq \\{$') is partially obscured.",
+        "The word 'pairs' is currently being written and is incomplete ('pa')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_186.00.jpg",
+    "timestamp": 186.0,
+    "analysis": {
+      "title": "Basic Graph Theory Definitions",
+      "visible_text": [
+        "Recall: graph G = (V,E)",
+        "V = set of vertices",
+        "E = set of edges",
+        "UNDIR.",
+        "unordered pairs",
+        "DIREC.",
+        "ordered pairs"
+      ],
+      "mathematical_content": [
+        "G = (V, E)",
+        "V = \\text{set of vertices}",
+        "E = \\text{set of edges}",
+        "e = \\{v, w\\}",
+        "e = (v, w)"
+      ],
+      "diagram": "None",
+      "explanation": "The chalkboard contains handwritten lecture notes reviewing the fundamental components of a graph, defining vertices, edges, and the distinction between undirected and directed edges.",
+      "important_points": [
+        "A graph $G$ is defined mathematically as $G = (V, E)$, where $V$ is the set of vertices and $E$ is the set of edges.",
+        "In an undirected graph (labeled 'UNDIR.'), an edge $e$ is represented as an unordered pair of vertices, written as $\\{v, w\\}$.",
+        "In a directed graph (labeled 'DIREC.'), an edge $e$ is represented as an ordered pair of vertices, written as $(v, w)$."
+      ],
+      "uncertain_content": [
+        "The cursive word or symbol written directly before '$e$' in both the 'UNDIR.' and 'DIREC.' lines is highly stylized and could be interpreted as 'or', a shorthand symbol, or a variable modifier."
+      ]
+    }
+  },
+  {
+    "frame": "frame_226.00.jpg",
+    "timestamp": 226.0,
+    "analysis": {
+      "title": "Introduction to Undirected and Directed Graphs",
+      "visible_text": [
+        "und...",
+        "DIRE..."
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c\\}",
+        "E_{\\text{undirected}} = \\{\\{a, b\\}, \\{b, c\\}, \\{c, a\\}\\}",
+        "E_{\\text{directed}} = \\{(b, a), (a, c), (b, c), (c, b)\\}"
+      ],
+      "diagram": "The blackboard shows two graph diagrams. On the left is an undirected graph with three vertices labeled 'a', 'b', and 'c' connected in a triangle by simple lines. On the right is a directed graph with the same three vertices, where edges are represented by arrows: one from 'b' to 'a', one from 'a' to 'c', and two separate arrows between 'b' and 'c' pointing in opposite directions.",
+      "explanation": "The instructor is illustrating the structural difference between undirected and directed graphs. In an undirected graph, edges have no direction, representing symmetric relationships. In a directed graph, edges (or arcs) have arrows indicating a one-way direction, and bidirectional relationships are represented by separate arrows in each direction.",
+      "important_points": [
+        "An undirected graph consists of vertices connected by bidirectional/unoriented edges.",
+        "A directed graph (digraph) consists of vertices connected by directed edges (arcs).",
+        "In a directed graph, symmetric relationships between two nodes (like b and c) require two separate directed edges in opposite directions."
+      ],
+      "uncertain_content": [
+        "The handwritten text under the left graph is partially obscured and seems to be the prefix 'und...' for 'undirected'.",
+        "The text under the right graph is being written by the instructor and currently spells 'DIRE...', likely representing the word 'directed'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_248.00.jpg",
+    "timestamp": 248.0,
+    "analysis": {
+      "title": "Undirected and Directed Graphs",
+      "visible_text": [
+        "UNDIR.",
+        "DIRECTED"
+      ],
+      "mathematical_content": [
+        "\\{a, b\\}",
+        "\\{b, c\\}",
+        "\\{c, d\\}"
+      ],
+      "diagram": "The board features two diagrams of graphs:\n1. An undirected graph (labeled 'UNDIR.') on the left with four vertices: $a$, $b$, $c$, and $d$. The edges connect $a-b$, $a-c$, $b-c$, $b-d$, and $c-d$.\n2. A directed graph (labeled 'DIRECTED') on the right with three vertices: $a$, $b$, and $c$. The directed edges (arrows) are from $b$ to $a$, $a$ to $c$, $b$ to $c$, and $c$ to $b$.",
+      "explanation": "This lecture frame introduces graph theory by contrasting undirected graphs with directed graphs. Undirected graphs have edges without a defined direction, represented mathematically as unordered sets of two vertices (e.g., $\\{a, b\\}$). Directed graphs have directed edges (or arcs) represented by arrows, indicating a one-way relationship from one vertex to another.",
+      "important_points": [
+        "Undirected graphs use unordered pairs (sets) to denote edges, shown as $\\{a, b\\}$.",
+        "Directed graphs use directed arrows to indicate the orientation of edges between vertices.",
+        "The directed graph example contains a bidirectional relationship between vertices $b$ and $c$, represented by two distinct directed arrows pointing in opposite directions."
+      ],
+      "uncertain_content": [
+        "The handwritten list of sets at the bottom left is partially obscured by the lecturer's hand and is incomplete, showing what appears to be $\\{a, b\\}$, $\\{b, c\\}$, $\\{c, d\\}$, and some ellipsis dots."
+      ]
+    }
+  },
+  {
+    "frame": "frame_274.00.jpg",
+    "timestamp": 274.0,
+    "analysis": {
+      "title": "Introduction to Undirected and Directed Graphs",
+      "visible_text": [
+        "V = {a, b, c, d}",
+        "UNDIR.",
+        "E = {{a, b}, {b, c}, {c, d}, ...}",
+        "DIRECTED"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E = \\{\\{a, b\\}, \\{b, c\\}, \\{c, d\\}, \\dots\\}"
+      ],
+      "diagram": "The chalkboard contains two hand-drawn graphs:\n1. On the left: An undirected graph with four vertices labeled 'a', 'b', 'c', and 'd'. The edges are drawn as simple lines connecting the vertices: (a, b), (a, c), (b, c), (b, d), and (c, d).\n2. On the right: A directed graph with three vertices labeled 'a', 'b', and 'c'. The edges are directed arrows: one pointing from 'b' to 'a', one from 'a' to 'c', and a pair of opposing directed edges between 'b' and 'c' (one pointing from 'b' to 'c', and another from 'c' to 'b').",
+      "explanation": "This lecture frame distinguishes between Undirected Graphs (labeled 'UNDIR.') and Directed Graphs (labeled 'DIRECTED'). For the undirected graph, it defines the vertex set $V$ and begins listing the edge set $E$ using unordered pairs denoted by curly braces, representing bidirectional or non-directional relationships. For the directed graph, the edges are depicted with arrows to denote ordered relationships (directions) between the vertices.",
+      "important_points": [
+        "An undirected graph ('UNDIR.') has edges with no defined direction, represented mathematically as sets of size two, e.g., $\\{a, b\\}$.",
+        "A directed graph ('DIRECTED') has edges with a specific direction, represented by arrows between vertices.",
+        "In a directed graph, there can be multiple directed edges between the same pair of vertices pointing in opposite directions (as shown between 'b' and 'c')."
+      ],
+      "uncertain_content": [
+        "The list of elements in the edge set $E$ is incomplete and ends with an ellipsis ('...}')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_294.00.jpg",
+    "timestamp": 294.0,
+    "analysis": {
+      "title": "Recall: Graph Definition, Undirected vs. Directed Graphs",
+      "visible_text": [
+        "Recall: graph G=(V,E)",
+        "V set of vertices",
+        "E set of edges",
+        "UNDIR. {v, w} unordered pairs",
+        "DIRECTED (v, w) ordered pairs",
+        "V = { ... }",
+        "UND[...]",
+        "E = { {a, b}, {c, d} ... }"
+      ],
+      "mathematical_content": [
+        "G = (V, E)",
+        "V",
+        "E",
+        "\\{v, w\\}",
+        "(v, w)",
+        "E = \\{ \\{a, b\\}, \\{c, d\\}, \\dots \\}"
+      ],
+      "diagram": "A hand-drawn graph diagram on the right blackboard showing circled vertices (with labels 'a' and 'c' clearly visible) connected by lines (edges).",
+      "explanation": "The lecturer is defining the fundamental components of a graph $G = (V, E)$. The definition is broken down into the vertex set $V$ and edge set $E$. The text distinguishes between undirected graphs, where edges are represented as unordered pairs $\\{v, w\\}$, and directed graphs, where edges are represented as ordered pairs $(v, w)$. An example graph is partially drawn on the right blackboard to illustrate these concepts practically.",
+      "important_points": [
+        "A graph $G$ is defined as an ordered pair $(V, E)$ consisting of a set of vertices $V$ and a set of edges $E$.",
+        "In undirected graphs (UNDIR.), edges are represented as unordered sets of two vertices, written as $\\{v, w\\}$.",
+        "In directed graphs (DIRECTED), edges have a direction and are represented as ordered pairs (tuples), written as $(v, w)$."
+      ],
+      "uncertain_content": [
+        "The full set definitions for the example graph's vertices $V = \\{...\\}$ and edges $E = \\{...\\}$ on the right-hand blackboard are partially cut off by the frame."
+      ]
+    }
+  },
+  {
+    "frame": "frame_314.00.jpg",
+    "timestamp": 314.0,
+    "analysis": {
+      "title": "Introduction to Undirected and Directed Graphs",
+      "visible_text": [
+        "V = {a, b, c, d}",
+        "UNDIRECTED",
+        "DIRECTED"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E = \\{ \\{a, b\\}, \\{a, c\\}, \\{b, c\\}, \\{c, d\\}, \\{b, d\\} \\}",
+        "(a, b), (a, c), (b, c), (c, b)"
+      ],
+      "diagram": "Two graph diagrams are drawn on the blackboard:\n1. An undirected graph (left) with four vertices: 'a', 'b', 'c', and 'd'. The edges connect (a, b), (a, c), (b, c), (b, d), and (c, d) without arrows.\n2. A directed graph (right) with three vertices: 'a', 'b', and 'c'. Arrows show direction from 'a' to 'b', 'a' to 'c', and two opposing curved arrows between 'b' and 'c' (b to c, and c to b).",
+      "explanation": "The lecturer is illustrating the difference between undirected and directed graphs. In undirected graphs, edges represent bidirectional or orientation-free relationships and are mathematically denoted using unordered set notation (curly braces). In directed graphs, edges have a specific direction and are denoted as ordered pairs using parentheses.",
+      "important_points": [
+        "The vertex set V is defined as \\{a, b, c, d\\}.",
+        "For undirected graphs, the edge notation uses sets, e.g., \\{a, b\\}, indicating the relation is symmetric.",
+        "For directed graphs, the edge notation uses ordered pairs, e.g., (a, b), indicating a directed link from a to b.",
+        "The directed graph contains a mutual pair of directed edges between vertices b and c, written as (b, c) and (c, b)."
+      ],
+      "uncertain_content": [
+        "The complete equation for the undirected edge set 'E' on the left is partially blocked by the instructor's torso.",
+        "The exact characters being written by the instructor at the bottom right are partially obscured by his hand, but they appear to be part of the directed edge list."
+      ]
+    }
+  },
+  {
+    "frame": "frame_334.00.jpg",
+    "timestamp": 334.0,
+    "analysis": {
+      "title": "Applications",
+      "visible_text": [
+        "Applications:",
+        "- we"
+      ],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "An instructor with long hair in a ponytail and wearing a blue t-shirt is writing on a large blackboard. He has written the heading 'Applications:' (underlined) and is beginning to write the first bullet point, which currently starts with the letters 'we'.",
+      "important_points": [
+        "The lecture is starting a section on applications related to the topic of study."
+      ],
+      "uncertain_content": [
+        "The word starting with 'we' is incomplete as the instructor is actively writing it during this frame."
+      ]
+    }
+  },
+  {
+    "frame": "frame_370.00.jpg",
+    "timestamp": 370.0,
+    "analysis": {
+      "title": "Applications of Directed Graphs",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "DIR...",
+        "E ="
+      ],
+      "mathematical_content": [
+        "\\}",
+        "E = \\{ (a, c), ... \\}"
+      ],
+      "diagram": "A directed graph consisting of three vertices labeled 'a', 'b', and 'c' arranged in a triangle:\n- Vertex 'a' is at the top.\n- Vertex 'b' is at the bottom-left.\n- Vertex 'c' is at the bottom-right.\n- There is a directed edge pointing from 'b' to 'a'.\n- There is a directed edge pointing from 'a' to 'c'.\n- There are two directed edges between 'b' and 'c': one pointing from 'b' to 'c' and another pointing from 'c' to 'b'.",
+      "explanation": "The chalkboard displays a directed graph (often used to represent networks like the World Wide Web) and lists 'web crawling' as a primary application. In this context, web pages are represented as vertices (nodes), and hyperlinks between pages are represented as directed edges.",
+      "important_points": [
+        "A directed graph (digraph) contains edges with a specific direction.",
+        "Web crawling is an application of directed graphs where crawlers traverse nodes (web pages) via directed links."
+      ],
+      "uncertain_content": [
+        "The text representing the vertex set at the top-left is almost entirely cut off, leaving only a closing brace '}'.",
+        "The label directly beneath the graph starting with 'DIR...' is partially obscured by the instructor, likely writing 'DIRECTED GRAPH' or 'DIGRAPH'.",
+        "The formal definition of the edge set 'E' is partially blocked by the instructor's body."
+      ]
+    }
+  },
+  {
+    "frame": "frame_390.00.jpg",
+    "timestamp": 390.0,
+    "analysis": {
+      "title": "Introduction to Graph Theory and Applications",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "- social networking"
+      ],
+      "mathematical_content": [
+        "\\{a, b, c, d\\}",
+        "\\{b, c\\}",
+        "E = \\{(a, b), \\dots, (c, b)\\}"
+      ],
+      "diagram": "Two hand-drawn graphs are visible on the left side of the blackboard. One is an undirected graph (partially visible on the far left) with vertices including 'd'. The other is a directed graph in the center-left with circular nodes labeled 'a' and 'b', connected by directed edges (arrows), including an arrow pointing from 'b' to 'a'.",
+      "explanation": "The lecture introduces graph theory, depicting how graphs can be represented mathematically using sets of vertices (nodes) and edges (connections). The instructor highlights practical applications of graphs, such as web crawling (modeling the internet as a directed graph of web pages and hyperlinks) and social networking (modeling users and their connections).",
+      "important_points": [
+        "Graphs consist of a set of vertices/nodes (indicated by the set notation containing elements like 'a', 'b', 'c', 'd').",
+        "Edges in a directed graph are represented as ordered pairs, shown in the edge set $E$ containing pairs like $(c, b)$.",
+        "Two key real-world applications of graphs are web crawling and social networking."
+      ],
+      "uncertain_content": [
+        "The full list of elements in the edge set $E$ is partially obscured by the instructor's body.",
+        "The leftmost set containing 'b, c' is partially cut off at the edge of the board."
+      ]
+    }
+  },
+  {
+    "frame": "frame_410.00.jpg",
+    "timestamp": 410.0,
+    "analysis": {
+      "title": "Applications",
+      "visible_text": [
+        "Applications:",
+        "- crawling",
+        "- l networking",
+        "- network bro"
+      ],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "The lecturer is writing a list of applications of graph-related algorithms on a blackboard. The visible list items relate to graph search applications such as web crawling, social network analysis, and network broadcasting.",
+      "important_points": [
+        "Graph algorithms have practical applications in web crawling.",
+        "Graph structures are used to model and analyze social networks.",
+        "Network broadcasting or routing (currently being written as 'network bro...') is another application of these algorithms."
+      ],
+      "uncertain_content": [
+        "The prefix before 'crawling' is obscured by the lecturer but is likely 'web'.",
+        "The prefix before 'l networking' is obscured by the lecturer but is likely 'social'.",
+        "The word starting with 'bro' is incomplete as the lecturer is still writing, but it is likely 'broadcasting'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_430.00.jpg",
+    "timestamp": 430.0,
+    "analysis": {
+      "title": "Applications",
+      "visible_text": [
+        "1. Applications:",
+        "- web crawling",
+        "- social networking",
+        "- network broadcast",
+        "- garba"
+      ],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "An instructor in a classroom is writing a list of applications of a computer science concept on a blackboard. Based on the examples (web crawling, social networking, network broadcast), the lecture is likely covering graph algorithms such as Breadth-First Search (BFS) or Depth-First Search (DFS).",
+      "important_points": [
+        "Web crawling is an application of the discussed algorithm.",
+        "Social networking (representing and traversing social graphs) is an application.",
+        "Network broadcasting is an application.",
+        "Garbage collection (partially written as 'garba') is another standard application of graph traversal algorithms (e.g., mark-and-sweep)."
+      ],
+      "uncertain_content": [
+        "The word 'garba' is incomplete as the instructor is actively writing it. It is highly likely to be 'garbage collection'.",
+        "There is partially visible, obscured text on the far left edge of the blackboard."
+      ]
+    }
+  },
+  {
+    "frame": "frame_450.00.jpg",
+    "timestamp": 450.0,
+    "analysis": {
+      "title": "Applications:",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "- social networking",
+        "- network broadcast",
+        "- garbage collection"
+      ],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "The handwritten text lists key applications of a computer science topic, most likely related to graph traversal algorithms such as Breadth-First Search (BFS) or Depth-First Search (DFS).",
+      "important_points": [
+        "Web crawling (systematically exploring links to index pages)",
+        "Social networking (analyzing connections or finding paths between users)",
+        "Network broadcast (propagating information through network nodes)",
+        "Garbage collection (identifying reachable/unreachable memory objects, as in the mark-and-sweep algorithm)"
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_470.00.jpg",
+    "timestamp": 470.0,
+    "analysis": {
+      "title": "Introduction to Graphs: Undirected vs. Directed Graphs",
+      "visible_text": [
+        "V = {a, b, c, d}",
+        "UND[IRECTED]",
+        "[DIREC]TED",
+        "Applications",
+        "- web crawl",
+        "- social net",
+        "- network",
+        "- garbage"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E = \\{\\{a, b\\}, \\{a, c\\}, \\{b, c\\}, \\{c, d\\}\\}",
+        "E = \\{(a, c), (b, c), (c, b), (b, a)\\}"
+      ],
+      "diagram": "The blackboard features two graph drawings:\n1. On the left, an undirected graph with nodes 'a', 'b', and 'c' visible, connected by undirected lines (node 'd' and its connection are obscured by the lecturer).\n2. In the center, a directed graph with nodes 'a', 'b', and 'c' where connections are indicated with directed arrows.",
+      "explanation": "The lecture introduces fundamental graph theory concepts, contrasting undirected graphs (where edges have no direction) with directed graphs (where edges have a specific direction represented as ordered pairs or arrows). The right side of the board lists practical applications where graph data structures are used.",
+      "important_points": [
+        "Undirected graph edges are represented as unordered pairs (sets), e.g., {a, b}.",
+        "Directed graph edges are represented as ordered pairs, e.g., (a, c), where the order indicates the direction of the edge.",
+        "Real-world applications of graphs include web crawlers, social networks, network topologies, and garbage collection algorithms."
+      ],
+      "uncertain_content": [
+        "Parts of the words 'UNDIRECTED' and 'DIRECTED' are obscured by the lecturer.",
+        "The rightmost letters of 'web crawl' and 'social net' are cut off on the edge of the blackboard.",
+        "The node 'd' and some associated edges in the diagrams are blocked from view by the lecturer's body."
+      ]
+    }
+  },
+  {
+    "frame": "frame_490.00.jpg",
+    "timestamp": 490.0,
+    "analysis": {
+      "title": "1. Applications:",
+      "visible_text": [
+        "1. Applications:",
+        "web crawling",
+        "social networking",
+        "- network broadcast",
+        "garbage collection",
+        "model c"
+      ],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "The image shows a lecturer writing a list of computer science applications on a blackboard. These applications (such as web crawling, social networking, network broadcast, and garbage collection) are classic use cases for graph traversal algorithms (like Breadth-First Search or Depth-First Search).",
+      "important_points": [
+        "The lecture is listing applications of a specific computer science concept (likely graph algorithms).",
+        "Listed applications include: Web crawling, Social networking, Network broadcast, Garbage collection, and a fifth point starting with 'model c'."
+      ],
+      "uncertain_content": [
+        {
+          "text": "model c",
+          "reason": "The text is incomplete because the instructor is actively writing it. Based on computer science context, it is highly likely to be 'model checking'."
+        }
+      ]
+    }
+  },
+  {
+    "frame": "frame_510.00.jpg",
+    "timestamp": 510.0,
+    "analysis": {
+      "title": "Applications:",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "- social networking",
+        "- network broadcast",
+        "- garbage collection",
+        "- model checking"
+      ],
+      "mathematical_content": [],
+      "diagram": "A single vertical white line is drawn on the left side of the blackboard, acting as a margin or section divider.",
+      "explanation": "The image displays a handwritten list on a blackboard detailing five applications of a computer science algorithm or concept (highly characteristic of graph traversal algorithms like Breadth-First Search or Depth-First Search).",
+      "important_points": [
+        "Web crawling",
+        "Social networking",
+        "Network broadcast",
+        "Garbage collection",
+        "Model checking"
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_530.00.jpg",
+    "timestamp": 530.0,
+    "analysis": {
+      "title": "Applications of Graphs and Directed Graphs",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "- social net...",
+        "- network b...",
+        "- garbage co...",
+        "- model check...",
+        "DIR..."
+      ],
+      "mathematical_content": [
+        "d\\}",
+        "E = \\{ (a, \\dots \\}"
+      ],
+      "diagram": "A directed graph diagram is drawn on the left blackboard. It shows circular nodes labeled 'a' and 'b'. A directed edge (arrow) points from node 'b' to node 'a'. Other directed edges originate from node 'b' and extend to the right, but their destinations are obscured by the instructor.",
+      "explanation": "The lecture covers graph theory, specifically directed graphs (indicated by 'DIR...' which likely stands for 'DIRECTED') and their applications. The left side displays a formal representation of a graph, including a visual diagram and the edge set notation $E$. The right side lists practical computer science applications of graph algorithms.",
+      "important_points": [
+        "Directed graphs are characterized by edges with specific directions between nodes.",
+        "Graph traversal and search algorithms have diverse applications, including web crawling, social network analysis, garbage collection in memory management, and formal model checking."
+      ],
+      "uncertain_content": [
+        "The text on the right blackboard is cut off at the right edge: 'social net...' (likely 'social networks'), 'network b...' (possibly 'network broadcasting' or 'network bridges'), 'garbage co...' (likely 'garbage collection'), and 'model check...' (likely 'model checking').",
+        "The mathematical text 'E = { (a, ...' and 'd}' is partially cut off or blocked by the instructor.",
+        "The word 'DIR...' is cut off by the instructor's body, but is likely 'DIRECTED'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_550.00.jpg",
+    "timestamp": 550.0,
+    "analysis": {
+      "title": "Applications",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "- social networking",
+        "- network broadcast",
+        "- garbage collection",
+        "- model checking",
+        "- checking mathematical conj."
+      ],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "The image shows a handwritten list on a blackboard listing several real-world applications of a computer science concept, typically associated with graph traversal algorithms (such as Breadth-First Search or Depth-First Search).",
+      "important_points": [
+        "Web crawling: Navigating the web graph by following hyperlinks.",
+        "Social networking: Analyzing connections and degrees of separation between users.",
+        "Network broadcast: Distributing data packets across a network to reach all nodes.",
+        "Garbage collection: Identifying reachable memory objects to reclaim unused memory (e.g., tracing garbage collection).",
+        "Model checking: Checking state spaces to verify the correctness of a system.",
+        "Checking mathematical conjectures: Using computational search to verify or find counterexamples for mathematical hypotheses."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_570.00.jpg",
+    "timestamp": 570.0,
+    "analysis": {
+      "title": "Applications of Graph Algorithms",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "- social network",
+        "- network broad",
+        "- garbage collect",
+        "- model checking",
+        "- checking mathem"
+      ],
+      "mathematical_content": [
+        "E = \\{ \\dots \\}",
+        "(c, b)"
+      ],
+      "diagram": "A directed graph is partially visible on the left side of the blackboard. It shows a node labeled 'c' at the top and a node labeled 'b' at the bottom-left, with a directed arrow pointing from 'b' to 'c'. Other elements of the graph are obscured by the instructor.",
+      "explanation": "The lecture presents practical applications of graph theory and graph traversal algorithms (such as BFS/DFS). The left side contains a formal graph diagram and set notation for edges ($E$), while the right side lists various computer science domains where these graph concepts are applied.",
+      "important_points": [
+        "Web crawling uses graph traversal to navigate links between web pages.",
+        "Social networks represent individuals as nodes and relationships as edges.",
+        "Garbage collection algorithms (like mark-and-sweep) use graph reachability to identify unused memory.",
+        "Model checking and verifying mathematical proofs can be framed as graph search problems."
+      ],
+      "uncertain_content": [
+        "The text on the right margin is cut off (e.g., 'social network...', 'network broad...', 'garbage collect...', 'checking mathem...').",
+        "The graph details and the edge set $E$ on the left are largely obscured by the instructor."
+      ]
+    }
+  },
+  {
+    "frame": "frame_590.00.jpg",
+    "timestamp": 590.0,
+    "analysis": {
+      "title": "Applications:",
+      "visible_text": [
+        "Applications:",
+        "- web crawl...",
+        "- social ne...ing",
+        "- network ...dcast",
+        "- garb...tion",
+        "- mod...",
+        "- check...ical conj.",
+        "- solv..."
+      ],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "An instructor is writing on a blackboard, listing various computer science applications of graph traversal algorithms (typically Breadth-First Search or Depth-First Search). The instructor's body partially blocks the center of the list.",
+      "important_points": [
+        "The board lists practical applications of graph search algorithms.",
+        "The list elements correspond to: web crawling, social networking, network broadcast, garbage collection, model checking, checking mathematical conjectures, and solving (likely puzzles/games)."
+      ],
+      "uncertain_content": [
+        "The exact full spelling of the obscured words, reconstructed here as 'networking', 'broadcast', 'collection', 'model checking', 'mathematical conjectures', and 'solving' based on context."
+      ]
+    }
+  },
+  {
+    "frame": "frame_610.00.jpg",
+    "timestamp": 610.0,
+    "analysis": {
+      "title": "Introduction to Directed Graphs and Their Applications",
+      "visible_text": [
+        "DIRECT...",
+        "- web crawling",
+        "- social networks",
+        "- network [unclear]",
+        "- garbage col...",
+        "- model check...",
+        "- checking math...",
+        "- solving puzz..."
+      ],
+      "mathematical_content": [
+        "$E = \\{ (a, c), \\dots \\}$"
+      ],
+      "diagram": "A directed graph drawn on the chalkboard consisting of three vertices: 'a' (top), 'b' (bottom-left), and 'c' (bottom-right). The edges are directed as follows:\n- An arrow pointing from 'b' up to 'a'.\n- An arrow pointing from 'a' down to 'c'.\n- Two opposing arrows between 'b' and 'c' (one pointing from 'b' to 'c', and one pointing from 'c' to 'b').",
+      "explanation": "The instructor is presenting the concept of directed graphs (digraphs). On the left, a formal representation is being defined with a vertex-edge diagram and the beginning of an edge set $E$. On the right, a list of practical applications of graph theory is shown, illustrating where directed graphs are used in computer science.",
+      "important_points": [
+        "Directed graphs consist of vertices connected by directed edges (arrows showing a specific direction).",
+        "Real-world applications of directed graphs include: web crawling (hyperlinks), social networks (follower relationships), garbage collection (object reachability), model checking, and state-space exploration for solving puzzles."
+      ],
+      "uncertain_content": [
+        "The edge set $E$ is partially obscured and incomplete.",
+        "The text on the right side of the chalkboard is cut off at the edge of the frame (e.g., 'network [unclear]', 'garbage col...', 'model check...', 'checking math...', 'solving puzz...')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_662.00.jpg",
+    "timestamp": 662.0,
+    "analysis": {
+      "title": "Pocket Cube: 2x2x2",
+      "visible_text": [
+        "Pocket Cube: 2x2x2",
+        "- configuration graph",
+        "- vertex - each poss"
+      ],
+      "mathematical_content": [
+        "2 \\times 2 \\times 2"
+      ],
+      "diagram": "None",
+      "explanation": "The instructor is writing on a blackboard, defining the 'configuration graph' for a 2x2x2 Pocket Cube. In this graph representation, each vertex corresponds to a possible state or configuration of the cube.",
+      "important_points": [
+        "The lecture introduces the Pocket Cube (2x2x2 Rubik's Cube).",
+        "It defines a 'configuration graph' to model the state space of the cube.",
+        "A vertex in this graph represents each possible configuration/state of the cube."
+      ],
+      "uncertain_content": [
+        "The word at the end of the second bullet point is incomplete as the instructor is currently writing it; it is highly likely to be 'possible' or 'position' (written as 'poss...')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_682.00.jpg",
+    "timestamp": 682.0,
+    "analysis": {
+      "title": "Applications of Graph Theory and Network Algorithms",
+      "visible_text": [
+        "web crawling",
+        "social networks",
+        "network broadcasting",
+        "garbage collection",
+        "model checking",
+        "mathematics"
+      ],
+      "mathematical_content": [
+        "\\partial_1(c_1, b_1 \\dots)",
+        "\\omega^2 \\log \\dots"
+      ],
+      "diagram": "The blackboard does not contain a fully visible diagram. The lecturer's t-shirt features a graphic diagram illustrating the 'Rock, Paper, Scissors, Lizard, Spock' game relations.",
+      "explanation": "The lecturer is presenting a list of practical and theoretical areas in computer science where the discussed mathematical or algorithmic concepts (likely graph theory, automata, or network analysis) are applied. Examples include web crawling, social network analysis, network broadcasting, garbage collection in programming languages, model checking, and pure mathematics.",
+      "important_points": [
+        "Web crawling relies on traversing web graphs.",
+        "Social networks represent relationship graphs among entities.",
+        "Network broadcasting involves routing algorithms on network topologies.",
+        "Garbage collection often uses graph reachability (e.g., mark-and-sweep) to find unused memory.",
+        "Model checking involves state-space exploration of transition systems (directed graphs).",
+        "Mathematical foundations underpin all of these computational applications."
+      ],
+      "uncertain_content": [
+        "The partial mathematical expression on the bottom-left: '..._1(c_1, b_1...'",
+        "The partial expression on the bottom-right: '...^2 \\log...'"
+      ]
+    }
+  },
+  {
+    "frame": "frame_702.00.jpg",
+    "timestamp": 702.0,
+    "analysis": {
+      "title": "Configuration Graph of a 2x2x2 Cube",
+      "visible_text": [
+        "2x2x2",
+        "tion graph",
+        "for each poss",
+        "of cube",
+        "# vert"
+      ],
+      "mathematical_content": [
+        "2 \\times 2 \\times 2"
+      ],
+      "diagram": "A vertical chalk line divides the blackboard into two sections: the left section contains introductory definitions about the cube graph, while the right section is set up to list its properties.",
+      "explanation": "The lecturer is introducing a graph representation (likely a state transition or configuration graph) for a $2 \\times 2 \\times 2$ Rubik's cube, where vertices represent possible states or configurations of the cube. He is beginning to calculate the properties of this graph, starting with the number of vertices ('# vert').",
+      "important_points": [
+        "The topic concerns a graph associated with a $2 \\times 2 \\times 2$ cube.",
+        "The graph is defined with a vertex/node 'for each poss[ible state] of cube'.",
+        "The lecturer is starting to determine graph metrics, starting with the number of vertices ('# vert')."
+      ],
+      "uncertain_content": [
+        "The word preceding '2x2x2' is cut off by the edge of the frame.",
+        "The prefix to 'tion graph' is cut off (highly likely to be 'configuration' or 'transition').",
+        "The word 'poss' is incomplete, likely meaning 'possible states' or 'possible configurations'.",
+        "The word 'vert' is incomplete, clearly shorthand for 'vertices'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_724.00.jpg",
+    "timestamp": 724.0,
+    "analysis": {
+      "title": "Subdivided 3D Cube Diagram",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "A perspective drawing of a three-dimensional cube on a blackboard. The three visible faces (top, front-left, and front-right) are each subdivided into a $2 \\times 2$ grid of smaller regions by intersecting lines aligned with the edges of the cube, representing a partition into eight smaller sub-cubes.",
+      "explanation": "The diagram visually represents the subdivision of a three-dimensional volume (a cube) into eight smaller octants or sub-cubes. The instructor is shown drawing or highlighting the dividing lines on the faces of the cube. This structure is commonly used to illustrate concepts such as 3D coordinate grids, spatial partitioning (e.g., octrees in computer science), multivariable integration partitions in calculus, or geometric symmetry groups.",
+      "important_points": [
+        "A 3D cube is drawn in perspective on the blackboard.",
+        "Each visible face of the cube is divided into four equal quadrants by orthogonal lines.",
+        "The complete structure represents a $2 \\times 2 \\times 2$ subdivision containing 8 sub-cubes.",
+        "The instructor is actively tracing or emphasizing one of the central dividing lines on the front-left face."
+      ],
+      "uncertain_content": [
+        "The specific lecture topic (e.g., multivariable calculus, computer graphics, linear algebra, or group theory) is not explicitly written and cannot be determined with certainty from the image alone."
+      ]
+    }
+  },
+  {
+    "frame": "frame_744.00.jpg",
+    "timestamp": 744.0,
+    "analysis": {
+      "title": "3D Grid Cell and Surface Representation",
+      "visible_text": [
+        "# vertices"
+      ],
+      "mathematical_content": [],
+      "diagram": "A 3D hand-drawn diagram of a cubic grid cell. Inside the wireframe of the cube, there is a shaded, curved surface or a tunnel-like structure passing through the cell's boundaries.",
+      "explanation": "The diagram illustrates a geometric or topological concept within a three-dimensional grid, such as an isosurface passing through a voxel (common in computer graphics algorithms like Marching Cubes) or a topological cell complex representation.",
+      "important_points": [
+        "The drawing represents a 3D cubic cell structure.",
+        "A shaded, curved surface is depicted inside the cube, highlighting an intersection or a boundary within the cell."
+      ],
+      "uncertain_content": [
+        "The handwritten text at the very top of the blackboard is cropped and partially cut off, but appears to start with '# vertices'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_766.00.jpg",
+    "timestamp": 766.0,
+    "analysis": {
+      "title": "Configuration Graph of a 2x2x2 Cube",
+      "visible_text": [
+        "Cube: 2x2x2",
+        "configuration graph",
+        "vertex for each possible state of c",
+        "# vertices ="
+      ],
+      "mathematical_content": [
+        "2 \\times 2 \\times 2",
+        "\\# \\text{vertices} ="
+      ],
+      "diagram": "A vertical chalk line separates the blackboard into two columns.",
+      "explanation": "The lecturer is introducing the concept of a configuration graph for a $2 \\times 2 \\times 2$ Rubik's Cube. In this graph, each vertex represents a unique possible state/configuration of the cube. The right column is prepared to calculate or list the total number of vertices in this state space.",
+      "important_points": [
+        "The topic is modeling a $2 \\times 2 \\times 2$ cube using a configuration graph.",
+        "A vertex in this configuration graph corresponds to each possible state of the cube."
+      ],
+      "uncertain_content": [
+        "The word 'configuration' is partially cut off on the left edge as 'guration'.",
+        "The word 'vertex' is partially cut off on the left edge as 'tex'.",
+        "The word 'cube' after 'state of' is cut off and appears as 'c'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_786.00.jpg",
+    "timestamp": 786.0,
+    "analysis": {
+      "title": "State Graph of a 2x2x2 Rubik's Cube",
+      "visible_text": [
+        "2x2",
+        "graph",
+        "poss",
+        "# vertices =",
+        "/24"
+      ],
+      "mathematical_content": [
+        "\\# \\text{vertices} = 8! \\cdot 3^8",
+        "= 264,539,520",
+        "/24"
+      ],
+      "diagram": "A hand-drawn 3D wireframe representation of a $2 \\times 2 \\times 2$ cube (representing a $2 \\times 2 \\times 2$ Rubik's Cube). A curved, hatched/shaded region is drawn across one of the front-facing corner divisions, possibly highlighting a specific orientation or rotational movement of the pieces.",
+      "explanation": "The lecture calculates the number of vertices (states) in the transition graph of a $2 \\times 2 \\times 2$ Rubik's Cube. The term $8! \\cdot 3^8$ represents the permutations ($8!$) and orientations ($3^8$) of the 8 corner pieces, yielding $264,539,520$ total configurations. Dividing by 24 (`/24`) accounts for the 24 rotational symmetries of the cube in 3D space to identify unique physical orientations.",
+      "important_points": [
+        "The total number of raw vertex configurations before symmetry reduction is $8! \\cdot 3^8 = 264,539,520$.",
+        "Dividing by 24 simplifies the state space by factoring out overall solid rotations of the cube."
+      ],
+      "uncertain_content": [
+        "The text on the far left is cut off; 'poss' is likely 'possibilities' or 'possible', and the letter below it is unclear."
+      ]
+    }
+  },
+  {
+    "frame": "frame_806.00.jpg",
+    "timestamp": 806.0,
+    "analysis": {
+      "title": "Configuration Graph of a 2x2x2 Rubik's Cube",
+      "visible_text": [
+        "Cube: 2x2x2",
+        "...uration graph",
+        "...ex for ... possible",
+        "...tate of...",
+        "# vertices =",
+        "/24",
+        "/3"
+      ],
+      "mathematical_content": [
+        "\\text{# vertices} = 8! \\dots",
+        "/24",
+        "/3"
+      ],
+      "diagram": "None",
+      "explanation": "The lecturer is explaining the configuration graph of a $2 \\times 2 \\times 2$ Rubik's Cube, specifically calculating the number of vertices (valid states) in this graph.",
+      "important_points": [
+        "A vertex in the configuration graph represents a possible state of the $2 \\times 2 \\times 2$ Rubik's Cube.",
+        "The calculation of the number of vertices starts with the permutations of the 8 corner pieces ($8!$) and their orientations.",
+        "Dividing by 24 accounts for the 24 possible orientations of the entire cube in 3D space (rotational symmetry).",
+        "Dividing by 3 accounts for the fact that only $1/3$ of the corner orientations are reachable through legal moves."
+      ],
+      "uncertain_content": [
+        "The text on the left side of the board is partially cut off, likely reading 'Configuration graph', 'vertex for each possible', and 'state of'.",
+        "The full mathematical expression next to '8!' is cut off by the right edge of the board.",
+        "The numerical result written below '# vertices' is unclear and partially cut off (looks like '= 264...' or '= 367...')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_826.00.jpg",
+    "timestamp": 826.0,
+    "analysis": {
+      "title": "Pocket Cube: 2x2x2 Configuration Graph",
+      "visible_text": [
+        "Pocket Cube: 2x2x2",
+        "configuration graph",
+        "vertices for each possible",
+        "of cube",
+        "each possible move"
+      ],
+      "mathematical_content": [
+        "$2 \\times 2 \\times 2$"
+      ],
+      "diagram": "The lecturer is drawing a simplified graph representation on the board: a node (circle) connected by a horizontal line (edge) to another node (circle) that is currently being drawn.",
+      "explanation": "The board outlines the definition of a 'configuration graph' for a $2\\times2\\times2$ Pocket Cube. This graph model represents the state space of the Rubik's cube variation, where each unique state of the cube is a vertex, and the possible moves (transitions) between states are represented as edges connecting those vertices.",
+      "important_points": [
+        "The subject is the $2\\times2\\times2$ Pocket Cube.",
+        "A configuration graph is used to map out the states of the cube.",
+        "Vertices (nodes) in the graph correspond to every possible physical state/configuration of the cube.",
+        "Edges (connections) represent the valid moves that transition the cube from one state to another."
+      ],
+      "uncertain_content": [
+        "The start of the line '- vertices for each...' is partially obscured by the speaker's shoulder.",
+        "The text immediately preceding 'of cube' is obscured, but contextually implies 'state' or 'configuration'.",
+        "The text preceding 'each possible move' is obscured, but contextually implies 'edges for' or 'transitions for'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_844.00.jpg",
+    "timestamp": 844.0,
+    "analysis": {
+      "title": "Pocket Cube: $2 \\times 2 \\times 2$",
+      "visible_text": [
+        "Pocket Cube: 2x2x2",
+        "- configuration graph",
+        "- vertex for each possible state of cube",
+        "- edge for each possible move"
+      ],
+      "mathematical_content": [
+        "$2 \\times 2 \\times 2$"
+      ],
+      "diagram": "A simple graph diagram consisting of two vertices (drawn as circles with a central dot) connected by a single horizontal line representing an edge.",
+      "explanation": "This whiteboard slide defines the concept of a configuration graph for the $2 \\times 2 \\times 2$ Pocket Cube. In this discrete mathematical model, every unique physical state of the cube is represented as a vertex, and any valid move transitioning one state to another is represented as an edge connecting those vertices.",
+      "important_points": [
+        "The system analyzed is the $2 \\times 2 \\times 2$ Pocket Cube.",
+        "The state space is modeled using a configuration graph.",
+        "A vertex represents a possible state of the cube.",
+        "An edge represents a possible move between states."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_864.00.jpg",
+    "timestamp": 864.0,
+    "analysis": {
+      "title": "",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "A lecturer with long hair in a ponytail and wearing a blue shirt is standing in front of a blackboard. The board is mostly blank and appears to have been recently erased, showing only faint white chalk residue.",
+      "important_points": [],
+      "uncertain_content": [
+        "Faint chalk smudges are visible on the blackboard, which may be the erased remnants of a square root symbol or mathematical notation, but they are too faint and indistinct to identify with certainty."
+      ]
+    }
+  },
+  {
+    "frame": "frame_916.00.jpg",
+    "timestamp": 916.0,
+    "analysis": {
+      "title": "State Space Reachability Graph",
+      "visible_text": [
+        "solved",
+        "possible moves",
+        "reachable in 2"
+      ],
+      "mathematical_content": [],
+      "diagram": "A graph/tree diagram illustrating state transitions. It consists of three levels:\n1. A root node on the far left labeled 'solved'.\n2. A first layer of four nodes connected to the root node, indicated by an arrow as 'possible moves'.\n3. A second layer of five nodes connected to the nodes of the first layer, with an arrow pointing to the bottom node labeled 'reachable in 2'.",
+      "explanation": "The diagram represents a backward search or reachability analysis in a state space (such as for a game or puzzle like the Rubik's Cube). Starting from a terminal 'solved' state, the graph branches outward to show all states that can reach the solved state in one move ('possible moves'), and subsequently all states 'reachable in 2' moves.",
+      "important_points": [
+        "The search starts from the 'solved' state (backward search/retrograde analysis).",
+        "Each level of branching represents an additional move/step away from the solved state.",
+        "Edges represent valid transitions or moves between states."
+      ],
+      "uncertain_content": [
+        "The text following 'reachable in 2' is partially obscured by the presenter and cut off at the bottom-right corner of the board."
+      ]
+    }
+  },
+  {
+    "frame": "frame_936.00.jpg",
+    "timestamp": 936.0,
+    "analysis": {
+      "title": "Diagram of network nodes or cells",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "A hand-drawn diagram on a blackboard showing a vertical, elongated capsule-like container enclosing two circular nodes. From the left side of each circle, three diverging lines extend outwards. At the bottom of the enclosing capsule, two short, vertical, parallel lines extend downwards.",
+      "explanation": "The diagram represents a structural grouping of two nodes or cellular units within a defined boundary. Each node features multiple connection lines on its left, suggesting inputs or dendrites, while the lines at the bottom of the enclosing boundary may represent outputs or a base connection of the collective unit.",
+      "important_points": [
+        "The diagram illustrates a grouped structure containing two distinct circular units/nodes.",
+        "Each unit has three fan-like connections extending to the left.",
+        "A capsule-like boundary encloses both units, with two downward-pointing lines at its base."
+      ],
+      "uncertain_content": [
+        "The exact academic subject (e.g., neural networks, computer networking, or cellular biology) is uncertain as there is no written text or mathematical formulas visible in this frame."
+      ]
+    }
+  }
+]

@@ -1,0 +1,812 @@
+[
+  {
+    "frame": "frame_0.00.jpg",
+    "timestamp": 0.0,
+    "analysis": {
+      "title": "Introduction to Algorithms - Lecture 13: Breadth-First Search (BFS)",
+      "visible_text": [
+        "MIT Massachusetts Institute of Technology",
+        "6.006, Fall 2011",
+        "Introduction to Algorithms",
+        "Erik Demaine",
+        "Lecture 13: Breadth-First Search (BFS)",
+        "MITOPENCOURSEWARE",
+        "MASSACHUSETTS INSTITUTE OF TECHNOLOGY",
+        "CC BY-NC-SA"
+      ],
+      "mathematical_content": [],
+      "diagram": "Decorative background graphic showing a stylized, pixelated representation of the MIT Great Dome at night.",
+      "explanation": "This image is the title slide for Lecture 13 of the Fall 2011 course '6.006: Introduction to Algorithms' at the Massachusetts Institute of Technology (MIT). The lecture is presented by Erik Demaine and covers the topic of Breadth-First Search (BFS).",
+      "important_points": [
+        "Course Number: 6.006",
+        "Course Title: Introduction to Algorithms",
+        "Term: Fall 2011",
+        "Instructor: Erik Demaine",
+        "Lecture Number: 13",
+        "Lecture Topic: Breadth-First Search (BFS)"
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_22.00.jpg",
+    "timestamp": 22.0,
+    "analysis": {
+      "title": "",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "The image is completely black, containing no visible educational content, text, diagrams, or equations. This may represent a blank slide, a video transition, or an unrendered frame from the lecture.",
+      "important_points": [],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_32.00.jpg",
+    "timestamp": 32.0,
+    "analysis": {
+      "title": "Lecture Demonstration with Rubik's Cubes",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "A lecturer stands at the front of a classroom behind a demonstration table containing papers and several puzzle cubes (including a Rubik's cube and other color variations). He is holding one of the cubes, suggesting a demonstration related to permutation groups, algorithms, or combinatorics. The blackboards in the background are blank.",
+      "important_points": [
+        "The lecturer is holding a geometric puzzle cube (Rubik's cube-style).",
+        "Several different types and colors of puzzle cubes are laid out on the demonstration table.",
+        "No written text, equations, or slides are visible on the blackboards in this frame."
+      ],
+      "uncertain_content": [
+        "The exact subject of the lecture (e.g., group theory, computer science algorithms, or combinatorics) is uncertain due to the lack of written text or slides."
+      ]
+    }
+  },
+  {
+    "frame": "frame_42.00.jpg",
+    "timestamp": 42.0,
+    "analysis": {
+      "title": "Blackboard Setup",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "A vertical white line is drawn on the right-hand side of the blackboard, dividing the board into two sections.",
+      "explanation": "The instructor is standing on the left side of a large, dark blackboard, preparing to write. Currently, the board contains no written text or formulas, only a vertical dividing line that separates the board into two columns.",
+      "important_points": [
+        "The blackboard is divided into two sections using a vertical chalk line to organize the upcoming lecture notes."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_56.00.jpg",
+    "timestamp": 56.0,
+    "analysis": {
+      "title": "Graph Search",
+      "visible_text": [
+        "Graph search;",
+        "...lore\" a"
+      ],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "A lecturer is writing on a blackboard with yellow chalk. The title of the section is 'Graph search;' which is underlined. Below the title, the lecturer is writing a sentence starting with 'explore' (partially obscured by his head/body as '...lore\"') followed by the letter 'a'.",
+      "important_points": [
+        "The lecture is introducing the topic of 'Graph search'.",
+        "The concept of 'exploring' (likely referring to exploring a graph or vertices) is being introduced."
+      ],
+      "uncertain_content": [
+        {
+          "content": "explore\"",
+          "reason": "The prefix 'exp' of the word 'explore\"' is obscured by the lecturer's head."
+        }
+      ]
+    }
+  },
+  {
+    "frame": "frame_74.00.jpg",
+    "timestamp": 74.0,
+    "analysis": {
+      "title": "Rubik's Cube Demonstration",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "The lecturer is holding and demonstrating a Rubik's cube in front of a blank blackboard. On the desk in front of him, several other puzzle cubes of different sizes and configurations are displayed next to some lecture notes, suggesting a demonstration related to combinatorial mathematics, group theory, or algorithmic problem-solving.",
+      "important_points": [
+        "The lecturer is holding a Rubik's-style twisty puzzle.",
+        "Four distinct puzzle cubes of varying sizes and states are placed on the front table.",
+        "The setup suggests a physical demonstration of mathematical concepts such as group theory, permutations, or algorithms."
+      ],
+      "uncertain_content": [
+        "The text on the papers lying on the table is not legible.",
+        "The exact icons printed on the lecturer's t-shirt (which look like hand-shape symbols) cannot be clearly identified."
+      ]
+    }
+  },
+  {
+    "frame": "frame_96.00.jpg",
+    "timestamp": 96.0,
+    "analysis": {
+      "title": "Graph search:",
+      "visible_text": [
+        "Graph search:",
+        "\"explore\" a graph"
+      ],
+      "mathematical_content": [
+        "t"
+      ],
+      "diagram": "A diagram illustrating a path or connection in a graph, featuring a target node labeled 't' inside a circle on the right, connected by a curved path from a starting node on the left (which is blocked by the lecturer).",
+      "explanation": "The lecturer is introducing the concept of graph search, defining it informally as 'exploring' a graph. The diagram on the board represents finding a path to a target node, typically denoted as $t$ (often paired with a source node $s$).",
+      "important_points": [
+        "The core concept being introduced is 'Graph search', described as exploring a graph.",
+        "A target node labeled 't' is shown as the destination of a search path."
+      ],
+      "uncertain_content": [
+        "The node on the left of the diagram is completely obscured by the lecturer, but conceptually represents the source node (likely labeled 's')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_106.00.jpg",
+    "timestamp": 106.0,
+    "analysis": {
+      "title": "Graph Search",
+      "visible_text": [
+        "Graph search:",
+        "\"explore\" a graph"
+      ],
+      "mathematical_content": [
+        "$s$",
+        "$t$"
+      ],
+      "diagram": "A diagram containing two circled vertices labeled '$s$' and '$t$'. A wavy line with an arrowhead pointing from left to right connects the two vertices, representing a path or transition from '$s$' to '$t$'.",
+      "explanation": "The lecture introduces the concept of graph search, defining it informally as 'exploring' a graph. The drawing illustrates a basic pathfinding or connectivity query between a starting node $s$ (source) and a target node $t$.",
+      "important_points": [
+        "Graph search is introduced as a method to 'explore' a graph.",
+        "The search process typically involves finding a path or determining reachability from a start vertex $s$ to a destination vertex $t$."
+      ],
+      "uncertain_content": [
+        "There is faint, partially erased text in the lower-left area of the blackboard (resembling '5. No' or 'S...'), which is illegible."
+      ]
+    }
+  },
+  {
+    "frame": "frame_116.00.jpg",
+    "timestamp": 116.0,
+    "analysis": {
+      "title": "Graph Search",
+      "visible_text": [
+        "Graph search;",
+        "\"explore\" a grap"
+      ],
+      "mathematical_content": [
+        "$s$",
+        "$t$"
+      ],
+      "diagram": "A hand-drawn graph search diagram illustrating path exploration. It shows a source node labeled '$s$' and a target node labeled '$t$'. Three paths originate from node '$s$': one path travels upwards to the right and ends; a middle wavy path connects '$s$' to '$t$' with an arrow-like marker; a third path goes downwards and to the right, ending with an arrowhead/marker.",
+      "explanation": "The visual content represents the concept of graph search, defined here as 'exploring' a graph. The diagram depicts starting from a source vertex $s$ and searching through various paths to reach a target vertex $t$.",
+      "important_points": [
+        "Graph search is described as 'exploring' a graph.",
+        "The search starts from a designated source node, labeled $s$.",
+        "The process involves traversing paths to find a route to a destination node, labeled $t$."
+      ],
+      "uncertain_content": [
+        "The word 'grap' is cut off at the right edge of the blackboard, which is highly likely the beginning of the word 'graph'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_126.00.jpg",
+    "timestamp": 126.0,
+    "analysis": {
+      "title": "Recall",
+      "visible_text": [
+        "gra...",
+        "Recall"
+      ],
+      "mathematical_content": [],
+      "diagram": "A vertical white line drawn on the blackboard separates the left margin from the main writing area.",
+      "explanation": "The instructor has written the heading 'Recall' underlined at the top of a sectioned-off portion of the blackboard, indicating the start of a review or recollection of previously covered material.",
+      "important_points": [
+        "The board is divided into sections using a vertical chalk line.",
+        "A recall/review segment of the lecture is being introduced."
+      ],
+      "uncertain_content": [
+        "The text starting with 'gra...' on the far left is cut off and its full meaning is unclear.",
+        "The circled symbol below 'gra...' is partially cut off and unclear."
+      ]
+    }
+  },
+  {
+    "frame": "frame_136.00.jpg",
+    "timestamp": 136.0,
+    "analysis": {
+      "title": "Definition of a Graph",
+      "visible_text": [
+        "Recall: graph G = (V, E)"
+      ],
+      "mathematical_content": [
+        "$G = (V, E)$"
+      ],
+      "diagram": "None",
+      "explanation": "An instructor is writing the standard definition of a graph on a blackboard, reminding the audience that a graph $G$ is defined as an ordered pair of sets $(V, E)$, where $V$ typically denotes the set of vertices and $E$ denotes the set of edges.",
+      "important_points": [
+        "A graph $G$ is formally defined by its vertex set $V$ and edge set $E$ as $G = (V, E)$."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_146.00.jpg",
+    "timestamp": 146.0,
+    "analysis": {
+      "title": "Introduction to Graph Theory",
+      "visible_text": [
+        "Recall: graph G = (V, E)",
+        "set of ve"
+      ],
+      "mathematical_content": [
+        "$G = (V, E)$"
+      ],
+      "diagram": "None",
+      "explanation": "A lecturer is writing the standard definition of a graph on a blackboard. He has written the definition $G = (V, E)$ and is beginning to define the components, starting with 'set of ve' which is the beginning of 'set of vertices' representing $V$.",
+      "important_points": [
+        "A graph $G$ is mathematically defined as a pair $(V, E)$.",
+        "The symbol $V$ represents the set of vertices (or nodes).",
+        "The symbol $E$ represents the set of edges."
+      ],
+      "uncertain_content": [
+        "The text 'set of ve' is incomplete, but context strongly suggests it is the beginning of 'set of vertices'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_166.00.jpg",
+    "timestamp": 166.0,
+    "analysis": {
+      "title": "Recall: Definition of a Graph",
+      "visible_text": [
+        "Recall: graph G = (V, E)",
+        "V = set of vertices",
+        "E = set of edges",
+        "e = {u, v} unordered pair"
+      ],
+      "mathematical_content": [
+        "G = (V, E)",
+        "V",
+        "E",
+        "e = \\{u, v\\}"
+      ],
+      "diagram": "None",
+      "explanation": "The lecturer is writing the standard mathematical definition of an undirected graph on a blackboard. A graph $G$ is defined as a pair of sets $(V, E)$, where $V$ represents the vertices and $E$ represents the edges, which are composed of unordered pairs of vertices.",
+      "important_points": [
+        "A graph is represented as $G = (V, E)$.",
+        "The symbol $V$ denotes the set of vertices (or nodes).",
+        "The symbol $E$ denotes the set of edges.",
+        "An individual edge $e$ in an undirected graph is defined as an unordered pair of vertices, written as $e = \\{u, v\\}$."
+      ],
+      "uncertain_content": [
+        "The word 'set' (or similar term) before 'of vertices' and 'of edges' is partially obscured by the lecturer's head and shoulder.",
+        "The word 'pair' at the bottom right is currently being written by the lecturer and is incomplete."
+      ]
+    }
+  },
+  {
+    "frame": "frame_176.00.jpg",
+    "timestamp": 176.0,
+    "analysis": {
+      "title": "Recall: Graph Theory Definition",
+      "visible_text": [
+        "Recall: graph G = (V, E)",
+        "V = [obscured] of vertices",
+        "E = [obscured] of edges",
+        "[obscured] {v, w} unordered pairs",
+        "ordered"
+      ],
+      "mathematical_content": [
+        "G = (V, E)",
+        "V",
+        "E",
+        "\\{v, w\\}"
+      ],
+      "diagram": "None",
+      "explanation": "The lecturer is reviewing the basic mathematical definition of a graph, denoted as $G = (V, E)$, where $V$ represents the set of vertices and $E$ represents the set of edges. The lecture distinguishes between edges as unordered pairs (for undirected graphs) and ordered pairs (for directed graphs).",
+      "important_points": [
+        "A graph $G$ is defined by a pair $(V, E)$.",
+        "$V$ represents the set of vertices.",
+        "$E$ represents the set of edges.",
+        "Edges in an undirected graph are represented as unordered pairs, typically written as $\\{v, w\\}$.",
+        "Edges in a directed graph are represented as ordered pairs (the lecturer is currently writing this definition)."
+      ],
+      "uncertain_content": [
+        "The text obscured by the lecturer's body, which is highly likely to be 'set of' for both 'V = set of vertices' and 'E = set of edges'.",
+        "The character or symbol immediately preceding the set notation '\\{v, w\\}'.",
+        "The incomplete word being written below 'ordered', which appears to be the beginning of 'pairs'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_186.00.jpg",
+    "timestamp": 186.0,
+    "analysis": {
+      "title": "Introduction to Graphs: Vertices and Edges",
+      "visible_text": [
+        "Recall: graph G=(V,E)",
+        "V = set of vertices",
+        "E = set of edges",
+        "UNDIR. or e = {v, w} unordered pairs",
+        "DIREC. or e = (v, w) ordered pairs"
+      ],
+      "mathematical_content": [
+        "G = (V, E)",
+        "V = \\text{set of vertices}",
+        "E = \\text{set of edges}",
+        "e = \\{v, w\\}",
+        "e = (v, w)"
+      ],
+      "diagram": "None",
+      "explanation": "The image shows a chalkboard with introductory definitions in graph theory. It recalls the formal definition of a graph $G$ consisting of a set of vertices $V$ and a set of edges $E$. It distinguishes between undirected graphs, where edges are unordered pairs $\\{v, w\\}$, and directed graphs, where edges are ordered pairs $(v, w)$.",
+      "important_points": [
+        "A graph $G$ is formally defined as a pair of sets $(V, E)$.",
+        "$V$ is the set of vertices (or nodes).",
+        "$E$ is the set of edges (or links).",
+        "For undirected graphs (UNDIR.), an edge $e$ is an unordered pair: $e = \\{v, w\\}$.",
+        "For directed graphs (DIREC.), an edge $e$ is an ordered pair: $e = (v, w)$."
+      ],
+      "uncertain_content": [
+        "The cursive word written between 'UNDIR.'/'DIREC.' and 'e' is likely 'or', but could be interpreted as a mathematical symbol or shorthand."
+      ]
+    }
+  },
+  {
+    "frame": "frame_198.00.jpg",
+    "timestamp": 198.0,
+    "analysis": {
+      "title": "Graph Theory Lecture",
+      "visible_text": [
+        "(unclear, E)",
+        "es",
+        "ired",
+        "is",
+        "r"
+      ],
+      "mathematical_content": [
+        "$(V, E)$"
+      ],
+      "diagram": "A single vertical white chalk line is drawn near the right edge of the main blackboard.",
+      "explanation": "The image shows an instructor at a blackboard preparing to write. On the far-left blackboard, there is partially cut-off text that appears to define a graph using standard mathematical notation.",
+      "important_points": [
+        "The notation $(V, E)$ on the left board typically represents a graph consisting of a set of vertices $V$ and edges $E$."
+      ],
+      "uncertain_content": [
+        "The handwritten text on the far-left board is cut off by the edge of the frame, making the exact words preceding 'es', 'ired', and 'is' unclear."
+      ]
+    }
+  },
+  {
+    "frame": "frame_226.00.jpg",
+    "timestamp": 226.0,
+    "analysis": {
+      "title": "Introduction to Undirected and Directed Graphs",
+      "visible_text": [
+        "a",
+        "b",
+        "c",
+        "un",
+        "DIRE"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c\\}",
+        "E_{\\text{undirected}} = \\{\\{a, b\\}, \\{a, c\\}, \\{b, c\\}\\}",
+        "E_{\\text{directed}} = \\{(b, a), (a, c), (b, c), (c, b)\\}"
+      ],
+      "diagram": "The blackboard shows two graph diagrams:\n1. On the left: An undirected graph with three vertices labeled 'a', 'b', and 'c' forming a triangle where all nodes are connected to each other.\n2. On the right: A directed graph with the same three vertices. There is a directed arrow pointing from 'b' to 'a', another pointing from 'a' to 'c', and two parallel arrows in opposite directions between 'b' and 'c' (one pointing from 'b' to 'c', and one from 'c' to 'b').",
+      "explanation": "This lecture visualizes the fundamental difference between undirected and directed graphs. In undirected graphs, edges represent bidirectional, symmetric relationships. In directed graphs, edges (also called arcs) have a specific direction representing one-way relationships, which allows for asymmetric connections and multiple distinct paths between the same pair of nodes (as seen between 'b' and 'c').",
+      "important_points": [
+        "An undirected graph has edges with no orientation (e.g., connection between 'a' and 'b' is mutual).",
+        "A directed graph features edges with orientation, indicated by arrows.",
+        "A directed graph can have separate, directional paths going both ways between two nodes."
+      ],
+      "uncertain_content": [
+        "The handwritten text under the left graph is cut off and only shows 'un' (presumably meant to be 'UNDIRECTED').",
+        "The handwritten text under the right graph is partially written as 'DIRE' (presumably meant to be 'DIRECTED')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_236.00.jpg",
+    "timestamp": 236.0,
+    "analysis": {
+      "title": "Introduction to Undirected and Directed Graphs",
+      "visible_text": [
+        "UNDIR.",
+        "DIRECTED",
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "mathematical_content": [
+        "E = \\{"
+      ],
+      "diagram": "Two hand-drawn graph diagrams on a blackboard. \n\n1. The left diagram is labeled 'UNDIR.' (undirected) and consists of four vertices labeled 'a', 'b', 'c', and 'd'. There are undirected edges connecting: \n   - 'a' and 'b'\n   - 'a' and 'c'\n   - 'b' and 'c'\n   - 'b' and 'd'\n   - 'c' and 'd'\n\n2. The right diagram is labeled 'DIRECTED' and consists of three vertices labeled 'a', 'b', and 'c'. There are directed edges (indicated by arrows): \n   - from 'b' to 'a'\n   - from 'a' to 'c'\n   - from 'b' to 'c'\n   - from 'c' to 'b'",
+      "explanation": "This lecture frame distinguishes between undirected and directed graphs. An undirected graph has edges that represent bidirectional or symmetric relationships with no inherent direction. A directed graph (or digraph) has edges with a specific direction, represented by arrows, showing a one-way relationship from one vertex to another.",
+      "important_points": [
+        "An undirected graph (UNDIR.) is shown with vertices V = {a, b, c, d}.",
+        "A directed graph (DIRECTED) is shown with vertices V = {a, b, c}.",
+        "The directed graph includes two opposing directed edges between vertices 'b' and 'c' (b -> c and c -> b), demonstrating that directed paths can run in both directions between the same pair of nodes."
+      ],
+      "uncertain_content": [
+        "The handwritten text being started by the instructor's hand at the bottom left is cut off and incomplete, appearing to be 'E = {' to define the edge set."
+      ]
+    }
+  },
+  {
+    "frame": "frame_248.00.jpg",
+    "timestamp": 248.0,
+    "analysis": {
+      "title": "Introduction to Undirected and Directed Graphs",
+      "visible_text": [
+        "UNDIR.",
+        "DIRECTED"
+      ],
+      "mathematical_content": [
+        "\\{a, b\\}",
+        "\\{b, c\\}",
+        "\\{c, d\\}"
+      ],
+      "diagram": "Two graphs are drawn on the blackboard:\n1. On the left: An undirected graph with four vertices labeled 'a', 'b', 'c', and 'd'. The edges connect the pairs (a, b), (a, c), (b, c), (b, d), and (c, d) with simple solid lines containing no arrows.\n2. On the right: A directed graph with three vertices labeled 'a', 'b', and 'c'. The connections are directed arrows: one pointing from b to a, one pointing from a to c, and two anti-parallel arrows between b and c (one pointing from b to c, and another pointing from c to b).",
+      "explanation": "The lecture slide contrasts undirected graphs ('UNDIR.') with directed graphs ('DIRECTED'). Below the undirected graph, the instructor is writing out the edge set using unordered pair/set notation (e.g., \\{a, b\\}, \\{b, c\\}), indicating that direction does not matter in an undirected graph.",
+      "important_points": [
+        "Undirected graphs represent symmetric relations where edges are unordered pairs, written in set notation like $\\{a, b\\}$.",
+        "Directed graphs (digraphs) represent asymmetric relations where edges have a specific direction, indicated by arrows on the diagram."
+      ],
+      "uncertain_content": [
+        "The handwritten list of edge sets at the bottom-left is partially obscured by the instructor and contains scribbles that are difficult to read completely (e.g., the exact brackets and elements near the bottom-most line)."
+      ]
+    }
+  },
+  {
+    "frame": "frame_258.00.jpg",
+    "timestamp": 258.0,
+    "analysis": {
+      "title": "Undirected and Directed Graphs",
+      "visible_text": [
+        "UNDIR.",
+        "DIRECTED"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E = \\{\\{a, b\\}, \\{b, c\\}, \\{c, d\\}, \\dots\\}"
+      ],
+      "diagram": "The blackboard shows two hand-drawn graphs. On the left is an undirected graph with four vertices labeled a, b, c, and d. On the right is a directed graph with three vertices labeled a, b, and c.",
+      "explanation": "This lecture frame illustrates the difference between undirected and directed graphs. On the left, an undirected graph ('UNDIR.') has its vertex set defined as $V = \\{a, b, c, d\\}$ and its edge set $E$ defined as a set of unordered pairs (e.g., $\\{a, b\\}$). On the right, a directed graph ('DIRECTED') uses arrows to define directional paths between vertices, such as from $b$ to $a$, $a$ to $c$, and bi-directional relationships between $b$ and $c$.",
+      "important_points": [
+        "An undirected graph uses unordered pairs of vertices to represent edges, denoted mathematically using set notation, e.g., $\\{a, b\\}$.",
+        "A directed graph uses directed arrows to represent ordered pairs of vertices, signifying a specific direction of travel between nodes.",
+        "The vertex set shown for the undirected graph is $V = \\{a, b, c, d\\}$."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_274.00.jpg",
+    "timestamp": 274.0,
+    "analysis": {
+      "title": "Undirected and Directed Graphs",
+      "visible_text": [
+        "V = {a, b, c, d}",
+        "UNDIR.",
+        "E = {{a, b}, {b, c}, {c, d}, ...}",
+        "DIRECTED"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E = \\{\\{a, b\\}, \\{b, c\\}, \\{c, d\\}, \\dots\\}"
+      ],
+      "diagram": "The blackboard shows two handwritten graph diagrams. The left diagram is labeled 'UNDIR.' (undirected) and features four vertices: a, b, c, and d. The right diagram is labeled 'DIRECTED' and features three vertices: a, b, and c.",
+      "explanation": "The slide introduces the basic concepts and mathematical notation for undirected and directed graphs. On the left, an undirected graph is shown where edges are represented as unordered sets (e.g., \\{a, b\\}). On the right, a directed graph is shown where edges have arrows indicating direction, including two separate directed edges in opposite directions between vertices b and c.",
+      "important_points": [
+        "In an undirected graph, the edge set consists of unordered pairs, written as sets, e.g., \\{a, b\\}.",
+        "The vertex set is denoted by V, and the edge set is denoted by E.",
+        "In a directed graph, edges have directions represented by arrows.",
+        "Two vertices can have directed edges going in opposite directions between them simultaneously (as seen between vertices b and c)."
+      ],
+      "uncertain_content": [
+        "The edge list E under the undirected graph is incomplete and ends with an ellipsis ('...')."
+      ]
+    }
+  },
+  {
+    "frame": "frame_284.00.jpg",
+    "timestamp": 284.0,
+    "analysis": {
+      "title": "Introduction to Graph Theory: Undirected and Directed Graphs",
+      "visible_text": [
+        "V = {a, b, c, d}",
+        "UNDIR.",
+        "DIRECTED",
+        "(V, E)",
+        "vertices",
+        "ordered pairs"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E = \\{\\{a, b\\}, \\{b, c\\}, \\dots\\}",
+        "(V, E)"
+      ],
+      "diagram": "Two graph diagrams are drawn on the blackboard:\n1. On the left, an undirected graph labeled 'UNDIR.' consists of four vertices: 'a', 'b', 'c', and 'd'. Undirected edges connect the pairs (a, b), (a, c), (b, c), (b, d), and (c, d).\n2. On the right, a directed graph labeled 'DIRECTED' consists of three vertices: 'a', 'b', and 'c'. Directed edges (arcs with arrows) go from 'b' to 'a', 'a' to 'c', 'b' to 'c', and 'c' to 'b'.",
+      "explanation": "The instructor is illustrating the structural and mathematical differences between undirected and directed graphs. In an undirected graph, edges are bidirectional and represented mathematically as sets of unordered pairs (e.g., $\\{a, b\\}$). In a directed graph, edges have a specific direction and are represented as ordered pairs.",
+      "important_points": [
+        "A graph is defined by a set of vertices $V$ and a set of edges $E$.",
+        "In an undirected graph, edges are unordered pairs, meaning the connection between 'a' and 'b' is represented as $\\{a, b\\}$.",
+        "In a directed graph, edges are ordered pairs where the direction of the arrow matters (e.g., from 'b' to 'a' is distinct from 'a' to 'b')."
+      ],
+      "uncertain_content": [
+        "The text on the far-left board is partially cut off but appears to list terminology like 'vertices', 'edges', 'ordered pairs', and 'unordered pairs'.",
+        "The full list of elements in the edge set $E$ written below 'UNDIR.' is partially obscured by the instructor's hand."
+      ]
+    }
+  },
+  {
+    "frame": "frame_294.00.jpg",
+    "timestamp": 294.0,
+    "analysis": {
+      "title": "Introduction to Graph Theory: Undirected vs. Directed Graphs",
+      "visible_text": [
+        "Recall: graph G=(V,E)",
+        "V set of vertices",
+        "E set of edges",
+        "UNDIR.",
+        "unordered pairs",
+        "DIRECTED",
+        "ordered pairs",
+        "UND"
+      ],
+      "mathematical_content": [
+        "G = (V, E)",
+        "V",
+        "E",
+        "\\{v, w\\}",
+        "(v, w)",
+        "E = \\{\\{a, b\\}, \\dots \\{c, d\\} \\dots \\}"
+      ],
+      "diagram": "A partial diagram of an undirected graph is drawn on the right blackboard. Visible nodes include 'a' and 'c' enclosed in circles, connected by edges. Below the diagram, the edge set E is partially defined as a set of unordered pairs, e.g., {a, b} and {c, d}.",
+      "explanation": "This lecture frame reviews the formal definition of a graph. It defines a graph G as consisting of a set of vertices V and a set of edges E. It highlights the distinction between undirected graphs (where edges are unordered pairs) and directed graphs (where edges are ordered pairs).",
+      "important_points": [
+        "A graph is formally represented as $G = (V, E)$.",
+        "In an undirected graph, an edge between two vertices $v$ and $w$ is represented as an unordered pair $\\{v, w\\}$.",
+        "In a directed graph, an edge is an ordered pair $(v, w)$, indicating direction from $v$ to $w$."
+      ],
+      "uncertain_content": [
+        "The vertex set $V$ at the top right of the board is partially cut off.",
+        "The full diagram of the graph and the complete list of its edge set $E$ are cut off by the right edge of the frame."
+      ]
+    }
+  },
+  {
+    "frame": "frame_304.00.jpg",
+    "timestamp": 304.0,
+    "analysis": {
+      "title": "Introduction to Directed and Undirected Graphs",
+      "visible_text": [
+        "V = {a, b, c, d}",
+        "DIRECTED",
+        "E ="
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E =",
+        "(a,"
+      ],
+      "diagram": "The blackboard shows two graph diagrams:\n1. An undirected graph on the left with vertices labeled 'a', 'b', and 'c' visible. The edges are simple undirected lines connecting 'a'-'b' and 'a'-'c'.\n2. A directed graph on the right with three vertices labeled 'a', 'b', and 'c'. The edges are directed arrows:\n   - An arrow pointing from 'b' to 'a'\n   - An arrow pointing from 'a' to 'c'\n   - Two opposing arrows between 'b' and 'c' (one pointing 'b' to 'c', and one pointing 'c' to 'b').",
+      "explanation": "The lecturer is illustrating the difference between undirected and directed graphs. On the left, an undirected graph is defined with a vertex set $V = \\{a, b, c, d\\}$. On the right, a directed graph labeled 'DIRECTED' shows directed edges (arcs) represented by arrows, and the lecturer is beginning to write down the directed edges as ordered pairs (starting with '(a,').",
+      "important_points": [
+        "An undirected graph has edges with no inherent direction.",
+        "A directed graph has edges (arcs) with a specific direction pointing from one vertex to another.",
+        "Directed edges are typically represented as ordered pairs of vertices, signifying the source and target nodes.",
+        "Bidirectional relationships between two nodes in a directed graph are represented by two separate directed edges (one in each direction)."
+      ],
+      "uncertain_content": [
+        "The vertex 'd' in the vertex set is not clearly represented as a labeled node in the visible portion of the leftmost graph (it may be obscured by the lecturer).",
+        "The text below the left-hand graph starting with 'E =' is partially blocked from view.",
+        "The ordered pair the lecturer is currently writing under the 'DIRECTED' label is incomplete, showing only '(a,'."
+      ]
+    }
+  },
+  {
+    "frame": "frame_314.00.jpg",
+    "timestamp": 314.0,
+    "analysis": {
+      "title": "",
+      "visible_text": [],
+      "mathematical_content": [],
+      "diagram": "",
+      "explanation": "{\n  \"title\": \"Introduction to Graph Theory: Undirected vs. Directed Graphs\",\n  \"visible_text\": [\n    \"V = {a, b, c, d}\",\n    \"UNDIRECTED\",\n    \"DIRECTED\"\n  ],\n  \"mathematical_content\": [\n    \"V = \\\\{a, b, c, d\\\\}\",\n    \"E = \\\\{\\\\{a, b\\\\}, \\\\dots\\\\}\",\n    \"(a, c)\",\n    \"(b, c)\",\n    \"(c, b)\"\n  ],\n  \"diagram\": \"Two graph diagrams are drawn on the blackboard:\\n1. An undirected graph (left) with four vertices labeled $a, b, c, d$. The edges are represented by undirected lines connecting the nodes: $\\{a, b\\}$, $\\{a, c\\}$, $\\{b, c\\}$, $\\{b, d\\}$, and $\\{c, d\\}$.\\n2. A directed graph (right) with three vertices labeled $a, b, c$. The directed edges (arcs) are represented by arrows: one from $a$ to $b$, one from $a$ to $c$, and a bidirectional pair of curves between $b$ and $c$ (one pointing $b \\\\rightarrow c$ and the other $c \\\\rightarrow b$).\",\n  \"explanation\": \"The lecture illustrates the structural differences between undirected and directed graphs. In an undirected graph, edges are unordered pairs of vertices, mathematically written using set notation (e.g., $\\\\{a, b\\\\}$). In a directed graph, edges have a specific direction and are represented as ordered pairs (e.g., $(a, c)$).\",\n  \"important_points\": [\n    \"The vertex set $V$ defines the nodes in the graph.\",\n    \"Undirected graph edges are bidirectional/unordered pairs, denoted with curly braces $\\\\{u, v\\\\}$.\",\n    \"Directed graph edges (arcs) have a starting and ending node, denoted as ordered pairs $(u, v)$.\"\n  ],\n  \"uncertain_content\": [\n    \"The full set of undirected edges $E$ on the bottom left is partially obscured by the instructor.\",\n    \"The exact ordered pairs being written by the instructor at the bottom right are partially obscured and incomplete.\"\n  ]\n}",
+      "important_points": [],
+      "uncertain_content": [
+        "Gemini returned non-JSON output."
+      ]
+    }
+  },
+  {
+    "frame": "frame_324.00.jpg",
+    "timestamp": 324.0,
+    "analysis": {
+      "title": "Graph Theory: Undirected vs. Directed Graphs",
+      "visible_text": [
+        "V = {a, b, c, d}",
+        "UNDIR.",
+        "DIR.",
+        "A"
+      ],
+      "mathematical_content": [
+        "V = \\{a, b, c, d\\}",
+        "E = \\{\\{a, b\\}, \\{b, c\\}, \\{c, d\\}, \\dots\\}",
+        "E = \\{(a, \\dots\\}"
+      ],
+      "diagram": "The blackboard shows two graph diagrams:\n1. An undirected graph (labeled 'UNDIR.') with four vertices: a, b, c, and d. The edges connected are {a, b}, {a, c}, {b, c}, {b, d}, and {c, d}.\n2. A directed graph (labeled 'DIR.') with three vertices: a, b, and a third vertex partially obscured by the instructor. There is a directed edge from b to a, a directed edge from a to the obscured vertex, and two directed edges in opposite directions between b and the obscured vertex.",
+      "explanation": "This lecture introduces the fundamental concepts of graph theory, specifically distinguishing between undirected and directed graphs. It demonstrates how vertex sets ($V$) and edge sets ($E$) are mathematically defined for both types of graphs. For undirected graphs, edges are unordered pairs and denoted with curly braces (e.g., $\\{a, b\\}$). For directed graphs, edges have direction and are represented as ordered pairs using parentheses (e.g., $(a, b)$).",
+      "important_points": [
+        "Undirected graphs use unordered pairs (sets) to denote edges: $\\{u, v\\}$.",
+        "Directed graphs use ordered pairs to denote directed edges: $(u, v)$."
+      ],
+      "uncertain_content": [
+        "The third node in the directed graph is obscured but presumably labeled 'c' or 'd'.",
+        "The full edge set for the directed graph is blocked by the instructor.",
+        "The letter 'A' written on the far right is cut off and its full word is not visible."
+      ]
+    }
+  },
+  {
+    "frame": "frame_334.00.jpg",
+    "timestamp": 334.0,
+    "analysis": {
+      "title": "Applications:",
+      "visible_text": [
+        "Applications:",
+        "- we"
+      ],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "The image shows a blackboard where an instructor has written the header 'Applications:' (underlined) and is in the middle of writing the first bullet point, starting with '- we'.",
+      "important_points": [
+        "The lecture is transitioning to a section discussing 'Applications'."
+      ],
+      "uncertain_content": [
+        "The text being written after '- we' is incomplete."
+      ]
+    }
+  },
+  {
+    "frame": "frame_370.00.jpg",
+    "timestamp": 370.0,
+    "analysis": {
+      "title": "Introduction to Directed Graphs and Applications",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "DIR..."
+      ],
+      "mathematical_content": [
+        "a",
+        "b",
+        "c",
+        "E = \\{(a, c), (b, a), \\dots \\}"
+      ],
+      "diagram": "A directed graph consisting of three nodes labeled 'a', 'b', and 'c'. The directed edges are oriented as follows: an edge pointing from 'b' to 'a', an edge pointing from 'a' to 'c', and a pair of opposite-directed edges between 'b' and 'c' (one pointing from 'b' to 'c' and another pointing from 'c' to 'b').",
+      "explanation": "The instructor is explaining directed graphs and writing down their practical applications. On the left board, a simple directed graph is drawn along with its formal edge-set representation. On the right board, 'web crawling' is listed as an application of graph traversal.",
+      "important_points": [
+        "A directed graph contains vertices and directed edges that represent asymmetric relationships.",
+        "Web crawling is a standard application of graph theory, where websites are treated as vertices and hyperlinks as directed edges."
+      ],
+      "uncertain_content": [
+        "The handwritten text starting with 'DIR' is partially obscured but is likely 'DIRECTED'.",
+        "The formal set notation for edges 'E = ...' below the graph is partially blocked by the instructor."
+      ]
+    }
+  },
+  {
+    "frame": "frame_380.00.jpg",
+    "timestamp": 380.0,
+    "analysis": {
+      "title": "Applications",
+      "visible_text": [
+        "Applications:",
+        "- ...crawling",
+        "- ...al netwo..."
+      ],
+      "mathematical_content": [
+        "D",
+        "c)_1(c_1,"
+      ],
+      "diagram": "A vertical white line on the blackboard separates mathematical scratch work on the left from the list of applications on the right.",
+      "explanation": "The lecturer is writing a list of applications on the blackboard. The visible text indicates topics related to web crawling and social networks, which are common applications of graph theory or network algorithms.",
+      "important_points": [
+        "The section is titled 'Applications:'.",
+        "One of the applications listed is related to crawling (likely web crawling).",
+        "Another application is related to networks (being written as 'social networks')."
+      ],
+      "uncertain_content": [
+        "The beginning of the first bullet point is obscured by the lecturer's body (likely 'web crawling').",
+        "The second bullet point is incomplete as the lecturer is in the middle of writing it (likely 'social networks').",
+        "The mathematical text on the far left is cut off by the frame and is unclear."
+      ]
+    }
+  },
+  {
+    "frame": "frame_390.00.jpg",
+    "timestamp": 390.0,
+    "analysis": {
+      "title": "Applications of Graph Theory",
+      "visible_text": [
+        "Applications:",
+        "- web crawling",
+        "- social networking"
+      ],
+      "mathematical_content": [
+        "\\{..., c, d\\}",
+        "E = \\{..., \\{b, c\\}, ...\\}",
+        "E = \\{(a, ...), ..., (c, b)\\}"
+      ],
+      "diagram": "Two hand-drawn graphs on the blackboard: 1. A partially visible undirected graph on the left, showing vertex 'd' connected to an adjacent vertex above it. 2. A directed graph in the middle, showing vertices 'a' and 'b' connected by directed edges (arrows).",
+      "explanation": "The lecture contrastingly illustrates undirected graphs and directed graphs. Undirected graphs represent bidirectional relationships and define edges using unordered sets (e.g., $\\{b, c\\}$). Directed graphs represent one-way relationships (arcs) and define edges using ordered pairs (e.g., $(c, b)$). The right side of the blackboard highlights practical applications of these models, specifically 'web crawling' and 'social networking'.",
+      "important_points": [
+        "Undirected edges are represented mathematically as unordered sets (e.g., $\\{b, c\\}$).",
+        "Directed edges (arcs) are represented mathematically as ordered pairs (e.g., $(c, b)$).",
+        "Web crawling can be modeled as a directed graph where web pages are vertices and hyperlinks are directed edges.",
+        "Social networks can be modeled using graphs to represent users (vertices) and their connections (edges)."
+      ],
+      "uncertain_content": [
+        "The full definition of the vertex set at the top-left is cut off by the edge of the board.",
+        "Specific elements in both edge sets ($E$) are obscured by the presenter."
+      ]
+    }
+  },
+  {
+    "frame": "frame_400.00.jpg",
+    "timestamp": 400.0,
+    "analysis": {
+      "title": "Graph Search",
+      "visible_text": [
+        "Graph search:",
+        "\"explore\" a graph"
+      ],
+      "mathematical_content": [
+        "s",
+        "t"
+      ],
+      "diagram": "A hand-drawn schematic diagram illustrating graph exploration. It features a starting/source node labeled 's' inside a circle on the left, and a target node labeled 't' inside a circle on the right. Several paths radiate from 's' towards the right. Two curved vertical lines intersect these paths, representing progressive layers, levels, or wavefronts of exploration moving outward from the source 's' towards 't'.",
+      "explanation": "The diagram conceptually depicts how a graph search algorithm systematically explores a graph from a starting vertex $s$ to a destination vertex $t$. The vertical-like arcs represent the search frontier (such as layers in Breadth-First Search) expanding outwards from the source node to find a path to the target node.",
+      "important_points": [
+        "Graph search is characterized as the process of 'exploring' a graph.",
+        "The search starts at a designated source node, labeled $s$.",
+        "The search progress is visualized as expanding frontiers or wavefronts moving outward from the source $s$ towards a destination $t$."
+      ],
+      "uncertain_content": []
+    }
+  },
+  {
+    "frame": "frame_410.00.jpg",
+    "timestamp": 410.0,
+    "analysis": {
+      "title": "Applications of Graph/Network Algorithms",
+      "visible_text": [
+        "Applications:",
+        "- crawling",
+        "- social networking",
+        "network br"
+      ],
+      "mathematical_content": [],
+      "diagram": "None",
+      "explanation": "The image shows an instructor writing a list of practical applications on a blackboard. The context suggests applications of graph theory or network traversal algorithms (such as Breadth-First Search or Depth-First Search).",
+      "important_points": [
+        "The lecture outlines real-world use cases for the current topic.",
+        "Web crawling is listed as a primary application.",
+        "Social networking (modeling and analyzing connections) is another key application.",
+        "Network broadcasting or routing (indicated by 'network br...') is being introduced as an application."
+      ],
+      "uncertain_content": [
+        "The prefix of 'social' is partially obscured by the instructor.",
+        "The prefix of 'network' on the third bullet point is obscured by the instructor's torso.",
+        "The word starting with 'br' is unfinished, but is highly likely to be 'broadcasting' (network broadcasting)."
+      ]
+    }
+  }
+]

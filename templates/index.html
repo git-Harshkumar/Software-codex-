@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecture Notes Platform</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath:  [['$','$'],['\\(','\\)']],
+        displayMath: [['$$','$$'],['\\[','\\]']],
+        processEscapes: true
+      },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <style>
+    /* ═══════════════ DESIGN TOKENS ═══════════════ */
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --surface2:  #21262d;
+      --surface3:  #30363d;
+      --border:    #30363d;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --primary:   #58a6ff;
+      --primary-d: #1f6feb;
+      --green:     #3fb950;
+      --purple:    #bc8cff;
+      --orange:    #ff9100;
+      --red:       #f85149;
+      --pink:      #f778ba;
+      --radius:    12px;
+      --shadow:    0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    /* ═══════════════ RESET ═══════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+
+    /* ═══════════════ SCROLLBAR ═══════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 99px; }
+
+    /* ═══════════════ NAVBAR ═══════════════ */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      height: 60px;
+      background: rgba(13,17,23,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .navbar-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.05rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .navbar-brand .logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-tabs {
+      display: flex; gap: 4px;
+    }
+    .nav-tab {
+      padding: 6px 16px; border-radius: 8px;
+      font-size: 0.85rem; font-weight: 500;
+      color: var(--muted);
+      cursor: pointer; border: none;
+      background: transparent;
+      transition: all .2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nav-tab:hover { color: var(--text); background: var(--surface2); }
+    .nav-tab.active {
+      color: var(--primary);
+      background: rgba(88,166,255,.1);
+    }
+
+    /* ═══════════════ HERO ═══════════════ */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1f2937 100%);
+      padding: 48px 32px 40px;
+      border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 600px 300px at 20% 50%, rgba(88,166,255,.08) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 200px at 80% 30%, rgba(188,140,255,.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 900px; margin: 0 auto; position: relative; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 99px;
+      background: rgba(88,166,255,.1);
+      border: 1px solid rgba(88,166,255,.2);
+      font-size: .75rem; font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 16px; letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      font-weight: 800; line-height: 1.2;
+      background: linear-gradient(135deg, #e6edf3 30%, var(--primary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .hero-sub {
+      color: var(--muted); font-size: .95rem; max-width: 600px;
+    }
+    .hero-stats {
+      display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap;
+    }
+    .stat {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .82rem; color: var(--muted);
+    }
+    .stat-val {
+      font-weight: 700; font-size: 1rem; color: var(--text);
+    }
+
+    /* ═══════════════ MAIN LAYOUT ═══════════════ */
+    .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ═══════════════ NOTES TAB ═══════════════ */
+    .notes-controls {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .control-group {
+      display: flex; gap: 6px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 4px;
+    }
+    .level-btn, .lang-btn {
+      padding: 7px 18px; border-radius: 7px;
+      font-size: .82rem; font-weight: 600;
+      border: none; cursor: pointer;
+      background: transparent; color: var(--muted);
+      transition: all .2s;
+    }
+    .level-btn:hover, .lang-btn:hover { color: var(--text); }
+    .level-btn.active-l1 { background: rgba(88,166,255,.15); color: var(--primary); }
+    .level-btn.active-l2 { background: rgba(63,185,80,.15);  color: var(--green);   }
+    .level-btn.active-l3 { background: rgba(188,140,255,.15);color: var(--purple);  }
+    .lang-btn.active-lang{ background: var(--surface3); color: var(--text); }
+
+    .notes-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-height: 400px;
+      overflow: hidden;
+    }
+    .notes-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .notes-header h3 { font-size: .9rem; font-weight: 600; color: var(--muted); }
+    .notes-body {
+      padding: 32px;
+      font-family: 'Inter','Noto Sans Devanagari',sans-serif;
+      line-height: 1.8;
+    }
+
+    /* ── Rendered markdown styles ── */
+    .notes-body h1 { font-size: 1.6rem; font-weight: 800; margin: 0 0 20px; color: var(--text); }
+    .notes-body h2 {
+      font-size: 1.15rem; font-weight: 700;
+      color: var(--primary);
+      border-left: 3px solid var(--primary);
+      background: rgba(88,166,255,.06);
+      padding: 8px 14px;
+      border-radius: 0 8px 8px 0;
+      margin: 28px 0 14px;
+    }
+    .notes-body h3 {
+      font-size: 1rem; font-weight: 600;
+      color: var(--text);
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 4px;
+      margin: 20px 0 10px;
+    }
+    .notes-body h4 { font-size: .92rem; font-weight: 600; color: var(--purple); margin: 14px 0 6px; }
+    .notes-body p  { margin-bottom: 12px; color: var(--text); }
+    .notes-body ul, .notes-body ol { margin: 8px 0 14px 20px; }
+    .notes-body li { margin-bottom: 6px; }
+    .notes-body li::marker { color: var(--primary); }
+    .notes-body strong { color: var(--text); font-weight: 600; }
+    .notes-body em     { color: var(--muted); font-style: italic; }
+    .notes-body code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .82em;
+      background: var(--surface3);
+      color: var(--orange);
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .notes-body pre {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      overflow-x: auto;
+      margin: 12px 0 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .82em;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+    .notes-body pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    .notes-body blockquote {
+      border-left: 3px solid var(--purple);
+      background: rgba(188,140,255,.06);
+      padding: 10px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 12px 0;
+      color: var(--text);
+    }
+    .notes-body hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+    .notes-body table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: .88em; }
+    .notes-body th { background: var(--surface3); padding: 9px 14px; text-align: left; font-weight: 600; }
+    .notes-body td { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+    .notes-body tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+
+    /* Not-generated state */
+    .not-generated {
+      text-align: center; padding: 60px 40px;
+      color: var(--muted);
+    }
+    .not-generated .ng-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+    .not-generated h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+    .not-generated pre {
+      display: inline-block; margin-top: 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 10px 18px; border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem; color: var(--green);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: flex; align-items: center; justify-content: center;
+      padding: 80px; gap: 12px; color: var(--muted);
+      flex-direction: column;
+    }
+    .spin {
+      width: 36px; height: 36px;
+      border: 3px solid var(--surface3);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══════════════ SHORTS TAB ═══════════════ */
+    .shorts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .short-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .short-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 40px rgba(88,166,255,.15);
+    }
+    .short-video-wrap {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: #010409;
+      overflow: hidden;
+    }
+    .short-video-wrap video {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+    .play-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.35);
+      transition: opacity .2s;
+    }
+    .play-overlay .play-btn {
+      width: 54px; height: 54px;
+      background: rgba(88,166,255,.9);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+      transition: transform .2s;
+    }
+    .short-card:hover .play-btn { transform: scale(1.1); }
+    .short-card:hover .play-overlay { opacity: 0; }
+    .short-info { padding: 14px 16px; }
+    .short-heading {
+      font-size: .85rem; font-weight: 600; margin-bottom: 6px;
+      color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .short-meta {
+      display: flex; gap: 12px; font-size: .75rem; color: var(--muted);
+    }
+    .short-meta span { display: flex; align-items: center; gap: 4px; }
+
+    /* Video modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.85);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: min(820px, 95vw);
+      overflow: hidden;
+      transform: scale(.95);
+      transition: transform .25s;
+      box-shadow: var(--shadow);
+    }
+    .modal-overlay.open .modal-box { transform: scale(1); }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-weight: 600; font-size: .9rem; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--surface3);
+      border: none; color: var(--text);
+      cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .modal-close:hover { background: var(--red); }
+    .modal-video video { width: 100%; display: block; max-height: 70vh; }
+
+    /* ═══════════════ STICKY NOTES TAB ═══════════════ */
+    .sticky-toolbar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .add-sticky-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      color: white; font-weight: 600; font-size: .88rem;
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(88,166,255,.3);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .add-sticky-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(88,166,255,.4);
+    }
+    .color-swatches {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .swatch {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer; transition: transform .2s, border-color .2s;
+    }
+    .swatch:hover { transform: scale(1.2); }
+    .swatch.selected { border-color: white; transform: scale(1.15); }
+
+    .sticky-new {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .sticky-new.open { display: block; }
+    .sticky-new textarea {
+      width: 100%; min-height: 100px; resize: vertical;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      padding: 12px; font-family: inherit; font-size: .9rem;
+      line-height: 1.6;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .sticky-new textarea:focus { border-color: var(--primary); }
+    .sticky-new .new-controls {
+      display: flex; gap: 10px; margin-top: 12px; align-items: center;
+    }
+    .btn-save {
+      padding: 8px 20px; border-radius: 8px;
+      background: var(--primary); color: #0d1117;
+      font-weight: 600; font-size: .85rem;
+      border: none; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-save:hover { background: #79c0ff; }
+    .btn-cancel {
+      padding: 8px 16px; border-radius: 8px;
+      background: var(--surface3); color: var(--muted);
+      font-size: .85rem; border: none; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-cancel:hover { background: var(--border); }
+
+    /* Sticky notes grid */
+    .stickies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .sticky-note {
+      border-radius: 10px;
+      padding: 18px 16px 14px;
+      position: relative;
+      box-shadow: 3px 6px 20px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.2);
+      transform: rotate(var(--rot, -1deg));
+      transition: transform .2s, box-shadow .2s;
+      cursor: default;
+      min-height: 140px;
+    }
+    .sticky-note:hover {
+      transform: rotate(0deg) scale(1.02);
+      box-shadow: 6px 12px 30px rgba(0,0,0,.45);
+      z-index: 5;
+    }
+    .sticky-tape {
+      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 18px;
+      background: rgba(255,255,255,.2);
+      border-radius: 2px;
+    }
+    .sticky-text {
+      font-size: .88rem; line-height: 1.65;
+      color: rgba(0,0,0,.8);
+      word-break: break-word;
+      white-space: pre-wrap;
+      font-family: inherit;
+      min-height: 80px;
+      outline: none;
+    }
+    .sticky-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 12px;
+      font-size: .72rem; color: rgba(0,0,0,.5);
+    }
+    .sticky-del {
+      width: 22px; height: 22px;
+      background: rgba(0,0,0,.12);
+      border: none; border-radius: 50%;
+      cursor: pointer; color: rgba(0,0,0,.5);
+      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s;
+    }
+    .sticky-del:hover { background: rgba(200,0,0,.2); color: #c00; }
+
+    .empty-state {
+      text-align: center; padding: 80px 20px;
+      color: var(--muted);
+    }
+    .empty-state .e-icon { font-size: 3rem; display: block; margin-bottom: 14px; }
+    .empty-state p { font-size: .9rem; }
+
+    /* ═══════════════ SECTION LABELS ═══════════════ */
+    .section-label {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.15rem; font-weight: 700;
+      margin-bottom: 20px; color: var(--text);
+    }
+    .section-label::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+
+    /* ═══════════════ RESPONSIVE ═══════════════ */
+    @media (max-width: 640px) {
+      .navbar { padding: 0 16px; }
+      .main { padding: 20px 14px; }
+      .notes-body { padding: 20px; }
+      .hero { padding: 32px 16px 28px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <a class="navbar-brand" href="#">
+    <div class="logo">📚</div>
+    LectureAI
+  </a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('notes', this)">📝 Notes</button>
+    <button class="nav-tab"        onclick="switchTab('shorts', this)">🎬 Shorts</button>
+    <button class="nav-tab"        onclick="switchTab('sticky', this)">📌 Sticky Notes</button>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">🎓 MIT Lecture Series</div>
+    <h1>Graph Theory &amp; Search Algorithms</h1>
+    <p class="hero-sub">
+      AI-generated study notes with multilingual support, short video clips,
+      and interactive sticky notes — all in one place.
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val" id="stat-notes">3</span> Note Levels</div>
+      <div class="stat"><span class="stat-val" id="stat-langs">3</span> Languages</div>
+      <div class="stat"><span class="stat-val" id="stat-clips">—</span> Video Clips</div>
+      <div class="stat"><span class="stat-val" id="stat-sticky">0</span> Sticky Notes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- ═══ NOTES TAB ═══ -->
+  <div class="tab-panel active" id="panel-notes">
+
+    <div class="notes-controls">
+
+      <!-- Level selector -->
+      <div class="control-group">
+        <button class="level-btn active-l1" data-level="overview"
+                onclick="selectLevel('overview', this)">
+          ⚡ L1 · Overview
+        </button>
+        <button class="level-btn" data-level="summary"
+                onclick="selectLevel('summary', this)">
+          📖 L2 · Summary
+        </button>
+        <button class="level-btn" data-level="detailed"
+                onclick="selectLevel('detailed', this)">
+          🔬 L3 · Detailed
+        </button>
+      </div>
+
+      <!-- Language selector -->
+      <div class="control-group">
+        <button class="lang-btn active-lang" data-lang="english"
+                onclick="selectLang('english', this)">
+          🇺🇸 English
+        </button>
+        <button class="lang-btn" data-lang="hindi"
+                onclick="selectLang('hindi', this)">
+          🇮🇳 Hindi
+        </button>
+        <button class="lang-btn" data-lang="hinglish"
+                onclick="selectLang('hinglish', this)">
+          🤝 Hinglish
+        </button>
+      </div>
+
+    </div>
+
+    <div class="notes-card">
+      <div class="notes-header">
+        <h3 id="notes-label">Overview · English</h3>
+        <span id="notes-file" style="font-size:.75rem;color:var(--muted)"></span>
+      </div>
+      <div class="notes-body" id="notes-content">
+        <div class="spinner"><div class="spin"></div><span>Loading notes…</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ SHORTS TAB ═══ -->
+  <div class="tab-panel" id="panel-shorts">
+    <div class="section-label">🎬 Video Shorts</div>
+    <div class="shorts-grid" id="shorts-grid">
+      <div class="spinner"><div class="spin"></div><span>Loading clips…</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ STICKY NOTES TAB ═══ -->
+  <div class="tab-panel" id="panel-sticky">
+
+    <!-- Toolbar -->
+    <div class="sticky-toolbar">
+      <button class="add-sticky-btn" onclick="openNewSticky()">
+        ✚ Add Sticky Note
+      </button>
+      <div class="color-swatches" id="color-swatches">
+        <!-- injected by JS -->
+      </div>
+    </div>
+
+    <!-- New note form -->
+    <div class="sticky-new" id="sticky-new">
+      <textarea id="sticky-input" placeholder="Write your note here…"></textarea>
+      <div class="new-controls">
+        <button class="btn-save" onclick="saveSticky()">Save</button>
+        <button class="btn-cancel" onclick="closeNewSticky()">Cancel</button>
+        <span style="font-size:.78rem;color:var(--muted);margin-left:8px;">
+          Tip: Press Ctrl+Enter to save
+        </span>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="section-label" style="margin-top:8px;">📌 My Notes</div>
+    <div class="stickies-grid" id="stickies-grid"></div>
+
+  </div>
+</div><!-- end main -->
+
+
+<!-- ── VIDEO MODAL ── -->
+<div class="modal-overlay" id="video-modal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title"></span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-video">
+      <video id="modal-video" controls></video>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let currentLevel = 'overview';
+let currentLang  = 'english';
+let selectedColor = '#fef08a';
+const COLORS = [
+  { hex: '#fef08a', name: 'Yellow'  },
+  { hex: '#fdba74', name: 'Orange'  },
+  { hex: '#86efac', name: 'Green'   },
+  { hex: '#93c5fd', name: 'Blue'    },
+  { hex: '#f9a8d4', name: 'Pink'    },
+  { hex: '#c4b5fd', name: 'Violet'  },
+];
+const ROTS = [-2, -1, 0, 1, 2, -1.5, 1.5];
+
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  el.classList.add('active');
+
+  if (tab === 'shorts')  loadShorts();
+  if (tab === 'sticky')  loadStickies();
+}
+
+/* ══════════════════════════════════════════
+   NOTES
+══════════════════════════════════════════ */
+function selectLevel(level, btn) {
+  document.querySelectorAll('.level-btn').forEach(b => {
+    b.className = 'level-btn';
+  });
+  const cls = { overview:'active-l1', summary:'active-l2', detailed:'active-l3' };
+  btn.classList.add(cls[level]);
+  currentLevel = level;
+  loadNotes();
+}
+
+function selectLang(lang, btn) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active-lang'));
+  btn.classList.add('active-lang');
+  currentLang = lang;
+  loadNotes();
+}
+
+async function loadNotes() {
+  const label = document.getElementById('notes-label');
+  const fileEl = document.getElementById('notes-file');
+  const content = document.getElementById('notes-content');
+
+  const levelNames = { overview:'Overview', summary:'Summary', detailed:'Detailed Notes' };
+  const langNames  = { english:'English', hindi:'Hindi', hinglish:'Hinglish' };
+  label.textContent = `${levelNames[currentLevel]} · ${langNames[currentLang]}`;
+
+  content.innerHTML = '<div class="spinner"><div class="spin"></div><span>Loading…</span></div>';
+
+  try {
+    const res  = await fetch(`/api/notes/${currentLevel}/${currentLang}`);
+    const data = await res.json();
+    content.innerHTML = data.html || '<p style="color:var(--muted)">No content.</p>';
+    fileEl.textContent = data.filename || '';
+
+    // Re-run MathJax
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([content]).catch(console.warn);
+    }
+  } catch (err) {
+    content.innerHTML = `<p style="color:var(--red)">Error loading notes: ${err.message}</p>`;
+  }
+}
+
+/* ══════════════════════════════════════════
+   SHORTS
+══════════════════════════════════════════ */
+let shortsLoaded = false;
+
+async function loadShorts() {
+  if (shortsLoaded) return;
+  shortsLoaded = true;
+
+  const grid = document.getElementById('shorts-grid');
+  grid.innerHTML = '<div class="spinner"><div class="spin"></div><span>Loading clips…</span></div>';
+
+  try {
+    const res   = await fetch('/api/shorts');
+    const data  = await res.json();
+    const clips = data.clips || [];
+
+    document.getElementById('stat-clips').textContent = clips.length;
+
+    if (!clips.length) {
+      grid.innerHTML = '<div class="empty-state"><span class="e-icon">🎬</span><p>No shorts found. Run <code>python generate_shorts.py</code></p></div>';
+      return;
+    }
+
+    grid.innerHTML = clips.map((c, i) => `
+      <div class="short-card" onclick="openVideo('${c.url}','${escHtml(c.heading)}')">
+        <div class="short-video-wrap">
+          <video src="${c.url}" preload="metadata"></video>
+          <div class="play-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="short-info">
+          <div class="short-heading" title="${escHtml(c.heading)}">${escHtml(c.heading)}</div>
+          <div class="short-meta">
+            <span>⏱ ${c.duration}</span>
+            <span>💾 ${c.size_mb} MB</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    grid.innerHTML = `<p style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+}
+
+function openVideo(url, title) {
+  document.getElementById('modal-title').textContent = title;
+  const vid = document.getElementById('modal-video');
+  vid.src = url;
+  vid.load();
+  document.getElementById('video-modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('video-modal') && !e.currentTarget.classList.contains('modal-close')) return;
+  document.getElementById('video-modal').classList.remove('open');
+  const vid = document.getElementById('modal-video');
+  vid.pause(); vid.src = '';
+}
+
+/* ══════════════════════════════════════════
+   STICKY NOTES
+══════════════════════════════════════════ */
+function initSwatches() {
+  const el = document.getElementById('color-swatches');
+  el.innerHTML = COLORS.map(c => `
+    <div class="swatch ${c.hex === selectedColor ? 'selected' : ''}"
+         style="background:${c.hex}"
+         title="${c.name}"
+         onclick="selectColor('${c.hex}', this)">
+    </div>
+  `).join('');
+}
+
+function selectColor(hex, el) {
+  selectedColor = hex;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function openNewSticky() {
+  document.getElementById('sticky-new').classList.add('open');
+  document.getElementById('sticky-input').focus();
+}
+
+function closeNewSticky() {
+  document.getElementById('sticky-new').classList.remove('open');
+  document.getElementById('sticky-input').value = '';
+}
+
+async function saveSticky() {
+  const text = document.getElementById('sticky-input').value.trim();
+  if (!text) return;
+
+  try {
+    const res  = await fetch('/api/sticky', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, color: selectedColor }),
+    });
+    const note = await res.json();
+    prependSticky(note);
+    closeNewSticky();
+    updateStickyCount();
+  } catch (err) {
+    alert('Error saving note: ' + err.message);
+  }
+}
+
+async function loadStickies() {
+  const grid = document.getElementById('stickies-grid');
+  grid.innerHTML = '';
+  try {
+    const res   = await fetch('/api/sticky');
+    const notes = await res.json();
+    if (!notes.length) {
+      grid.innerHTML = '<div class="empty-state"><span class="e-icon">📌</span><p>No sticky notes yet. Click <strong>Add Sticky Note</strong> to start!</p></div>';
+    } else {
+      notes.forEach(n => appendSticky(n, grid));
+    }
+    updateStickyCount();
+  } catch (err) {
+    grid.innerHTML = `<p style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+}
+
+function prependSticky(note) {
+  const grid = document.getElementById('stickies-grid');
+  const empty = grid.querySelector('.empty-state');
+  if (empty) empty.remove();
+  const el = makeStickyEl(note);
+  grid.prepend(el);
+}
+
+function appendSticky(note, grid) {
+  grid.appendChild(makeStickyEl(note));
+}
+
+function makeStickyEl(note) {
+  const rot = ROTS[Math.floor(Math.random() * ROTS.length)];
+  // Compute text color (dark for light stickies, always dark for these colors)
+  const el = document.createElement('div');
+  el.className = 'sticky-note';
+  el.id = 'sticky-' + note.id;
+  el.style.cssText = `background:${note.color};--rot:${rot}deg`;
+  el.innerHTML = `
+    <div class="sticky-tape"></div>
+    <div class="sticky-text">${escHtml(note.text)}</div>
+    <div class="sticky-footer">
+      <span>${note.created || ''}</span>
+      <button class="sticky-del" onclick="deleteSticky('${note.id}')" title="Delete">×</button>
+    </div>
+  `;
+  return el;
+}
+
+async function deleteSticky(id) {
+  await fetch(`/api/sticky/${id}`, { method: 'DELETE' });
+  const el = document.getElementById('sticky-' + id);
+  if (el) {
+    el.style.transform = 'scale(0)';
+    el.style.opacity = '0';
+    el.style.transition = 'all .3s';
+    setTimeout(() => { el.remove(); updateStickyCount(); }, 300);
+  }
+}
+
+function updateStickyCount() {
+  const count = document.querySelectorAll('.sticky-note').length;
+  document.getElementById('stat-sticky').textContent = count;
+}
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+══════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.ctrlKey && e.key === 'Enter') {
+    const form = document.getElementById('sticky-new');
+    if (form.classList.contains('open')) saveSticky();
+  }
+});
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+initSwatches();
+loadNotes();
+</script>
+</body>
+</html>

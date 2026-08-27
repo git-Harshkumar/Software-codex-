@@ -1,0 +1,114 @@
+{
+  "title": "MIT 6.006 Cours 13 : Parcours en largeur (BFS) & Introduction au parcours de graphes",
+  "overview": "Ce cours introduit les bases du parcours de graphes, en se concentrant sur l'exploration des graphes pour trouver des chemins d'une source à une cible. Il passe en revue les définitions fondamentales des graphes (graphes non orientés vs. orientés), aborde diverses applications concrètes du parcours de graphes (telles que le parcours du Web, les réseaux sociaux et le ramasse-miettes), et détaille comment des états de puzzles complexes, comme le Pocket Cube $2 \\times 2 \\times 2$, peuvent être modélisés sous forme de graphes de configuration afin d'être résolus de manière algorithmique.",
+  "sections": [
+    {
+      "heading": "1. Fondements des graphes et du parcours de graphes",
+      "explanation": "Le parcours de graphe est conceptuellement défini comme l'« exploration » d'un réseau d'états. Étant donné un nœud source désigné $s$ et un nœud cible $t$, l'objectif du parcours de graphe est de traverser le graphe et de trouver un chemin qui les relie. Un graphe est formellement défini par $G = (V, E)$, où $V$ est un ensemble de sommets (nœuds) et $E$ est un ensemble d'arêtes (connexions). Les arêtes peuvent représenter des relations symétriques ou asymétriques, ce qui classe les graphes en types non orientés et orientés.",
+      "equations": [
+        {
+          "latex": "G = (V, E)",
+          "meaning": "Un graphe $G$ est formellement défini comme une paire ordonnée composée d'un ensemble de sommets $V$ et d'un ensemble d'arêtes $E$."
+        },
+        {
+          "latex": "e = \\{v, w\\}",
+          "meaning": "Une arête dans un graphe non orienté, représentant une connexion bidirectionnelle et symétrique entre les sommets $v$ et $w$ en utilisant la notation d'un ensemble non ordonné."
+        },
+        {
+          "latex": "e = (v, w)",
+          "meaning": "Un arc dans un graphe orienté, représentant une transition asymétrique et unidirectionnelle d'un sommet source $v$ vers un sommet cible $w$ en utilisant la notation d'une paire ordonnée."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Représentations de graphes (non orientés vs. orientés)",
+          "steps": [
+            "Graphe non orienté : Soit $V = \\{a, b, c, d\\}$ et $E = \\{\\{a, b\\}, \\{a, c\\}, \\{b, c\\}, \\{c, d\\}, \\{b, d\\}\\}$. Les arêtes sont des lignes non directionnelles. La connexion est symétrique : si $a$ est connecté à $b$, alors $b$ est connecté à $a$.",
+            "Graphe orienté (Digraphe) : Soit $V = \\{a, b, c\\}$ and $E = \\{(b, a), (a, c), (b, c), (c, b)\\}$. Les connexions sont des flèches pointant dans une direction spécifique. Pour représenter des relations mutuelles/bidirectionnelles dans un graphe orienté (comme entre les sommets $b$ et $c$), elles doivent être explicitement définies comme deux arcs distincts : $(b, c)$ et $(c, b)$."
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "description": "Concept d'exploration de graphe",
+          "explanation": "Un schéma dessiné à la main représentant le parcours de graphe. Il montre un sommet source $s$ à gauche et un sommet de destination/cible $t$ à droite. Trois chemins partent de $s$ : un chemin courbe mène vers le haut à une impasse ; un deuxième chemin ondulé atteint avec succès le nœud cible $t$ ; un troisième chemin va vers le bas, s'éloignant de $s$. Cela montre que les algorithmes de parcours de graphes explorent plusieurs branches pour trouver des itinéraires réussis.",
+          "frame": "frame_116.00.jpg"
+        }
+      ],
+      "important_points": [
+        "Le parcours de graphe est un processus systématique d'exploration d'un espace d'états.",
+        "Les graphes non orientés représentent des relations symétriques, tandis que les graphes orientés représentent des relations asymétriques.",
+        "Dans les graphes orientés, les relations bidirectionnelles nécessitent deux arcs distincts pointant dans des directions opposées."
+      ]
+    },
+    {
+      "heading": "2. Applications du parcours de graphes",
+      "explanation": "Les algorithmes de parcours de graphes sont fondamentaux dans de nombreux domaines de l'informatique, du génie logiciel et des mathématiques. Les applications courantes incluent :",
+      "equations": [],
+      "examples": [
+        {
+          "description": "Applications pratiques en génie logiciel",
+          "steps": [
+            "Parcours du Web (Web Crawling) : Les pages web sont modélisées comme des sommets et les hyperliens comme des arcs. Les robots d'indexation parcourent systématiquement ce graphe orienté massif pour indexer les données des moteurs de recherche.",
+            "Réseaux sociaux : Les utilisateurs représentent les sommets, et les amitiés/connexions représentent les arêtes. Le parcours de graphe est utilisé pour calculer les degrés de séparation ou suggérer des 'amis d'amis' (une recherche de niveau deux).",
+            "Diffusion réseau (Network Broadcasting) : Utilisé dans les protocoles de routage pour déterminer comment les paquets de données doivent se propager à travers les routeurs du réseau (nœuds) pour atteindre efficacement toutes les destinations.",
+            "Ramasse-miettes (Garbage Collection) : Les environnements d'exécution (comme Java, PyPy ou Jython) utilisent l'accessibilité dans les graphes pour identifier la mémoire active. En partant des pointeurs racines, le ramasse-miettes parcourt le graphe des objets alloués. Tout objet inaccessible est identifié comme 'déchet' et récupéré.",
+            "Validation de modèles (Model Checking) : Les sommets représentent les états du système et les arcs orientés représentent les transitions valides. Le parcours de graphe vérifie si une séquence d'événements mène à un état dangereux ou invalide.",
+            "Résolution de puzzles et de jeux : Explore un graphe de configurations de jeu pour trouver une séquence de mouvements menant d'une disposition mélangée à un état résolu."
+          ]
+        }
+      ],
+      "diagrams": [],
+      "important_points": [
+        "Les algorithmes de ramasse-miettes (comme le mark-and-sweep) sont fondamentalement des problèmes d'accessibilité dans les graphes.",
+        "L'espace d'états d'un système peut être entièrement analysé pour en vérifier la sécurité et la correction grâce à la validation de modèles par parcours de graphe."
+      ]
+    },
+    {
+      "heading": "3. Graphes de configuration et espace d'états (Le Pocket Cube 2x2x2)",
+      "explanation": "Les puzzles physiques et les jeux peuvent être modélisés à l'aide d'un **graphe de configuration**. Dans cette représentation, chaque disposition physique ou état unique du puzzle est un sommet, et chaque transition valide (comme un mouvement physique ou une rotation) est une arête orientée ou non orientée reliant deux sommets. Pour un Pocket Cube $2 \\times 2 \\times 2$ (un mini-Rubik's cube), nous pouvons calculer la taille exacte de ce graphe en analysant les permutations, les orientations et l'accessibilité par des mouvements autorisés.",
+      "equations": [
+        {
+          "latex": "|V| = \\frac{8! \\cdot 3^8}{24 \\cdot 3} = 3,674,160",
+          "meaning": "Le calcul des configurations physiques accessibles (sommets) d'un Pocket Cube $2 \\times 2 \\times 2$. $8!$ représente les permutations des 8 petits cubes de coin (cubies) ; $3^8$ représente les 3 orientations de rotation possibles pour chacun des 8 coins ; la division par 24 élimine les symétries de rotation globale dans l'espace 3D (rotations de l'ensemble du cube) ; la division par 3 élimine les orbites d'accessibilité (seul 1/3 des configurations d'orientation sont accessibles par des mouvements de cube autorisés)."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Recherche rétrograde (inversée) sur le Pocket Cube",
+          "steps": [
+            "Définir la racine de la recherche comme l'unique état 'résolu' du cube.",
+            "Développer vers l'extérieur en appliquant tous les mouvements possibles (comme les quarts de tour) pour identifier tous les états accessibles en exactement 1 mouvement.",
+            "À partir de ces états, appliquer à nouveau tous les mouvements autorisés pour trouver toutes les configurations 'accessibles en 2' mouvements.",
+            "Continuer cette expansion par niveaux, couche par couche (par exemple via un parcours en largeur). Selon la métrique du quart de tour, cette expansion montre que l'ensemble des 3,67 millions d'états peuvent être résolus en un maximum de 11 mouvements."
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "description": "Graphe d'accessibilité de l'espace d'états",
+          "explanation": "Un diagramme arborescent illustrant la recherche inversée. À gauche, un nœud racine est étiqueté 'résolu'. Il se ramifie en une première couche de quatre nœuds, représentant les 'mouvements possibles' immédiatement précédents. Ces nœuds se ramifient en une deuxième couche de motifs à cinq nœuds, étiquetés 'accessibles en 2' mouvements. Cela illustre comment les algorithmes de recherche cartographient les transitions d'états couche par couche.",
+          "frame": "frame_106.00.jpg"
+        }
+      ],
+      "important_points": [
+        "Un graphe de configuration associe des états à des sommets et des mouvements autorisés à des arêtes.",
+        "Sans tenir compte de la symétrie et de l'accessibilité, l'espace d'états brut d'un cube $2 \\times 2 \\times 2$ est de $8! \\cdot 3^8 = 264 539 520$ configurations.",
+        "La division par 24 prend en compte les rotations globales du cube solide dans l'espace 3D.",
+        "La division par 3 prend en compte les contraintes physiques, car seulement $1/3$ des orientations théoriques peuvent être atteintes sans démonter et réassembler physiquement le cube."
+      ]
+    }
+  ],
+  "key_takeaways": [
+    "Le parcours de graphe est un cadre général pour explorer des états et trouver des chemins d'un sommet source $s$ à un sommet cible $t$.",
+    "Un graphe $G = (V,E)$ est composé d'un ensemble de sommets $V$ et d'un ensemble d'arêtes $E$, classés comme non orientés (paires non ordonnées) ou orientés (paires ordonnées).",
+    "De nombreuses tâches informatiques pratiques, telles que le parcours du Web, le ramasse-miettes et la validation de modèles, sont résolues en les formulant comme des problèmes d'accessibilité et de parcours de graphes.",
+    "Des puzzles combinatoires complexes comme le Rubik's Cube peuvent être modélisés sous forme de graphes de configuration, où les états sont des sommets et les mouvements sont des arêtes."
+  ],
+  "exam_points": [
+    "Soyez prêt à écrire les définitions formelles des graphes orientés et non orientés, y compris leur notation mathématique ($G = (V,E)$, $\\{v,w\\}$ et $(v,w)$).",
+    "Comprenez le calcul de l'espace d'états d'un cube $2 \\times 2 \\times 2$ : sachez pourquoi vous multipliez les permutations et les orientations ($8! \\cdot 3^8$), et pourquoi vous divisez par les symétries de rotation (24) et les contraintes d'accessibilité (3).",
+    "Expliquez comment un ramasse-miettes utilise l'accessibilité dans les graphes pour déterminer quels objets sont éligibles à la suppression.",
+    "Expliquez comment une recherche inversée partant d'un état 'résolu' peut cartographier les chemins les plus courts pour résoudre le puzzle, et comment cela se rapporte aux couches d'un parcours en largeur (BFS)."
+  ]
+}

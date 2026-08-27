@@ -1,0 +1,186 @@
+{
+  "title": "Breadth-First Search (BFS) and Graph Exploration",
+  "overview": "An introduction to graph search, defining fundamental graph components, contrasting undirected and directed graphs, analyzing real-world applications of graph exploration, and modeling puzzle state spaces using configuration graphs with a focus on the two-by-two-by-two Rubik's Pocket Cube.",
+  "sections": [
+    {
+      "heading": "Graph Definitions and Terminology",
+      "explanation": "A graph is a fundamental mathematical and computational structure used to model relationships between objects. It consists of a set of vertices (also called nodes) and a set of edges connecting those vertices. Based on the nature of the connections, graphs are categorized into undirected graphs (where relationships are symmetric and bidirectional) and directed graphs (where relationships have a specific direction).",
+      "equations": [
+        {
+          "latex": "G = (V, E)",
+          "meaning": "A graph is formally defined as an ordered pair consisting of a set of vertices and a set of edges."
+        },
+        {
+          "latex": "V",
+          "meaning": "The vertex set containing all the individual nodes in the graph."
+        },
+        {
+          "latex": "E",
+          "meaning": "The edge set containing all the connections between vertices."
+        },
+        {
+          "latex": "e = \\{v, w\\}",
+          "meaning": "An undirected edge between two vertices, represented mathematically as an unordered pair."
+        },
+        {
+          "latex": "e = (v, w)",
+          "meaning": "A directed edge pointing from a source vertex to a target vertex, represented mathematically as an ordered pair."
+        }
+      ],
+      "examples": [],
+      "diagrams": [],
+      "important_points": [
+        "In an undirected graph, connections are mutual; an edge between two vertices allows traversal in both directions.",
+        "In a directed graph, traversal is restricted to the direction of the arrow. To represent a symmetric relationship in a directed graph, two separate opposing edges must be defined.",
+        "Graph search is the process of systematically exploring these vertices and edges to find paths or reach specific goal states."
+      ]
+    },
+    {
+      "heading": "Examples of Undirected and Directed Graphs",
+      "explanation": "To understand the mathematical structure of graphs, we can analyze simple models containing a finite set of vertices and edges.",
+      "equations": [],
+      "examples": [
+        {
+          "description": "Undirected Graph Example",
+          "steps": [
+            "Define a set of four distinct vertices.",
+            "Define the set of undirected edges as unordered pairs connecting these vertices."
+          ],
+          "equations": [
+            {
+              "latex": "V = \\{a, b, c, d\\}",
+              "meaning": "The vertex set contains four unique vertices."
+            },
+            {
+              "latex": "E = \\{\\{a, b\\}, \\{a, c\\}, \\{b, c\\}, \\{c, d\\}, \\{b, d\\}\\}",
+              "meaning": "The edge set contains five undirected connections."
+            }
+          ]
+        },
+        {
+          "description": "Directed Graph Example",
+          "steps": [
+            "Define a set of three distinct vertices.",
+            "Define the set of directed edges as ordered pairs, showing directional connections between the vertices."
+          ],
+          "equations": [
+            {
+              "latex": "V = \\{a, b, c\\}",
+              "meaning": "The vertex set contains three unique vertices."
+            },
+            {
+              "latex": "E = \\{(b, a), (a, c), (b, c), (c, b)\\}",
+              "meaning": "The edge set contains four directed edges, including a bidirectional relationship between two of the vertices represented as two separate ordered pairs."
+            }
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "description": "Undirected and Directed Graph Layouts",
+          "explanation": "The lecture slides depict two visual graphs. The undirected graph on the left shows four circular nodes labeled with letters, connected by simple solid lines. The directed graph on the right shows three circular nodes connected by arrows pointing in specific directions, with two opposing curved arrows representing a mutual connection between two of the nodes."
+        }
+      ],
+      "important_points": []
+    },
+    {
+      "heading": "Practical Applications of Graph Exploration",
+      "explanation": "Graph traversal is a core utility in computer science. Many real-world problems can be modeled as graphs where a search algorithm is applied to find paths, reachability, or structural properties.",
+      "equations": [],
+      "examples": [],
+      "diagrams": [],
+      "important_points": [
+        "Web Crawling: Web pages are modeled as vertices and hyperlinks as directed edges. Search engines traverse this graph to discover and index new pages.",
+        "Social Networks: Users are vertices, and connections (such as friendships or followers) are edges. Graph search is used to find degrees of separation or suggest new connections.",
+        "Network Broadcasting: Routers and computers are modeled as network nodes. Graph search is used to broadcast packets or find optimal routing paths through the network.",
+        "Garbage Collection: Run-time memory systems (such as Java, PyPy, or Jython) model memory blocks as vertices and pointers as directed edges. Algorithms use graph reachability to find and reclaim memory that is no longer accessible.",
+        "Model Checking: Systems are represented as finite state machines (directed graphs of states). Traversing the graph verifies that the system cannot reach invalid or unsafe states.",
+        "Puzzle Solving: Puzzles and games are represented as state graphs where the player seeks a path from an initial state to a solved state."
+      ]
+    },
+    {
+      "heading": "State Spaces and the Pocket Cube Configuration Graph",
+      "explanation": "A classic example of a puzzle state space is the two-by-two-by-two Rubik's Pocket Cube. We can represent the entire mechanics of this puzzle as a configuration graph where we calculate the size of the vertex set based on permutations and orientations of the physical components.",
+      "equations": [
+        {
+          "latex": "8! \\cdot 3^8 = 264,539,520",
+          "meaning": "The total raw combinations of placing 8 distinct corner pieces in 8 positions, with each corner piece having 3 possible rotational orientations."
+        },
+        {
+          "latex": "\\text{Rotational Symmetries} = 24",
+          "meaning": "The number of solid rotations of the entire cube in 3D space, which represent the same physical puzzle state."
+        },
+        {
+          "latex": "\\text{Reachable Orientations Ratio} = \\frac{1}{3}",
+          "meaning": "Only one-third of the corner piece orientations are reachable via valid physical twists of the cube."
+        },
+        {
+          "latex": "\\text{Total Vertices} = \\frac{8! \\cdot 3^8}{24 \\cdot 3} = 3,674,160",
+          "meaning": "The actual number of unique reachable states (vertices) in the configuration graph of the pocket cube."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Constructing the Pocket Cube Configuration Graph",
+          "steps": [
+            "Define each vertex as a unique, physically reachable configuration of the cube.",
+            "Define an edge as a valid physical move (such as a quarter twist of a face) that transitions the cube from one state to another."
+          ],
+          "equations": []
+        }
+      ],
+      "diagrams": [
+        {
+          "description": "3D Wireframe of a subdivided cube",
+          "explanation": "A perspective drawing of a three-dimensional cube divided into a two-by-two grid on each face, illustrating how the 8 distinct corner cubies form the entire structure of the pocket cube."
+        }
+      ],
+      "important_points": [
+        "A configuration graph acts as a complete map of a puzzle's state space.",
+        "The number of vertices in this graph is reduced by solid rotations and physical laws of orientation.",
+        "Finding a solution to the puzzle is equivalent to finding a path from a scrambled vertex to the designated solved vertex in the graph."
+      ]
+    },
+    {
+      "heading": "State Space Reachability and BFS Levels",
+      "explanation": "By executing a backward search starting from the solved state of a puzzle, we can build a tree structure. This systematic, level-by-level exploration maps directly to the behavior of Breadth-First Search (BFS).",
+      "equations": [
+        {
+          "latex": "L_0",
+          "meaning": "The initial level of the search, representing the target solved state."
+        },
+        {
+          "latex": "L_1",
+          "meaning": "The set of states reachable in exactly one move from the solved state."
+        },
+        {
+          "latex": "L_2",
+          "meaning": "The set of states reachable in exactly two moves from the solved state."
+        }
+      ],
+      "examples": [],
+      "diagrams": [
+        {
+          "description": "Layered State Space Transition Tree",
+          "explanation": "A graph on the blackboard radiating outward from a single root node labeled 'solved'. It branches to a layer of nodes labeled 'possible moves' (level one), which in turn branches to a larger layer of nodes labeled 'reachable in 2' moves (level two)."
+        }
+      ],
+      "important_points": [
+        "Exploring a graph level-by-level guarantees that when a path to a node is found, it is the shortest possible path (minimum number of moves).",
+        "For the two-by-two-by-two Pocket Cube, the maximum distance of any solvable configuration from the solved state is 11 moves (when half-twists are permitted as a single move)."
+      ]
+    }
+  ],
+  "key_takeaways": [
+    "A graph is defined as a set of vertices and edges, which can be directed or undirected.",
+    "Graph search is a powerful conceptual model used across computer science for routing, memory management, verification, and automated problem-solving.",
+    "Puzzles can be modeled as configuration graphs where vertices represent states and edges represent valid moves.",
+    "Systematically searching a graph level-by-level from a source state is the foundational mechanism of Breadth-First Search and guarantees finding optimal (shortest) paths."
+  ],
+  "exam_points": [
+    "Understand the formal mathematical differences in defining edge sets for undirected graphs (using unordered sets) vs. directed graphs (using ordered tuples).",
+    "Be prepared to calculate the size of a state space (vertex count) for permutation-based puzzles, accounting for rotational symmetries and reachability constraints.",
+    "Identify why level-by-level graph traversal (BFS) inherently yields shortest paths in unweighted graphs.",
+    "Recognize how computer science processes like garbage collection (identifying active/reclaimable memory) are framed as graph reachability problems."
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "title": "Graph Search and Breadth-First Search",
+  "overview": "These lecture notes introduce graph search, a fundamental tool for exploring networks, solving puzzles, and organizing data structures. The lecture covers basic graph definitions, standard representation formats (particularly adjacency lists and implicit models), and the Breadth-First Search (BFS) algorithm. Using the Rubik's Cube as a key example, the notes explore configuration spaces, shortest path properties, and the time complexity of graph exploration.",
+  "sections": [
+    {
+      "heading": "Introduction to Graphs and Basic Definitions",
+      "explanation": "A graph is a mathematical structure used to model pairwise relations between objects. It consists of a set of vertices (or nodes) and a set of edges connecting them. Depending on whether the connections have a direction, graphs are classified as either directed or undirected.",
+      "equations": [
+        {
+          "latex": "G = (V, E)",
+          "meaning": "A graph G defined by a set of vertices V and a set of edges E."
+        },
+        {
+          "latex": "E \\subseteq \\{\\{u, v\\} \\mid u, v \\in V\\}",
+          "meaning": "For an undirected graph, edges are unordered pairs (sets of two distinct vertices)."
+        },
+        {
+          "latex": "E \\subseteq V \\times V",
+          "meaning": "For a directed graph, edges are ordered pairs of vertices."
+        }
+      ],
+      "examples": [
+        {
+          "description": "An Undirected Graph",
+          "steps": [
+            "Vertices: V = {A, B, C, D}",
+            "Edges: E = { {A, B}, {B, C}, {C, D}, {A, C} }"
+          ]
+        },
+        {
+          "description": "A Directed Graph",
+          "steps": [
+            "Vertices: V = {A, B, C}",
+            "Edges: E = { (A, C), (B, C), (C, B), (B, A) }"
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "frame": "frame_136.00.jpg",
+          "description": "Mathematical definition of a graph",
+          "explanation": "Defines the vertices V and edges E, establishing the foundation for directed and undirected graphs."
+        },
+        {
+          "frame": "frame_198.00.jpg",
+          "description": "Visualizing Directed and Undirected Graphs",
+          "explanation": "Illustrates simple undirected and directed graphs on a blackboard, highlighting the visual distinction of arrowheads on directed edges."
+        }
+      ],
+      "important_points": [
+        "In undirected graphs, edges work symmetrically in both directions.",
+        "In directed graphs, an edge from u to v does not imply an edge from v to u.",
+        "Typically, a graph consists of either entirely directed or entirely undirected edges, though mixed graphs do exist in specialized studies."
+      ]
+    },
+    {
+      "heading": "Applications of Graph Search",
+      "explanation": "Graph exploration algorithms are widely applied across various domains of computer science and mathematics, including:",
+      "equations": [],
+      "examples": [],
+      "diagrams": [
+        {
+          "frame": "frame_324.00.jpg",
+          "description": "List of Graph Search Applications",
+          "explanation": "The lecturer lists key real-world applications of graph search, including web crawling, social networks, and network packet broadcasting."
+        }
+      ],
+      "important_points": [
+        "Web Crawling: Search engines discover pages by traversing hyperlinks (edges) connecting web pages (vertices). To prioritize relevant content and avoid infinite traps (due to dynamically generated pages), prioritized or breadth-first search is applied.",
+        "Social Networking: Platforms use graph search to find friends of friends (e.g., degrees of separation on Facebook or LinkedIn).",
+        "Network Broadcasting: Explores paths in a network to route or broadcast data packets effectively.",
+        "Garbage Collection: Used to detect and reclaim unreachable memory allocations. The language runtime uses BFS to identify objects reachable from active variables; any unreachable object is deleted.",
+        "Model Checking: Proving correctness in hardware circuits or computer programs by exploring the graph of all reachable states from an initial setup.",
+        "Mathematical Conjecture Verification: Searching through a finite state graph of cases to identify potential counterexamples to mathematical conjectures."
+      ]
+    },
+    {
+      "heading": "Configuration Spaces & The Rubik's Cube Example",
+      "explanation": "Puzzles can be modeled as graphs where each possible state of the puzzle represents a vertex, and each valid move represents an edge. This representation is called a configuration graph (or configuration space).",
+      "equations": [
+        {
+          "latex": "|V| = 8! \\times 3^8 \\approx 264,000,000",
+          "meaning": "The total number of conceivable configurations of a 2x2x2 pocket cube. There are 8 cubies to permute (8!) and each has 3 possible rotational orientations (3^8)."
+        },
+        {
+          "latex": "\\text{Diameter of 2x2x2 Cube} = 11",
+          "meaning": "The maximum number of moves required to solve any 2x2x2 configuration optimally (known as God's number, assuming half-twists are allowed)."
+        },
+        {
+          "latex": "\\text{Diameter of 3x3x3 Cube} = 20",
+          "meaning": "God's number for a standard 3x3x3 cube, which was solved using extensive computer simulation."
+        },
+        {
+          "latex": "\\Theta\\left(\\frac{n^2}{\\log n}\\right)",
+          "meaning": "The asymptotic diameter (God's number) for an n x n x n Rubik's Cube."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Symmetry reduction in 2x2x2 configuration space",
+          "steps": [
+            "We start with the total raw configurations: 8! * 3^8 ≈ 264 million.",
+            "Divide by 24 to account for the rotational symmetries of the entire cube in 3D space.",
+            "Divide by 3 because only 1/3 of the configuration space is physically reachable from the solved state without taking the cube apart.",
+            "This makes the reachable configuration graph significantly smaller and highly feasible for standard BFS traversal."
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "frame": "frame_74.00.jpg",
+          "description": "Rubik's Cube State Space Demonstration",
+          "explanation": "The lecturer holds up a Rubik's cube, demonstrating how physical twists correspond to navigating edges between distinct state vertices in a massive configuration graph."
+        }
+      ],
+      "important_points": [
+        "In a Rubik's Cube configuration graph, the edges are undirected because every turn can be undone.",
+        "An n x n x n Rubik's cube has a surface area proportional to n^2. While a typical solver takes O(n^2) steps (solving constant numbers of cubies at a time), the mathematically optimal route is faster by a factor of log n.",
+        "Constructing the graph layer-by-layer allows us to determine the diameter (furthest reachable solved state). However, the intermediate layers grow exponentially, which presents a major computational challenge."
+      ]
+    },
+    {
+      "heading": "Graph Representations in Memory",
+      "explanation": "When implementing graph algorithms, we must choose a data representation that supports efficient queries (e.g., retrieving the neighbors of a given node in O(1) or linear time relative to its degree).",
+      "equations": [
+        {
+          "latex": "\\text{Space Complexity} = \\Theta(V + E)",
+          "meaning": "The standard space complexity of an adjacency list, which is linear in the size of the graph."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Adjacency List Mapping",
+          "steps": [
+            "Let a directed graph have vertices {A, B, C} and edges {(A, C), (B, C), (C, B), (B, A)}.",
+            "adj[A] = [C]",
+            "adj[B] = [A, C]",
+            "adj[C] = [B]"
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "frame": "frame_274.00.jpg",
+          "description": "Adjacency List Representation",
+          "explanation": "An array indexed by vertex IDs, where each entry contains a pointer to a linked list representing all target neighbors reachable in one step."
+        }
+      ],
+      "important_points": [
+        "A simple list of vertices and a list of edges is highly inefficient. Finding a vertex's neighbors would require scanning the entire edge list, resulting in O(E) time per step.",
+        "Adjacency lists address this by storing the list of outgoing neighbors directly for each vertex.",
+        "Adjacency lists can be implemented as an array of linked lists, a hash map (in Python, a dictionary of lists/sets), or via object properties (`v.neighbors`).",
+        "Implicit Graphs: Instead of storing vertices and edges explicitly, we represent the neighbors using a function `adj(u)` that generates neighbors on the fly. This is essential for massive graphs (like the Rubik's Cube configuration graph) to save space."
+      ]
+    },
+    {
+      "heading": "Breadth-First Search (BFS) Algorithm",
+      "explanation": "Breadth-First Search is a simple, layer-by-layer traversal algorithm. Starting at a source vertex s, it visits all vertices at distance 1, then distance 2, and so on. To prevent infinite loops in graphs with cycles, BFS tracks visited vertices.",
+      "equations": [
+        {
+          "latex": "\\sum_{v \\in V} |\\text{adj}[v]| = \\Theta(E)",
+          "meaning": "Summing the out-degrees of all vertices yields the total number of directed edges (or 2 * E for undirected graphs due to the Handshaking Lemma)."
+        },
+        {
+          "latex": "\\text{Total Time Complexity} = O(V + E)",
+          "meaning": "The overall time complexity of BFS is linear with respect to the number of vertices and edges."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Python Implementation of BFS",
+          "steps": [
+            "def bfs(adj, s):",
+            "    level = {s: 0}",
+            "    parent = {s: None}",
+            "    i = 1",
+            "    frontier = [s] # Level i - 1",
+            "    while frontier:",
+            "        next_level = [] # Level i",
+            "        for u in frontier:",
+            "            for v in adj[u]:",
+            "                if v not in level:",
+            "                    level[v] = i",
+            "                    parent[v] = u",
+            "                    next_level.append(v)",
+            "        frontier = next_level",
+            "        i += 1"
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "frame": "frame_410.00.jpg",
+          "description": "Trace of BFS on a sample graph",
+          "explanation": "The blackboard shows how the search expands layer-by-layer starting at 's'. Vertices are assigned level numbers representing their shortest-path distance from the source."
+        }
+      ],
+      "important_points": [
+        "The 'frontier' array stores the nodes explored in the previous layer (distance i-1). 'next_level' collects nodes at distance i.",
+        "Duplicate checking (`v not in level`) is crucial to avoid infinite loops and redundant exploration in cyclic graphs.",
+        "BFS guarantees finding the shortest path (minimum number of edges) from the source 's' to any reachable vertex.",
+        "The parent pointers track the traversal history backwards, forming a 'shortest path tree' rooted at 's'. Following parent pointers from any target node back to 's' outlines its shortest path.",
+        "The Handshaking Lemma guarantees that we visit each edge at most twice in undirected graphs, which allows us to achieve the optimal O(V + E) runtime."
+      ]
+    }
+  ],
+  "key_takeaways": [
+    "A graph is represented as G = (V, E) and can be directed or undirected.",
+    "Using a simple edge list to find neighbors is inefficient; adjacency lists are the standard representation to achieve O(V + E) space and traversal times.",
+    "For extremely large configuration spaces (e.g., Rubik's Cubes or state machine models), graphs are represented implicitly using generator functions to avoid running out of memory.",
+    "Breadth-First Search (BFS) explores graphs systematically layer-by-layer, finding the shortest path (in terms of edge count) in O(V + E) time.",
+    "BFS uses a 'level' tracking mechanism to determine shortest distances and prevent infinite loops in cyclic graphs, alongside 'parent' pointers to reconstruct paths."
+  ],
+  "exam_points": [
+    "Understand how to represent graphs using adjacency lists, object-oriented neighborhoods, and implicit functions.",
+    "Be prepared to write, trace, and modify the standard BFS algorithm on various directed/undirected graphs.",
+    "Recall that BFS computes the shortest path in terms of edge count (unweighted shortest path).",
+    "Explain the space complexity of adjacency lists: O(V + E).",
+    "Understand the O(V + E) time complexity analysis of BFS, specifically why sum of adjacency list lookups is bounded by 2|E| (undirected) or |E| (directed) via the Handshaking Lemma.",
+    "Know how to reconstruct shortest paths using parent pointers."
+  ]
+}

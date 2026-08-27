@@ -1,0 +1,132 @@
+[
+  {
+    "index": 1,
+    "heading": "1. Fundamentals of Graphs and Graph Search  (Part A)",
+    "status": "ok",
+    "file": "shorts\\clip_01a_Fundamentals_of_Graphs_and_Graph_Search.mp4",
+    "start": 0.0,
+    "end": 161.08,
+    "duration": 161.08,
+    "size_mb": 6.9
+  },
+  {
+    "index": 1,
+    "heading": "1. Fundamentals of Graphs and Graph Search  (Part B)",
+    "status": "ok",
+    "file": "shorts\\clip_01b_Fundamentals_of_Graphs_and_Graph_Search.mp4",
+    "start": 161.08,
+    "end": 322.16,
+    "duration": 161.08,
+    "size_mb": 7.5
+  },
+  {
+    "index": 2,
+    "heading": "2. Applications of Graph Search  (Part A)",
+    "status": "ok",
+    "file": "shorts\\clip_02a_Applications_of_Graph_Search.mp4",
+    "start": 322.16,
+    "end": 477.52,
+    "duration": 155.35999999999996,
+    "size_mb": 7.3
+  },
+  {
+    "index": 2,
+    "heading": "2. Applications of Graph Search  (Part B)",
+    "status": "ok",
+    "file": "shorts\\clip_02b_Applications_of_Graph_Search.mp4",
+    "start": 477.52,
+    "end": 632.88,
+    "duration": 155.36,
+    "size_mb": 8.6
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part A)",
+    "status": "ok",
+    "file": "shorts\\clip_03a_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 632.88,
+    "end": 901.0088888888888,
+    "duration": 268.1288888888888,
+    "size_mb": 13.1
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part B)",
+    "status": "ok",
+    "file": "shorts\\clip_03b_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 901.0088888888888,
+    "end": 1169.1377777777777,
+    "duration": 268.1288888888889,
+    "size_mb": 15.2
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part C)",
+    "status": "ok",
+    "file": "shorts\\clip_03c_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 1169.1377777777777,
+    "end": 1437.2666666666664,
+    "duration": 268.1288888888887,
+    "size_mb": 12.8
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part D)",
+    "status": "ok",
+    "file": "shorts\\clip_03d_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 1437.2666666666664,
+    "end": 1705.3955555555553,
+    "duration": 268.1288888888889,
+    "size_mb": 13.7
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part E)",
+    "status": "ok",
+    "file": "shorts\\clip_03e_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 1705.3955555555553,
+    "end": 1973.5244444444443,
+    "duration": 268.1288888888889,
+    "size_mb": 14.2
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part F)",
+    "status": "ok",
+    "file": "shorts\\clip_03f_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 1973.5244444444443,
+    "end": 2241.653333333333,
+    "duration": 268.1288888888889,
+    "size_mb": 12.4
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part G)",
+    "status": "ok",
+    "file": "shorts\\clip_03g_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 2241.653333333333,
+    "end": 2509.782222222222,
+    "duration": 268.1288888888889,
+    "size_mb": 13.2
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part H)",
+    "status": "ok",
+    "file": "shorts\\clip_03h_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 2509.782222222222,
+    "end": 2777.911111111111,
+    "duration": 268.1288888888889,
+    "size_mb": 13.6
+  },
+  {
+    "index": 3,
+    "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)  (Part I)",
+    "status": "ok",
+    "file": "shorts\\clip_03i_Configuration_Graphs_and_State_Space_The_2x2x2_Poc.mp4",
+    "start": 2777.911111111111,
+    "end": 3046.04,
+    "duration": 268.1288888888889,
+    "size_mb": 14.4
+  }
+]

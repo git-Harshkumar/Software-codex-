@@ -1,0 +1,114 @@
+{
+  "title": "MIT 6.006 Lecture 13: Breadth-First Search (BFS) & Graph Search Introduction",
+  "overview": "This lecture introduces the fundamentals of graph search, focusing on exploring graphs to find paths from a source to a target. It reviews basic graph definitions (undirected vs. directed graphs), discusses diverse real-world applications of graph traversal (such as web crawling, social networks, and garbage collection), and details how complex puzzle states, like the $2 \\times 2 \\times 2$ Pocket Cube, can be modeled as configuration graphs to solve them algorithmically.",
+  "sections": [
+    {
+      "heading": "1. Fundamentals of Graphs and Graph Search",
+      "explanation": "Graph search is conceptually defined as \"exploring\" a network of states. Given a designated source node $s$ and a target node $t$, the objective of graph search is to traverse the graph and find a path connecting them. A graph is formally defined as $G = (V, E)$, where $V$ is a set of vertices (nodes) and $E$ is a set of edges (connections). Edges can represent symmetric or asymmetric relationships, which classifies graphs into undirected and directed types.",
+      "equations": [
+        {
+          "latex": "G = (V, E)",
+          "meaning": "A graph $G$ is formally defined as an ordered pair consisting of a set of vertices $V$ and a set of edges $E$."
+        },
+        {
+          "latex": "e = \\{v, w\\}",
+          "meaning": "An edge in an undirected graph, representing a bidirectional, symmetric connection between vertices $v$ and $w$ using unordered set notation."
+        },
+        {
+          "latex": "e = (v, w)",
+          "meaning": "An edge in a directed graph, representing an asymmetric, one-way transition from a source vertex $v$ to a target vertex $w$ using ordered pair notation."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Graph Representations (Undirected vs. Directed)",
+          "steps": [
+            "Undirected Graph: Let $V = \\{a, b, c, d\\}$ and $E = \\{\\{a, b\\}, \\{a, c\\}, \\{b, c\\}, \\{c, d\\}, \\{b, d\\}\\}$. Edges are non-directional lines. The connection is symmetric: if $a$ connects to $b$, then $b$ connects to $a$.",
+            "Directed Graph (Digraph): Let $V = \\{a, b, c\\}$ and $E = \\{(b, a), (a, c), (b, c), (c, b)\\}$. Connections are arrows pointing in a specific direction. To represent mutual/bidirectional relationships in a directed graph (like between vertices $b$ and $c$), they must be explicitly defined as two separate directed edges: $(b, c)$ and $(c, b)$."
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "description": "Graph Exploration Concept",
+          "explanation": "A hand-drawn schematic representing graph search. It shows a source vertex $s$ on the left and a destination/target vertex $t$ on the right. Three paths originate from $s$: one curved path leads upwards to a dead end; a second, wavy path successfully reaches target node $t$; a third path goes downwards, pointing away from $s$. This demonstrates that graph search algorithms explore multiple branches to find successful routes.",
+          "frame": "frame_116.00.jpg"
+        }
+      ],
+      "important_points": [
+        "Graph search is a systematic process of exploring a state space.",
+        "Undirected graphs represent symmetric relationships, whereas directed graphs represent asymmetric relationships.",
+        "In directed graphs, bidirectional relationships require two distinct edges pointing in opposite directions."
+      ]
+    },
+    {
+      "heading": "2. Applications of Graph Search",
+      "explanation": "Graph traversal algorithms are fundamental to a wide range of fields in computer science, software engineering, and mathematics. Common applications include:",
+      "equations": [],
+      "examples": [
+        {
+          "description": "Practical Software Engineering Applications",
+          "steps": [
+            "Web Crawling: Web pages are modeled as vertices, and hyperlinks are directed edges. Web crawlers systematically traverse this massive directed graph to index search engine data.",
+            "Social Networks: Users represent vertices, and friendships/connections represent edges. Graph traversal is used to calculate degrees of separation or suggest 'friends of friends' (a level-two search).",
+            "Network Broadcasting: Used in routing protocols to determine how data packets should propagate through network routers (nodes) to reach all destinations efficiently.",
+            "Garbage Collection: Run-time environments (like Java, PyPy, or Jython) use graph reachability to identify active memory. Starting from root pointers, the garbage collector traverses the graph of allocated objects. Any object that is unreachable is identified as 'garbage' and reclaimed.",
+            "Model Checking: Vertices represent system states, and directed edges represent valid transitions. Graph search verifies if any sequence of events leads to an unsafe or invalid state.",
+            "Solving Puzzles and Games: Explores a graph of game configurations to find a sequence of moves that leads from a scrambled layout to a solved state."
+          ]
+        }
+      ],
+      "diagrams": [],
+      "important_points": [
+        "Garbage collection algorithms (like mark-and-sweep) are fundamentally graph reachability problems.",
+        "A system's state space can be fully analyzed for safety and correctness through model checking via graph search."
+      ]
+    },
+    {
+      "heading": "3. Configuration Graphs and State Space (The 2x2x2 Pocket Cube)",
+      "explanation": "Physical puzzles and games can be modeled using a **Configuration Graph**. In this representation, each unique physical layout or state of the puzzle is a vertex, and every valid transition (such as a physical move or rotation) is a directed or undirected edge connecting two vertices. For a $2 \\times 2 \\times 2$ Pocket Cube (a mini-Rubik's cube), we can compute the exact size of this graph by analyzing permutations, orientations, and legal move reachability.",
+      "equations": [
+        {
+          "latex": "|V| = \\frac{8! \\cdot 3^8}{24 \\cdot 3} = 3,674,160",
+          "meaning": "The calculation of reachable physical configurations (vertices) of a $2 \\times 2 \\times 2$ Pocket Cube. $8!$ represents permutations of the 8 corner pieces (cubies); $3^8$ represents the 3 possible rotational orientations for each of the 8 corner pieces; dividing by 24 factors out solid rotational symmetries in 3D space (rotations of the entire cube); dividing by 3 factors out reachability orbits (only 1/3 of orientation configurations are reachable by legal cube moves)."
+        }
+      ],
+      "examples": [
+        {
+          "description": "Retrograde (Backward) Search on the Pocket Cube",
+          "steps": [
+            "Define the root of the search as the single 'solved' state of the cube.",
+            "Expand outwards by applying all possible moves (such as quarter-twists) to identify all states reachable in exactly 1 move.",
+            "From those states, apply all legal moves again to find all configurations 'reachable in 2' moves.",
+            "Continue this layered expansion level-by-level (such as through Breadth-First Search). Under the quarter-twist metric, this expansion shows that all of the 3.67 million states can be solved in a maximum of 11 moves."
+          ]
+        }
+      ],
+      "diagrams": [
+        {
+          "description": "State Space Reachability Graph",
+          "explanation": "A tree-like diagram demonstrating backward search. On the left, a root node is labeled 'solved'. It branches into a first layer of four nodes, representing the immediately preceding 'possible moves'. These nodes branch into a second layer of five nodes, labeled 'reachable in 2' moves. This illustrates how search algorithms map out state transitions layer-by-layer.",
+          "frame": "frame_106.00.jpg"
+        }
+      ],
+      "important_points": [
+        "A configuration graph maps states to vertices and legal moves to edges.",
+        "Without accounting for symmetry and reachability, the raw state space of a $2 \\times 2 \\times 2$ cube is $8! \\cdot 3^8 = 264,539,520$ configurations.",
+        "Dividing by 24 accounts for overall solid rotations of the cube in 3D space.",
+        "Dividing by 3 accounts for physical constraints, as only $1/3$ of the theoretical orientations can be reached without physically breaking and reassembling the cube."
+      ]
+    }
+  ],
+  "key_takeaways": [
+    "Graph search is a general framework for exploring states and finding paths from a source vertex $s$ to a target vertex $t$.",
+    "A graph $G = (V,E)$ is composed of a vertex set $V$ and an edge set $E$, classified as undirected (unordered pairs) or directed (ordered pairs).",
+    "Many practical computer science tasks, such as web crawling, garbage collection, and model checking, are solved by casting them as graph reachability and traversal problems.",
+    "Complex combinatorial puzzles like the Rubik's Cube can be modeled as configuration graphs, where states are vertices and moves are edges."
+  ],
+  "exam_points": [
+    "Be prepared to write down the formal definitions of directed and undirected graphs, including their mathematical notation ($G = (V,E)$, $\\{v,w\\}$, and $(v,w)$).",
+    "Understand the state space calculation of a $2 \\times 2 \\times 2$ cube: know why you multiply permutations and orientations ($8! \\cdot 3^8$), and why you divide by rotational symmetries (24) and reachability constraints (3).",
+    "Explain how a garbage collector uses graph reachability to determine which objects are eligible for deletion.",
+    "Explain how a backward search starting from a 'solved' state can map out shortest paths for puzzle solutions, and how this relates to BFS layers."
+  ]
+}
