@@ -286,6 +286,66 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ═══════════════ DOWNLOAD BUTTON ═══════════════ */
+    .download-wrap { position: relative; }
+    .download-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary-d), var(--purple));
+      color: #fff; font-size: .78rem; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      white-space: nowrap;
+    }
+    .download-btn:hover { opacity: .88; transform: translateY(-1px); }
+    .download-btn:active { transform: translateY(0); }
+    .download-btn .chevron {
+      font-size: .6rem; transition: transform .2s;
+    }
+    .download-wrap.open .download-btn .chevron { transform: rotate(180deg); }
+
+    .download-menu {
+      display: none;
+      position: absolute; right: 0; top: calc(100% + 6px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      min-width: 200px;
+      z-index: 200;
+      overflow: hidden;
+      animation: fadeDown .15s ease;
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .download-wrap.open .download-menu { display: block; }
+    .dl-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; font-size: .82rem; font-weight: 500;
+      color: var(--text); cursor: pointer;
+      transition: background .15s;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .dl-item:hover { background: var(--surface3); }
+    .dl-item .dl-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .dl-item .dl-desc { font-size: .72rem; color: var(--muted); display: block; }
+    .dl-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+    .copy-success {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--green); color: #fff;
+      padding: 10px 20px; border-radius: 10px;
+      font-size: .85rem; font-weight: 600;
+      box-shadow: var(--shadow);
+      animation: toastIn .3s ease;
+      z-index: 9999;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     /* ═══════════════ SHORTS TAB ═══════════════ */
     .shorts-grid {
       display: grid;
@@ -605,7 +665,40 @@
     <div class="notes-card">
       <div class="notes-header">
         <h3 id="notes-label">Overview · English</h3>
-        <span id="notes-file" style="font-size:.75rem;color:var(--muted)"></span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span id="notes-file" style="font-size:.75rem;color:var(--muted)"></span>
+          <!-- Download dropdown -->
+          <div class="download-wrap" id="dl-wrap">
+            <button class="download-btn" id="dl-btn" onclick="toggleDownload()">
+              ⬇ Download <span class="chevron">▼</span>
+            </button>
+            <div class="download-menu" id="dl-menu">
+              <button class="dl-item" onclick="downloadMarkdown()">
+                <span class="dl-icon">📄</span>
+                <span>
+                  Markdown (.md)
+                  <span class="dl-desc">Raw source file</span>
+                </span>
+              </button>
+              <hr class="dl-divider">
+              <button class="dl-item" onclick="openPrintView()">
+                <span class="dl-icon">🖨️</span>
+                <span>
+                  Save as PDF
+                  <span class="dl-desc">Opens print-ready page</span>
+                </span>
+              </button>
+              <hr class="dl-divider">
+              <button class="dl-item" onclick="copyToClipboard()">
+                <span class="dl-icon">📋</span>
+                <span>
+                  Copy to Clipboard
+                  <span class="dl-desc">Copy markdown text</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="notes-body" id="notes-content">
         <div class="spinner"><div class="spin"></div><span>Loading notes…</span></div>
@@ -735,6 +828,7 @@ async function loadNotes() {
     const data = await res.json();
     content.innerHTML = data.html || '<p style="color:var(--muted)">No content.</p>';
     fileEl.textContent = data.filename || '';
+    window._rawMarkdownFile = data.filename || null;
 
     // Re-run MathJax
     if (window.MathJax && MathJax.typesetPromise) {
@@ -744,6 +838,57 @@ async function loadNotes() {
     content.innerHTML = `<p style="color:var(--red)">Error loading notes: ${err.message}</p>`;
   }
 }
+
+/* ══════════════════════════════════════════
+   DOWNLOAD
+══════════════════════════════════════════ */
+function toggleDownload() {
+  const wrap = document.getElementById('dl-wrap');
+  const isOpen = wrap.classList.toggle('open');
+  if (isOpen) {
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function _close(e) {
+        if (!wrap.contains(e.target)) {
+          wrap.classList.remove('open');
+          document.removeEventListener('click', _close);
+        }
+      });
+    }, 0);
+  }
+}
+
+function downloadMarkdown() {
+  document.getElementById('dl-wrap').classList.remove('open');
+  window.location.href = `/api/notes/${currentLevel}/${currentLang}/download`;
+}
+
+function openPrintView() {
+  document.getElementById('dl-wrap').classList.remove('open');
+  window.open(`/api/notes/${currentLevel}/${currentLang}/print`, '_blank');
+}
+
+async function copyToClipboard() {
+  document.getElementById('dl-wrap').classList.remove('open');
+  try {
+    // Fetch the raw markdown text
+    const res  = await fetch(`/api/notes/${currentLevel}/${currentLang}/download`);
+    const text = await res.text();
+    await navigator.clipboard.writeText(text);
+    showToast('✓ Copied to clipboard!');
+  } catch (err) {
+    showToast('✗ Copy failed — try downloading instead');
+  }
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'copy-success';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
 
 /* ══════════════════════════════════════════
    SHORTS

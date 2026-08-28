@@ -20,21 +20,23 @@
     *   **Directed Graph (सदिश ग्राफ़ / Digraph):** किनारे क्रमित युग्म $(u, v)$ होते हैं (तीर की दिशा में ही गति संभव है)।
 
 ```
-[Undirected Graph]
-   A ——— B
-   |     |
-   D ——— C
+[Undirected Graph — MIT 6.006 Lecture 13 में बोर्ड पर दिखाया गया]
+   a — b
+   |\ /
+   | X
+   |/ \
+   c — d
 
-Vertices (V): {A, B, C, D}
-Edges (E):    {AB, BC, CD, DA}
+Vertices (V): {a, b, c, d}
+Edges (E):    {{a,b}, {a,c}, {b,c}, {c,d}}
 
-[Directed Graph]
-   A ——> C <—— B
-   ^           |
-   |___________|
+[Directed Graph — MIT 6.006 Lecture 13 में बोर्ड पर दिखाया गया]
+   b ——> a
+   ↓       ↘
+   c <——> b  (b और c एक-दूसरे की ओर इशारा करते हैं)
 
-Vertices (V): {A, B, C}
-Edges (E):    {(A, C), (B, C), (C, B), (B, A)}
+Vertices (V): {a, b, c}
+Edges (E):    {(a,c), (b,a), (b,c), (c,b)}
 ```
 
 ---

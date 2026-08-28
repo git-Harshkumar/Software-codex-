@@ -20,21 +20,23 @@ A graph $G = (V, E)$ consists of:
     *   **Directed Graph (Digraph):** Edges are **ordered pairs** $(u, v)$ pointing from $u$ to $v$. Movement is unidirectional (e.g., hyperlinks, one-way streets).
 
 ```
-[Undirected Graph Example]
-   A ——— B
-   |     |
-   D ——— C
+[Undirected Graph Example — as drawn on board in MIT 6.006 Lecture 13]
+   a — b
+   |\ /
+   | X
+   |/ \
+   c — d
 
-Vertices (V): {A, B, C, D}
-Edges (E):    {AB, BC, CD, DA}
+Vertices (V): {a, b, c, d}
+Edges (E):    {{a,b}, {a,c}, {b,c}, {c,d}}
 
-[Directed Graph Example]
-   A ——> C <—— B
-   ^           |
-   |___________|
+[Directed Graph Example — as drawn on board in MIT 6.006 Lecture 13]
+   b ——> a
+   ↓       ↘
+   c ↔ (b and c point to each other)
 
-Vertices (V): {A, B, C}
-Edges (E):    {(A, C), (B, C), (C, B), (B, A)}
+Vertices (V): {a, b, c}
+Edges (E):    {(a,c), (b,a), (b,c), (c,b)}
 ```
 
 ---
@@ -66,13 +68,36 @@ The efficiency of any graph search algorithm depends directly on how the graph i
 A **Configuration Graph** models discrete physical systems and puzzles:
 *   **Vertex:** A specific configuration or board state.
 *   **Edge:** A legal transition or valid move between states.
-*   **Example (The 2×2×2 Pocket Cube):**
-    *   Number of physical pieces: 8 corner pieces.
-    *   State space size: $\approx 3.67 \times 10^6$ distinct reachable configurations (after fixing one corner orientation).
-    *   Edges: 6 possible quarter-turn operations ($F, F', U, U', R, R'$).
-    *   **God's Number (Diameter):** The maximum distance between any configuration and the solved state. For the 2×2×2 cube, God's Number is **14 quarter turns** (or 11 half turns).
+*   **Example (The 2×2×2 Pocket Cube — as shown in MIT 6.006 Lecture 13):**
+    *   **Vertices (states):** Each possible physical configuration of the cube.
+    *   **Edges (moves):** Each possible quarter-turn move transitions one state to another.
+    *   **Number of vertices calculation (as written on board):**
+        $$\text{# vertices} = \frac{8! \times 3^8}{24} \div 3 = \frac{264{,}539{,}520}{24 \times 3} \approx 3{,}674{,}160$$
+        *   $8!$ = permutations of 8 corner pieces
+        *   $3^8$ = orientations of 8 corners
+        *   Divide by **24**: 24 rotational symmetries (overall cube rotations)
+        *   Divide by **3**: only 1/3 of corner orientations are reachable via legal moves
+    *   **God's Number (Diameter):** The maximum distance from any configuration to the solved state.
+        *   **14 quarter turns** (or **11 half turns**) — as stated in the lecture.
+
+### BFS on the Pocket Cube (Backward Search from "Solved")
+The lecturer demonstrated a **backward BFS** starting from the solved state:
+
+```
+BFS Tree — Backward from "solved" state (as drawn on board):
+
+          [solved]            ← Level 0 (root)
+         /   |   \  \
+        o    o    o   o       ← Level 1: states reachable in 1 move (possible moves)
+       /|   /|  ...  ...
+      o  o o  o               ← Level 2: states "reachable in 2" moves
+```
+
+By doing BFS from "solved", we find all configurations reachable in exactly $k$ moves — 
+this is equivalent to finding God's Number (the diameter of the configuration graph).
 
 ---
+
 
 ## 4. Breadth-First Search (BFS)
 

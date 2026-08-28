@@ -18,13 +18,14 @@ $$G = (V, E)$$
     1.  **Unordered Pairs (Undirected Graph):** Agar edges unordered pairs hain (yaani set of 2 items), toh graph **Undirected** hota hai. Isme movement dono directions mein ho sakta hai (e.g., $\{u, v\}$).
     2.  **Ordered Pairs (Directed Graph):** Agar edges ordered pairs hain, toh graph **Directed** hota hai (e.g., $(u, v)$, jahan edge $u$ se start hokar $v$ par end hoti hai).
 
-#### Example:
-*   **Undirected Graph Example:** 
-    *   $V = \{A, B, C, D\}$
-    *   $E = \{\{A, B\}, \{B, C\}, \{C, D\}, \{A, C\}\}$
-*   **Directed Graph Example:**
-    *   $V = \{A, B, C\}$
-    *   $E = \{(A, C), (B, C), (C, B), (B, A)\}$
+#### Example (Lecture ke board par dikhaya gaya):
+*   **Undirected Graph Example (MIT 6.006 board se):** 
+    *   $V = \{a, b, c, d\}$
+    *   $E = \{\{a,b\}, \{a,c\}, \{b,c\}, \{c,d\}\}$
+*   **Directed Graph Example (MIT 6.006 board se):**
+    *   $V = \{a, b, c\}$
+    *   $E = \{(a,c), (b,a), (b,c), (c,b)\}$
+    *   (Note: $b$ aur $c$ ke beech bidirectional arrows hain — $b \to c$ aur $c \to b$ dono hain)
 
 ---
 

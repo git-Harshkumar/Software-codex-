@@ -133,8 +133,8 @@ Examples:
 
     parser.add_argument(
         "--transcript",
-        default="clean_transcript.json",
-        help="Transcript JSON file (default: clean_transcript.json).",
+        default="data/combined_lecture.json",
+        help="Transcript JSON file (default: data/combined_lecture.json — includes visual analysis).",
     )
 
     parser.add_argument(
@@ -189,7 +189,10 @@ if args.output:
 else:
     lang_slug  = LANGUAGE.replace(" ", "_").lower()
     level_slug = NOTE_LEVEL.replace(" ", "_").lower()
-    OUTPUT_FILE = f"notes_{level_slug}_{lang_slug}.md"
+    # Default output goes to notes/markdown/ so app.py can serve it
+    OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "notes", "markdown")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    OUTPUT_FILE = os.path.join(OUTPUT_DIR, f"notes_{level_slug}_{lang_slug}.md")
 
 
 # ============================================================
@@ -203,17 +206,57 @@ if not os.path.exists(args.transcript):
 with open(args.transcript, "r", encoding="utf-8") as f:
     raw = json.load(f)
 
-# Flatten to plain text with timestamps
+# Flatten to plain text with timestamps, supporting both plain transcript
+# and combined_lecture.json (which includes visual analysis of board/slides).
 def transcript_to_text(data: list) -> str:
     lines = []
     for seg in data:
         if not isinstance(seg, dict):
             continue
-        text  = seg.get("text", "").strip()
-        start = seg.get("start", 0)
-        end   = seg.get("end",   0)
-        if text:
-            lines.append(f"[{start:.1f}s] {text}")
+
+        # ── Plain transcript format: {start, end, text} ──────────
+        if "start" in seg and "end" in seg and "text" in seg:
+            text = seg.get("text", "").strip()
+            start = seg.get("start", 0)
+            if text:
+                lines.append(f"[{start:.1f}s] {text}")
+
+        # ── Combined lecture format: {timestamp, transcript, visual_analysis} ──
+        elif "timestamp" in seg:
+            ts = seg.get("timestamp", 0)
+            spoken = seg.get("transcript", "").strip()
+            if spoken:
+                lines.append(f"[{ts:.1f}s] {spoken}")
+
+            va = seg.get("visual_analysis", {})
+            if isinstance(va, dict):
+                # Board/slide diagrams
+                diagram = va.get("diagram", "").strip()
+                if diagram:
+                    lines.append(f"  [BOARD DIAGRAM @ {ts:.1f}s]: {diagram}")
+
+                # Visible text on board/slides
+                visible = va.get("visible_text", [])
+                if visible:
+                    vt = " | ".join(str(v) for v in visible if str(v).strip())
+                    if vt:
+                        lines.append(f"  [VISIBLE TEXT @ {ts:.1f}s]: {vt}")
+
+                # Mathematical expressions
+                math_content = va.get("mathematical_content", [])
+                if math_content:
+                    mc = ", ".join(str(m) for m in math_content if str(m).strip())
+                    if mc:
+                        lines.append(f"  [MATH ON BOARD @ {ts:.1f}s]: {mc}")
+
+                # Important points identified from the frame
+                points = va.get("important_points", [])
+                if points:
+                    for pt in points:
+                        pt = str(pt).strip()
+                        if pt:
+                            lines.append(f"  [KEY POINT @ {ts:.1f}s]: {pt}")
+
     return "\n".join(lines)
 
 transcript_text = transcript_to_text(raw)
