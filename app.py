@@ -75,6 +75,14 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return Response(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📚</text></svg>',
+        mimetype="image/svg+xml",
+    )
+
+
 @app.route("/api/notes/<level>/<lang>")
 def get_notes(level, lang):
     pattern  = NOTE_PATTERNS.get(level.lower())

@@ -24,6 +24,7 @@ shorts/*.mp4
 *.mp4
 *.mkv
 *.avi
+!summary/*.mp4
 
 
 # Intermediate / generated outputs (can be regenerated)
