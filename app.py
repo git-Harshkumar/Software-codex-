@@ -48,8 +48,9 @@ except ImportError:
 # ── App setup ───────────────────────────────────────────────
 app = Flask(__name__)
 BASE   = os.path.dirname(os.path.abspath(__file__))
-SHORTS = os.path.join(BASE, "shorts")
-STICKY = os.path.join(BASE, "notes", "sticky_notes.json")
+SHORTS  = os.path.join(BASE, "shorts")
+SUMMARY = os.path.join(BASE, "summary", "summary.mp4")
+STICKY  = os.path.join(BASE, "notes", "sticky_notes.json")
 
 # Map level + lang → markdown filename
 NOTE_MD_DIR = os.path.join(BASE, "notes", "markdown")
@@ -307,6 +308,51 @@ def get_shorts():
             })
 
     return jsonify({"clips": clips})
+
+
+# ── Summary Video ────────────────────────────────────────────
+
+@app.route("/api/summary-video")
+def summary_video_meta():
+    """Return metadata for the summary video."""
+    if not os.path.exists(SUMMARY):
+        return jsonify({"available": False}), 404
+    size_mb = round(os.path.getsize(SUMMARY) / 1_048_576, 1)
+    return jsonify({"available": True, "url": "/summary-video", "size_mb": size_mb})
+
+
+@app.route("/summary-video")
+def serve_summary_video():
+    """Stream the summary MP4 with range-request support for seeking."""
+    if not os.path.exists(SUMMARY):
+        abort(404)
+
+    file_size    = os.path.getsize(SUMMARY)
+    range_header = request.headers.get("Range")
+
+    if range_header:
+        byte1, byte2 = 0, None
+        m = __import__("re").search(r"bytes=(\d+)-(\d*)", range_header)
+        if m:
+            byte1 = int(m.group(1))
+            byte2 = int(m.group(2)) if m.group(2) else file_size - 1
+        length = byte2 - byte1 + 1
+
+        with open(SUMMARY, "rb") as f:
+            f.seek(byte1)
+            data = f.read(length)
+
+        resp = Response(
+            data, 206,
+            mimetype="video/mp4",
+            direct_passthrough=True,
+        )
+        resp.headers["Content-Range"]  = f"bytes {byte1}-{byte2}/{file_size}"
+        resp.headers["Accept-Ranges"]  = "bytes"
+        resp.headers["Content-Length"] = length
+        return resp
+
+    return send_file(SUMMARY, mimetype="video/mp4")
 
 
 @app.route("/video/<path:filename>")

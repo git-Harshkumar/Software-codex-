@@ -346,62 +346,68 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ═══════════════ SHORTS TAB ═══════════════ */
-    .shorts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    .short-card {
+    /* ═══════════════ SUMMARY VIDEO TAB ═══════════════ */
+    .summary-video-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      cursor: pointer;
-      transition: transform .2s, border-color .2s, box-shadow .2s;
+      box-shadow: var(--shadow);
     }
-    .short-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--primary);
-      box-shadow: 0 12px 40px rgba(88,166,255,.15);
+    .summary-video-header {
+      padding: 20px 28px;
+      background: linear-gradient(135deg, rgba(88,166,255,.12) 0%, rgba(188,140,255,.08) 100%);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 14px;
     }
-    .short-video-wrap {
+    .summary-video-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 16px rgba(88,166,255,.3);
+      flex-shrink: 0;
+    }
+    .summary-video-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .summary-video-subtitle { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+    .summary-video-badges {
+      display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap;
+    }
+    .sv-badge {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 99px;
+      font-size: .75rem; font-weight: 600;
+      background: rgba(88,166,255,.1);
+      border: 1px solid rgba(88,166,255,.2);
+      color: var(--primary);
+    }
+    .summary-player-wrap {
       position: relative;
-      aspect-ratio: 16/9;
       background: #010409;
-      overflow: hidden;
     }
-    .short-video-wrap video {
-      width: 100%; height: 100%; object-fit: cover;
-      display: block;
+    .summary-player-wrap video {
+      width: 100%; display: block;
+      max-height: 72vh;
     }
-    .play-overlay {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.35);
-      transition: opacity .2s;
+    .summary-player-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(88,166,255,.07) 0%, transparent 70%);
     }
-    .play-overlay .play-btn {
-      width: 54px; height: 54px;
-      background: rgba(88,166,255,.9);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.4);
-      transition: transform .2s;
+    .summary-video-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      font-size: .82rem; color: var(--muted);
+      background: rgba(255,255,255,.01);
     }
-    .short-card:hover .play-btn { transform: scale(1.1); }
-    .short-card:hover .play-overlay { opacity: 0; }
-    .short-info { padding: 14px 16px; }
-    .short-heading {
-      font-size: .85rem; font-weight: 600; margin-bottom: 6px;
-      color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .summary-video-footer .dot { color: var(--border); }
+    .sv-not-found {
+      text-align: center; padding: 80px 40px;
+      color: var(--muted);
     }
-    .short-meta {
-      display: flex; gap: 12px; font-size: .75rem; color: var(--muted);
-    }
-    .short-meta span { display: flex; align-items: center; gap: 4px; }
+    .sv-not-found .sv-icon { font-size: 3rem; display: block; margin-bottom: 14px; }
+    .sv-not-found h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
 
     /* Video modal */
     .modal-overlay {
@@ -593,11 +599,11 @@
 <nav class="navbar">
   <a class="navbar-brand" href="#">
     <div class="logo">📚</div>
-    LectureAI
+    RecallAI
   </a>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('notes', this)">📝 Notes</button>
-    <button class="nav-tab"        onclick="switchTab('shorts', this)">🎬 Shorts</button>
+    <button class="nav-tab"        onclick="switchTab('summary', this)">🎥 Summary Video</button>
     <button class="nav-tab"        onclick="switchTab('sticky', this)">📌 Sticky Notes</button>
   </div>
 </nav>
@@ -614,7 +620,7 @@
     <div class="hero-stats">
       <div class="stat"><span class="stat-val" id="stat-notes">3</span> Note Levels</div>
       <div class="stat"><span class="stat-val" id="stat-langs">3</span> Languages</div>
-      <div class="stat"><span class="stat-val" id="stat-clips">—</span> Video Clips</div>
+      <div class="stat"><span class="stat-val">1</span> Summary Video</div>
       <div class="stat"><span class="stat-val" id="stat-sticky">0</span> Sticky Notes</div>
     </div>
   </div>
@@ -707,11 +713,11 @@
 
   </div>
 
-  <!-- ═══ SHORTS TAB ═══ -->
-  <div class="tab-panel" id="panel-shorts">
-    <div class="section-label">🎬 Video Shorts</div>
-    <div class="shorts-grid" id="shorts-grid">
-      <div class="spinner"><div class="spin"></div><span>Loading clips…</span></div>
+  <!-- ═══ SUMMARY VIDEO TAB ═══ -->
+  <div class="tab-panel" id="panel-summary">
+    <div class="section-label">🎥 Summary Video</div>
+    <div id="summary-video-container">
+      <div class="spinner"><div class="spin"></div><span>Loading video…</span></div>
     </div>
   </div>
 
@@ -788,7 +794,7 @@ function switchTab(tab, el) {
   document.getElementById('panel-' + tab).classList.add('active');
   el.classList.add('active');
 
-  if (tab === 'shorts')  loadShorts();
+  if (tab === 'summary') loadSummaryVideo();
   if (tab === 'sticky')  loadStickies();
 }
 
@@ -891,47 +897,65 @@ function showToast(msg) {
 
 
 /* ══════════════════════════════════════════
-   SHORTS
+   SUMMARY VIDEO
 ══════════════════════════════════════════ */
-let shortsLoaded = false;
+let summaryLoaded = false;
 
-async function loadShorts() {
-  if (shortsLoaded) return;
-  shortsLoaded = true;
+async function loadSummaryVideo() {
+  if (summaryLoaded) return;
+  summaryLoaded = true;
 
-  const grid = document.getElementById('shorts-grid');
-  grid.innerHTML = '<div class="spinner"><div class="spin"></div><span>Loading clips…</span></div>';
+  const container = document.getElementById('summary-video-container');
 
   try {
-    const res   = await fetch('/api/shorts');
-    const data  = await res.json();
-    const clips = data.clips || [];
+    const res  = await fetch('/api/summary-video');
+    if (!res.ok) throw new Error('Video not found');
+    const data = await res.json();
 
-    document.getElementById('stat-clips').textContent = clips.length;
-
-    if (!clips.length) {
-      grid.innerHTML = '<div class="empty-state"><span class="e-icon">🎬</span><p>No shorts found. Run <code>python generate_shorts.py</code></p></div>';
+    if (!data.available) {
+      container.innerHTML = `
+        <div class="sv-not-found">
+          <span class="sv-icon">🎥</span>
+          <h3>Summary video not found</h3>
+          <p>Place <code>summary.mp4</code> in the <code>summary/</code> folder and restart the server.</p>
+        </div>`;
       return;
     }
 
-    grid.innerHTML = clips.map((c, i) => `
-      <div class="short-card" onclick="openVideo('${c.url}','${escHtml(c.heading)}')">
-        <div class="short-video-wrap">
-          <video src="${c.url}" preload="metadata"></video>
-          <div class="play-overlay"><div class="play-btn">▶</div></div>
-        </div>
-        <div class="short-info">
-          <div class="short-heading" title="${escHtml(c.heading)}">${escHtml(c.heading)}</div>
-          <div class="short-meta">
-            <span>⏱ ${c.duration}</span>
-            <span>💾 ${c.size_mb} MB</span>
+    container.innerHTML = `
+      <div class="summary-video-wrap">
+        <div class="summary-video-header">
+          <div class="summary-video-icon">🎥</div>
+          <div>
+            <div class="summary-video-title">Lecture Summary Video</div>
+            <div class="summary-video-subtitle">AI-generated condensed walkthrough of the full lecture</div>
+          </div>
+          <div class="summary-video-badges">
+            <span class="sv-badge">💾 ${data.size_mb} MB</span>
+            <span class="sv-badge">🎬 MP4</span>
           </div>
         </div>
-      </div>
-    `).join('');
+        <div class="summary-player-wrap">
+          <video id="summary-player" controls preload="metadata" style="width:100%;display:block;max-height:72vh;background:#010409;">
+            <source src="${data.url}" type="video/mp4">
+            Your browser does not support HTML5 video.
+          </video>
+          <div class="summary-player-glow"></div>
+        </div>
+        <div class="summary-video-footer">
+          <span>📌 This video is a condensed AI-generated summary of the lecture</span>
+          <span class="dot">·</span>
+          <span>Use the controls to pause, seek, and adjust volume</span>
+        </div>
+      </div>`;
 
   } catch (err) {
-    grid.innerHTML = `<p style="color:var(--red)">Error: ${err.message}</p>`;
+    container.innerHTML = `
+      <div class="sv-not-found">
+        <span class="sv-icon">⚠️</span>
+        <h3>Could not load summary video</h3>
+        <p style="color:var(--red)">${escHtml(err.message)}</p>
+      </div>`;
   }
 }
 
