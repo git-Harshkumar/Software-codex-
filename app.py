@@ -12,8 +12,16 @@ Then open: http://localhost:5000
 import glob
 import json
 import os
+import re
 import uuid
 from datetime import datetime
+
+# Load .env on startup — but only to pre-populate if a key already exists
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=False)   # never overwrite a key already in os.environ
+except ImportError:
+    pass
 
 from flask import Flask, abort, jsonify, render_template, request, send_file, Response
 
@@ -48,9 +56,10 @@ except ImportError:
 # ── App setup ───────────────────────────────────────────────
 app = Flask(__name__)
 BASE   = os.path.dirname(os.path.abspath(__file__))
-SHORTS  = os.path.join(BASE, "shorts")
-SUMMARY = os.path.join(BASE, "summary", "summary.mp4")
-STICKY  = os.path.join(BASE, "notes", "sticky_notes.json")
+SHORTS   = os.path.join(BASE, "shorts")
+SUMMARY  = os.path.join(BASE, "summary", "summary.mp4")
+LECTURE  = os.path.join(BASE, "videos",  "lecture.mp4")
+STICKY   = os.path.join(BASE, "notes",   "sticky_notes.json")
 
 # Map level + lang → markdown filename
 NOTE_MD_DIR = os.path.join(BASE, "notes", "markdown")
@@ -70,6 +79,27 @@ CLI_LEVEL = {"overview": "1", "summary": "2", "detailed": "3"}
 
 # ── Routes ──────────────────────────────────────────────────
 
+# Free routes that never need an API key
+_FREE_ROUTES = {
+    "/",
+    "/favicon.ico",
+    "/api/check-api-key",
+    "/api/set-api-key",
+}
+
+@app.before_request
+def require_api_key():
+    """Block every /api/* route unless GEMINI_API_KEY is set."""
+    path = request.path
+    # Only guard API routes not in the free list
+    if path.startswith("/api/") and path not in _FREE_ROUTES:
+        if not os.environ.get("GEMINI_API_KEY", "").strip():
+            return jsonify({
+                "error": "API key not configured",
+                "code":  "NO_API_KEY"
+            }), 401
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -78,9 +108,57 @@ def index():
 @app.route("/favicon.ico")
 def favicon():
     return Response(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📚</text></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0-5H20"/></svg>',
         mimetype="image/svg+xml",
     )
+
+
+# ── API Key Management ───────────────────────────────────────
+
+@app.route("/api/check-api-key")
+def check_api_key():
+    """Return whether a Gemini API key is currently configured."""
+    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    return jsonify({"configured": bool(key), "masked": (key[:6] + "…" + key[-4:]) if len(key) > 10 else ""})
+
+
+@app.route("/api/set-api-key", methods=["POST"])
+def set_api_key():
+    """Accept a Gemini API key, store it in the environment and persist to .env."""
+    data = request.json or {}
+    key  = data.get("api_key", "").strip()
+
+    if not key:
+        return jsonify({"ok": False, "error": "API key cannot be empty"}), 400
+    if len(key) < 20:
+        return jsonify({"ok": False, "error": "That key looks too short — please double-check it"}), 400
+
+    # Apply to the running process immediately
+    os.environ["GEMINI_API_KEY"] = key
+
+    # Persist to .env file
+    env_path = os.path.join(BASE, ".env")
+    try:
+        if os.path.exists(env_path):
+            content = open(env_path, "r", encoding="utf-8").read()
+            # Replace existing key line or append
+            if re.search(r"^GEMINI_API_KEY=", content, re.MULTILINE):
+                content = re.sub(
+                    r'^GEMINI_API_KEY=.*$',
+                    f'GEMINI_API_KEY="{key}"',
+                    content, flags=re.MULTILINE
+                )
+            else:
+                content += f'\nGEMINI_API_KEY="{key}"\n'
+        else:
+            content = f'GEMINI_API_KEY="{key}"\n'
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.write(content)
+    except Exception as e:
+        # Non-fatal — key is already in os.environ
+        print(f"[warn] Could not write .env: {e}")
+
+    return jsonify({"ok": True})
 
 
 @app.route("/api/notes/<level>/<lang>")
@@ -103,7 +181,6 @@ def get_notes(level, lang):
         return jsonify({
             "html": (
                 f'<div class="not-generated">'
-                f'<span class="ng-icon">📄</span>'
                 f'<h3>Notes not yet generated</h3>'
                 f'<p>Run this command in your terminal:</p>'
                 f'<pre><code>{cmd}</code></pre>'
@@ -139,6 +216,52 @@ def download_notes(level, lang):
     )
 
 
+@app.route("/api/notes/<level>/<lang>/raw")
+def raw_notes(level, lang):
+    """Return the raw markdown text (for the in-browser editor)."""
+    pattern  = NOTE_PATTERNS.get(level.lower())
+    if not pattern:
+        return jsonify({"error": "Invalid level"}), 400
+
+    lang_slug = LANG_SLUGS.get(lang.lower(), lang.lower())
+    filename  = pattern.format(lang=lang_slug)
+    filepath  = os.path.join(NOTE_MD_DIR, filename)
+
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    return jsonify({"markdown": content, "filename": filename})
+
+
+@app.route("/api/notes/<level>/<lang>/save", methods=["POST"])
+def save_notes(level, lang):
+    """Save edited markdown content back to disk."""
+    pattern  = NOTE_PATTERNS.get(level.lower())
+    if not pattern:
+        return jsonify({"ok": False, "error": "Invalid level"}), 400
+
+    lang_slug = LANG_SLUGS.get(lang.lower(), lang.lower())
+    filename  = pattern.format(lang=lang_slug)
+    filepath  = os.path.join(NOTE_MD_DIR, filename)
+
+    data    = request.json or {}
+    content = data.get("markdown", "")
+
+    if not content.strip():
+        return jsonify({"ok": False, "error": "Content cannot be empty"}), 400
+
+    try:
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
 @app.route("/api/notes/<level>/<lang>/print")
 def print_notes(level, lang):
     """Return a standalone printable HTML page (for Save as PDF)."""
@@ -168,7 +291,7 @@ def print_notes(level, lang):
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{title} — Lecture Notes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script>
     window.MathJax = {{
       tex: {{ inlineMath: [['$','$'],['\\\\(','\\\\)']], displayMath: [['$$','$$'],['\\\\[','\\\\]']], processEscapes: true }},
@@ -184,12 +307,13 @@ def print_notes(level, lang):
     }}
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
-      font-family: 'Inter', 'Noto Sans Devanagari', Arial, sans-serif;
-      font-size: 10.5pt; line-height: 1.8; color: var(--text); background: #fff;
+      font-family: 'Kalam', 'Noto Sans Devanagari', cursive;
+      font-size: 11pt; line-height: 2; color: var(--text); background: #fff;
+      letter-spacing: 0.01em;
     }}
     .page {{ max-width: 820px; margin: 0 auto; padding: 0 0 40px; }}
     .title-banner {{
-      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      background: var(--primary);
       color: white; padding: 32px 40px; margin-bottom: 32px;
       border-radius: 0 0 16px 16px;
     }}
@@ -248,7 +372,7 @@ def print_notes(level, lang):
     tr:nth-child(even) td {{ background: rgba(0,0,0,.02); }}
     @media print {{
       .print-bar {{ display: none !important; }}
-      body {{ font-size: 9pt; }}
+      body {{ font-size: 9pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
       .title-banner {{ border-radius: 0; }}
       pre {{ white-space: pre-wrap; word-break: break-word; }}
       h2 {{ page-break-after: avoid; }}
@@ -259,7 +383,7 @@ def print_notes(level, lang):
 <body>
   <div class="page">
     <div class="print-bar">
-      <button class="btn-print" onclick="window.print()">🖨 Save as PDF / Print</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Save as PDF / Print</button>
       <button class="btn-close" onclick="window.close()">✕ Close</button>
     </div>
     <div class="title-banner">
@@ -274,7 +398,15 @@ def print_notes(level, lang):
       {body_html}
     </div>
   </div>
-  <script>window.addEventListener('load', () => {{ if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise(); }});</script>
+  <script>
+    window.addEventListener('load', () => {{
+      if (window.MathJax && MathJax.typesetPromise) {{
+        MathJax.typesetPromise().then(() => {{ window.print(); }});
+      }} else {{
+        setTimeout(() => {{ window.print(); }}, 600);
+      }}
+    }});
+  </script>
 </body>
 </html>"""
     return page, 200, {"Content-Type": "text/html; charset=utf-8"}
@@ -361,6 +493,79 @@ def serve_summary_video():
         return resp
 
     return send_file(SUMMARY, mimetype="video/mp4")
+
+
+# ── Lecture Video ─────────────────────────────────────────────
+
+def _stream_video(filepath):
+    """Helper: stream a video file with range-request support."""
+    if not os.path.exists(filepath):
+        abort(404)
+
+    file_size    = os.path.getsize(filepath)
+    range_header = request.headers.get("Range")
+
+    if range_header:
+        byte1, byte2 = 0, None
+        m = re.search(r"bytes=(\d+)-(\d*)", range_header)
+        if m:
+            byte1 = int(m.group(1))
+            byte2 = int(m.group(2)) if m.group(2) else file_size - 1
+        length = byte2 - byte1 + 1
+
+        with open(filepath, "rb") as f:
+            f.seek(byte1)
+            data = f.read(length)
+
+        resp = Response(data, 206, mimetype="video/mp4", direct_passthrough=True)
+        resp.headers["Content-Range"]  = f"bytes {byte1}-{byte2}/{file_size}"
+        resp.headers["Accept-Ranges"]  = "bytes"
+        resp.headers["Content-Length"] = length
+        return resp
+
+    return send_file(filepath, mimetype="video/mp4")
+
+
+@app.route("/api/lecture-video")
+def lecture_video_meta():
+    """Return metadata for the main lecture video."""
+    if not os.path.exists(LECTURE):
+        return jsonify({"available": False}), 404
+    size_mb  = round(os.path.getsize(LECTURE) / 1_048_576, 1)
+    return jsonify({"available": True, "url": "/lecture-video", "size_mb": size_mb, "filename": "lecture.mp4"})
+
+
+@app.route("/lecture-video")
+def serve_lecture_video():
+    """Stream the lecture MP4."""
+    return _stream_video(LECTURE)
+
+
+# ── Lecture Timeline ──────────────────────────────────────────
+
+TIMELINE = os.path.join(BASE, "videos", "timeline.json")
+
+@app.route("/api/lecture-timeline")
+def get_timeline():
+    """Return chapter timeline for the lecture video."""
+    if not os.path.exists(TIMELINE):
+        return jsonify({"chapters": []})
+    with open(TIMELINE, "r", encoding="utf-8") as f:
+        return jsonify(json.load(f))
+
+
+@app.route("/api/lecture-timeline", methods=["POST"])
+def save_timeline():
+    """Save updated chapter timeline."""
+    data = request.json or {}
+    chapters = data.get("chapters", [])
+    try:
+        os.makedirs(os.path.dirname(TIMELINE), exist_ok=True)
+        with open(TIMELINE, "w", encoding="utf-8") as f:
+            json.dump({"chapters": chapters}, f, indent=2, ensure_ascii=False)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 @app.route("/video/<path:filename>")

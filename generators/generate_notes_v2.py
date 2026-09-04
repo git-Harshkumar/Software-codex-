@@ -458,6 +458,7 @@ Avoid:
 - Information unrelated to the lecture
 - Unsupported claims
 - Invented examples
+- Emojis or icons
 
 At the end, always provide:
 
@@ -583,7 +584,7 @@ body {{
 
 /* ── Title Banner ── */
 .title-banner {{
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  background: var(--primary);
   color: white;
   padding: 32px 40px;
   margin-bottom: 32px;
@@ -741,7 +742,7 @@ tr:hover td {{
 
 /* ── Special section cards ── */
 .section-quick-revision {{
-  background: linear-gradient(135deg, #fff9c4 0%, #fff3cd 100%);
+  background: #fffbeb;
   border: 2px solid #f59e0b;
   border-radius: 12px;
   padding: 20px 24px;
@@ -757,7 +758,7 @@ tr:hover td {{
 }}
 
 .section-exam {{
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  background: #fef2f2;
   border: 2px solid #ef4444;
   border-radius: 12px;
   padding: 20px 24px;
@@ -946,15 +947,15 @@ def build_notes_html(markdown_text: str, level: int, language: str,
     level_label  = level_labels.get(level, "Summary")
 
     badges = [
-        f'<span class="badge">📚 {level_label}</span>',
-        f'<span class="badge">🌐 {language}</span>',
+        f'<span class="badge">{level_label}</span>',
+        f'<span class="badge">{language}</span>',
     ]
     if include_examples == "YES":
-        badges.append('<span class="badge">✏️ Examples</span>')
+        badges.append('<span class="badge">Examples</span>')
     if include_formulas == "YES":
-        badges.append('<span class="badge">📐 Formulas</span>')
+        badges.append('<span class="badge">Formulas</span>')
     if exam_focused == "YES":
-        badges.append('<span class="badge">🎯 Exam Focused</span>')
+        badges.append('<span class="badge">Exam Focused</span>')
 
     badges_html = "".join(badges)
 
