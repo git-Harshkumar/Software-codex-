@@ -13,6 +13,8 @@ import glob
 import json
 import os
 import re
+import shutil
+import subprocess
 import uuid
 from datetime import datetime
 
@@ -23,7 +25,7 @@ try:
 except ImportError:
     pass
 
-from flask import Flask, abort, jsonify, render_template, request, send_file, Response
+from flask import Flask, abort, jsonify, redirect, render_template, request, send_file, Response
 
 # ── Optional markdown renderer ──────────────────────────────
 try:
@@ -75,6 +77,139 @@ LANG_SLUGS = {
 }
 
 CLI_LEVEL = {"overview": "1", "summary": "2", "detailed": "3"}
+NOTE_PDF_DIR = os.path.join(BASE, "notes", "pdf")
+
+_BROWSER_PATHS = [
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    os.path.expanduser(r"~\AppData\Local\Google\Chrome\Application\chrome.exe"),
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    "chrome",
+    "google-chrome",
+    "msedge",
+]
+
+def find_browser_bin():
+    for p in _BROWSER_PATHS:
+        if os.path.isfile(p):
+            return p
+        w = shutil.which(p)
+        if w and os.path.isfile(w):
+            return w
+    return None
+
+def render_printable_html(title: str, body_html: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Kalam:wght@300;400;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = {{
+      tex: {{ inlineMath: [['$','$'],['\\\\(','\\\\)']], displayMath: [['$$','$$'],['\\\\[','\\\\]']], processEscapes: true }},
+      options: {{ skipHtmlTags: ['script','noscript','style','textarea','pre'] }}
+    }};
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    @page {{
+      margin: 18mm;
+      size: A4 portrait;
+    }}
+    *, *::before, *::after {{ box-sizing: border-box; }}
+    body {{
+      font-family: 'Kalam', 'Noto Sans Devanagari', cursive, sans-serif;
+      font-size: 15px;
+      line-height: 2;
+      color: #0f172a;
+      background: #ffffff;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }}
+    h1 {{
+      font-family: 'Inter', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: #1e3a8a;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 8px;
+      margin: 0 0 24px;
+    }}
+    h2 {{
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1d4ed8;
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 8px 14px;
+      margin: 26px 0 12px;
+      border-radius: 0 6px 6px 0;
+      page-break-after: avoid;
+    }}
+    h3 {{
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #334155;
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 4px;
+      margin: 20px 0 10px;
+      page-break-after: avoid;
+    }}
+    p {{ margin-bottom: 12px; }}
+    ul, ol {{ margin: 8px 0 14px 28px; }}
+    li {{ margin-bottom: 6px; }}
+    code {{
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #b45309;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }}
+    pre {{
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 14px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.5;
+      page-break-inside: avoid;
+    }}
+    blockquote {{
+      border-left: 4px solid #8b5cf6;
+      background: #f5f3ff;
+      padding: 8px 16px;
+      margin: 14px 0;
+      border-radius: 0 6px 6px 0;
+      color: #4b5563;
+      font-style: italic;
+    }}
+    table {{ width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; page-break-inside: avoid; }}
+    th {{ background: #f1f5f9; padding: 8px 12px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; }}
+    td {{ padding: 8px 12px; border: 1px solid #cbd5e1; }}
+    @media print {{
+      body {{ padding: 0; background: transparent; }}
+      .no-print {{ display: none !important; }}
+    }}
+  </style>
+</head>
+<body>
+  {body_html}
+  <script>
+    if (window.location.search.includes('autoprint=1')) {{
+      window.addEventListener('load', () => setTimeout(() => window.print(), 800));
+    }}
+  </script>
+</body>
+</html>"""
 
 
 # ── Routes ──────────────────────────────────────────────────
@@ -85,10 +220,25 @@ _FREE_ROUTES = {
     "/favicon.ico",
     "/api/check-api-key",
     "/api/set-api-key",
+    "/api/sync-lecture",
 }
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 @app.before_request
 def require_api_key():
+    if request.method == "OPTIONS":
+        resp = Response()
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return resp
+
     """Block every /api/* route unless GEMINI_API_KEY is set."""
     path = request.path
     # Only guard API routes not in the free list
@@ -161,6 +311,86 @@ def set_api_key():
     return jsonify({"ok": True})
 
 
+@app.route("/api/sync-lecture", methods=["POST"])
+def sync_lecture():
+    """Accept generated lecture notes, timeline, and study assets from extension and save to disk."""
+    data = request.json or {}
+    notes = data.get("notes", {})          # { "overview": { "english": "...", ... }, ... }
+    timeline = data.get("timeline", [])    # list of chapter objects
+    sticky = data.get("sticky", [])        # list of sticky notes
+    combined = data.get("combined", [])    # combined multimodal lecture array
+    transcript = data.get("transcript", [])# reconstructed transcript array
+
+    os.makedirs(NOTE_MD_DIR, exist_ok=True)
+
+    # 1. Save all markdown note levels and languages
+    saved_files = []
+    for level, langs in notes.items():
+        pattern = NOTE_PATTERNS.get(level.lower())
+        if not pattern:
+            continue
+        for lang, content in langs.items():
+            if not content:
+                continue
+            lang_slug = LANG_SLUGS.get(lang.lower(), lang.lower())
+            filename = pattern.format(lang=lang_slug)
+            filepath = os.path.join(NOTE_MD_DIR, filename)
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(content)
+            saved_files.append(filename)
+
+    # 2. Save timeline / chapter markers
+    if timeline:
+        try:
+            os.makedirs(os.path.dirname(TIMELINE), exist_ok=True)
+            with open(TIMELINE, "w", encoding="utf-8") as f:
+                json.dump({"chapters": timeline}, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"[warn] Could not save timeline: {e}")
+
+    # 3. Save sticky flashcard notes
+    if sticky:
+        try:
+            existing = _load_sticky()
+            existing_texts = {s.get("text", "").strip() for s in existing}
+            for s in sticky:
+                stext = s.get("text", "").strip() if isinstance(s, dict) else str(s).strip()
+                if stext and stext not in existing_texts:
+                    existing.append({
+                        "id": str(uuid.uuid4()),
+                        "text": stext,
+                        "color": s.get("color", "#fef08a") if isinstance(s, dict) else "#fef08a",
+                        "created": datetime.now().strftime("%d %b %Y, %H:%M"),
+                    })
+                    existing_texts.add(stext)
+            _save_sticky(existing)
+        except Exception as e:
+            print(f"[warn] Could not save sticky notes: {e}")
+
+    # 4. Save combined lecture & clean transcript in data directory
+    data_dir = os.path.join(BASE, "data")
+    os.makedirs(data_dir, exist_ok=True)
+    if combined:
+        try:
+            with open(os.path.join(data_dir, "combined_lecture.json"), "w", encoding="utf-8") as f:
+                json.dump(combined, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"[warn] Could not save combined lecture: {e}")
+
+    if transcript:
+        try:
+            with open(os.path.join(data_dir, "clean_transcript.json"), "w", encoding="utf-8") as f:
+                json.dump(transcript, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"[warn] Could not save transcript: {e}")
+
+    return jsonify({
+        "ok": True,
+        "saved_files": saved_files,
+        "message": f"Successfully synced {len(saved_files)} note files, timeline, and study assets!"
+    })
+
+
 @app.route("/api/notes/<level>/<lang>")
 def get_notes(level, lang):
     pattern  = NOTE_PATTERNS.get(level.lower())
@@ -216,7 +446,72 @@ def download_notes(level, lang):
     )
 
 
+@app.route("/api/notes/<level>/<lang>/pdf")
+def download_notes_pdf(level, lang):
+    """Directly download the notes as a PDF."""
+    pattern = NOTE_PATTERNS.get(level.lower())
+    if not pattern:
+        return jsonify({"error": "Invalid level"}), 400
+
+    lang_slug = LANG_SLUGS.get(lang.lower(), lang.lower())
+    filename = pattern.format(lang=lang_slug)
+    md_filepath = os.path.join(NOTE_MD_DIR, filename)
+
+    if not os.path.exists(md_filepath):
+        abort(404)
+
+    os.makedirs(NOTE_PDF_DIR, exist_ok=True)
+    pdf_filename = f"notes_{level.lower()}_{lang_slug}.pdf"
+    pdf_filepath = os.path.join(NOTE_PDF_DIR, pdf_filename)
+
+    # Check if a freshly generated PDF exists
+    needs_gen = True
+    if os.path.exists(pdf_filepath):
+        if os.path.getmtime(pdf_filepath) >= os.path.getmtime(md_filepath):
+            needs_gen = False
+
+    if needs_gen:
+        with open(md_filepath, "r", encoding="utf-8") as f:
+            md_content = f.read()
+
+        body_html = md_to_html(md_content)
+        title = f"RecallAI — {level.title()} Notes ({lang.title()})"
+        full_html = render_printable_html(title, body_html)
+
+        html_temp = os.path.join(NOTE_PDF_DIR, f"temp_{level}_{lang_slug}.html")
+        with open(html_temp, "w", encoding="utf-8") as f:
+            f.write(full_html)
+
+        browser = find_browser_bin()
+        if browser:
+            cmd = [
+                browser,
+                "--headless=new",
+                "--disable-gpu",
+                "--no-sandbox",
+                "--no-pdf-header-footer",
+                f"--print-to-pdf={os.path.abspath(pdf_filepath)}",
+                f"file:///{os.path.abspath(html_temp).replace(chr(92), '/')}"
+            ]
+            try:
+                subprocess.run(cmd, capture_output=True, timeout=30)
+            except Exception as e:
+                print(f"[PDF] Headless conversion error: {e}")
+
+    if os.path.exists(pdf_filepath) and os.path.getsize(pdf_filepath) > 0:
+        return send_file(
+            pdf_filepath,
+            as_attachment=True,
+            download_name=f"RecallAI_Notes_{level.title()}_{lang.title()}.pdf",
+            mimetype="application/pdf"
+        )
+    else:
+        # Fallback to direct print view with autoprint enabled
+        return redirect(f"/api/notes/{level}/{lang}/print?autoprint=1")
+
+
 @app.route("/api/notes/<level>/<lang>/raw")
+
 def raw_notes(level, lang):
     """Return the raw markdown text (for the in-browser editor)."""
     pattern  = NOTE_PATTERNS.get(level.lower())

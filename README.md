@@ -79,10 +79,26 @@ Create a `.env` file:
 GEMINI_API_KEY=your_api_key_here
 ```
 
+## Deploy to AWS (100% Free Tier with Terraform)
+
+You can deploy this platform to an AWS EC2 `t2.micro` instance completely free using the included Terraform configuration:
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform apply
+.\deploy.ps1   # On Windows (or ./deploy.sh on Mac/Linux)
+```
+
+See the full [Terraform Deployment Guide](file:///c:/Users/harsh/OneDrive/Desktop/notes_gen/video2/terraform/README.md) for details on zero-cost setup, SSH management, and teardown.
+
 ## Tech Stack
 
-- **AI**: Google Gemini (gemini-3.5-flash)
+- **AI**: Google Gemini (gemini-3.6-flash)
 - **PDF**: Chrome headless + MathJax
 - **Video**: ffmpeg
 - **Web**: Flask + vanilla JS
+- **Infrastructure**: Terraform + AWS EC2 Free Tier (t2.micro) + Nginx + Gunicorn
 - **Transcript**: OpenAI Whisper
+

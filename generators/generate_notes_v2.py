@@ -154,8 +154,8 @@ Examples:
 
     parser.add_argument(
         "--model",
-        default="gemini-3.5-flash",
-        help="Gemini model (default: gemini-3.5-flash).",
+        default="gemini-3.8-flash",
+        help="Gemini model (default: gemini-3.8-flash).",
     )
 
     return parser.parse_args()
@@ -442,14 +442,34 @@ Overview, Summary, and Detailed Notes must contain the SAME CORE INFORMATION.
 The difference is DEPTH, not different facts.
 
 ==================================================
-OUTPUT QUALITY
+OUTPUT QUALITY, VISUALS & CODE IMPLEMENTATIONS
 ==================================================
+
+CRITICAL DIRECTIVE: CODE IMPLEMENTATION WITH SIDEWISE VISUALIZATION:
+Whenever presenting an algorithm, data structure, mathematical mechanism, or implementation:
+1. Always provide production-grade, clean, runnable code in a standard fenced code box (```python ... ``` or ```cpp ... ```). Include line-by-line comments, sample inputs/outputs, and Time/Space complexity.
+2. IMMEDIATELY follow the code box with a corresponding SIDEWISE VISUALIZATION: an inline vector <svg> visual walkthrough diagram (e.g. array memory cells, recursion tree, pointer movements, state transitions, or flowchart) that visually represents the algorithm execution alongside the code.
+The platform automatically renders the code box and visualization side-by-side (Split View: Code on the left, Visual Walkthrough on the right) so students can study the implementation and its visual trace simultaneously.
+
+CRITICAL READABILITY DIRECTIVE: ZERO UNREADABLE AI IMAGES:
+1. NEVER USE RASTER AI IMAGES (ai-image:) FOR TECHNICAL DIAGRAMS, FLOWCHARTS, ARCHITECTURES, OR FORMULAS.
+   AI image diffusion models cannot write legible text, producing distorted, illegible pseudo-letters.
+   Therefore, ALL technical schematics, algorithm flowcharts, data structures, trees, coordinate plots, and system architectures MUST be written as inline vector <svg> diagrams.
+2. INLINE VECTOR <svg> DIAGRAMS (100% SHARP, VECTOR-READABLE TYPOGRAPHY):
+   <svg width="100%" height="240" viewBox="0 0 650 240" xmlns="http://www.w3.org/2000/svg">
+     <!-- Crisp vector elements, high-contrast text, clear nodes, distinct arrows -->
+   </svg>
+   Design rules for maximum legibility:
+   a) High-contrast text: Use large, readable text (<text font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#f8fafc">...</text>) on dark surface cards (<rect rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>).
+   b) Ample spacing: Ensure at least 25-30px spacing between nodes so text never overlaps or cramps.
+   c) Explicit viewBox: Always specify viewBox="0 0 650 240" so it scales crisply at any zoom level.
+   d) Distinct colors: Primary Blue #38bdf8, Emerald Green #34d399, Amber #fbbf24, Violet #a78bfa.
 
 Use:
 - Clear headings and subheadings
 - Bullet points and numbered lists
 - **Bold** for important terms
-- LaTeX for mathematical expressions (inline: $formula$, block: $$formula$$)
+- Natural readable mathematical symbols (e.g., α, β, ≤, ≥, ∑, ∫, √) without raw LaTeX slashes
 - Tables for comparisons when useful
 
 Avoid:
@@ -458,7 +478,7 @@ Avoid:
 - Information unrelated to the lecture
 - Unsupported claims
 - Invented examples
-- Emojis or icons
+- Emojis in body text except designated callout badges: 💡, ⚠️, 🎯
 
 At the end, always provide:
 

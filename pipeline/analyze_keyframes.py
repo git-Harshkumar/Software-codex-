@@ -18,7 +18,7 @@ load_dotenv(r"..\.env")
 INPUT_DIR = r"keyframes_final"
 OUTPUT_FILE = r"visual_analysis1.json"
 
-MODEL_NAME = "gemini-3.5-flash"
+MODEL_NAME = "gemini-3.6-flash"
 
 # Wait between requests
 REQUEST_DELAY = 1.5

@@ -1,0 +1,332 @@
+/* RecallAI Popup — Full Redesign with Onboarding */
+
+:root {
+  --bg:        #080c14;
+  --surface:   #0f1520;
+  --surface2:  #161e2e;
+  --surface3:  #1e2a3d;
+  --border:    #1e2d45;
+  --border2:   #263550;
+  --text:      #e8edf5;
+  --muted:     #7a8ba8;
+  --primary:   #4f9ef8;
+  --primary-g: linear-gradient(135deg, #4f9ef8, #7c5bfa);
+  --green:     #34d399;
+  --red:       #f87171;
+  --yellow:    #fbbf24;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 340px;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 16px;
+  user-select: none;
+}
+
+.popup-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Views ────────────────────────────────────────────────────── */
+.view { display: flex; flex-direction: column; gap: 14px; }
+.hidden { display: none !important; }
+
+/* ── Header ─────────────────────────────────────────────────── */
+.header, .onboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--primary-g);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 2px 10px rgba(79, 158, 248, 0.35);
+}
+.brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(120deg, #fff, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Badge ──────────────────────────────────────────────────── */
+.badge, .onboard-step-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.badge.active {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--green);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+.badge.missing, .badge.error {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--red);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+.onboard-step-badge {
+  background: rgba(79, 158, 248, 0.15);
+  color: var(--primary);
+  border-color: rgba(79, 158, 248, 0.4);
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+@keyframes pulse-badge {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 158, 248, 0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(79, 158, 248, 0); }
+}
+
+/* ── Onboarding Hero ────────────────────────────────────────── */
+.onboard-hero {
+  background: linear-gradient(135deg, rgba(79,158,248,0.1), rgba(124,91,250,0.1));
+  border: 1px solid rgba(79,158,248,0.2);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.onboard-hero-icon { font-size: 32px; margin-bottom: 8px; }
+.onboard-hero-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.onboard-hero-sub { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+/* ── Steps ──────────────────────────────────────────────────── */
+.onboard-steps {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.step-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.steps-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.steps-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.step-num {
+  width: 20px;
+  height: 20px;
+  background: var(--primary-g);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.steps-list li > div {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.step-note {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.steps-list code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--primary);
+}
+
+/* ── Onboard Links ──────────────────────────────────────────── */
+.onboard-links {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 11px;
+}
+
+/* ── Usage Card ─────────────────────────────────────────────── */
+.usage-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.usage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.usage-label { font-size: 11px; color: var(--muted); }
+.usage-val { font-size: 11px; font-weight: 600; color: var(--text); }
+.usage-ok { color: var(--green); }
+.usage-warn { color: var(--yellow); }
+
+/* ── Key row / edit area ────────────────────────────────────── */
+.key-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Section ────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Inputs ─────────────────────────────────────────────────── */
+.input-row {
+  display: flex;
+  gap: 6px;
+}
+input[type="password"], input[type="text"] {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input[type="password"]:focus, input[type="text"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(79, 158, 248, 0.15);
+}
+
+/* ── Status Messages ────────────────────────────────────────── */
+.status-msg { font-size: 11px; display: none; margin-top: 4px; }
+.status-msg.error { color: var(--red); display: block; }
+.status-msg.success { color: var(--green); display: block; }
+.status-msg.loading { color: var(--muted); display: block; }
+
+/* ── Tab status ─────────────────────────────────────────────── */
+.tab-status-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--primary-g);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(79, 158, 248, 0.3);
+}
+.btn-primary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.btn-primary:active { filter: brightness(0.95); transform: translateY(0); }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--surface3); border-color: var(--border2); }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+.btn-sm { padding: 4px 8px; font-size: 11px; }
+.btn-full { width: 100%; }
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.link {
+  color: var(--primary);
+  text-decoration: none;
+}
+.link:hover { text-decoration: underline; }
+
+/* ── Loading Spinner ─────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

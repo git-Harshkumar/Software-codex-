@@ -597,48 +597,127 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ═══════════════ DOWNLOAD BUTTON ═══════════════ */
-    .download-wrap { position: relative; }
-    .download-btn {
-      display: flex; align-items: center; gap: 6px;
-      padding: 7px 14px; border-radius: 9px;
-      background: rgba(79,158,248,0.1);
-      border: 1px solid rgba(79,158,248,0.2);
-      color: var(--primary); font-size: 0.78rem; font-weight: 600;
+    /* Header Download PDF Button */
+    .download-pdf-header-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+      color: #ffffff;
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
     }
-    .download-btn:hover { background: rgba(79,158,248,0.18); border-color: rgba(79,158,248,0.35); transform: translateY(-1px); }
-    .download-btn .chevron { font-size: 0.6rem; transition: transform 0.2s; }
-    .download-wrap.open .download-btn .chevron { transform: rotate(180deg); }
+    .download-pdf-header-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45), 0 0 12px rgba(59, 130, 246, 0.4);
+    }
+    .download-pdf-header-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+    .download-pdf-header-btn svg {
+      transition: transform 0.2s ease;
+    }
+    .download-pdf-header-btn:hover svg {
+      transform: translateY(1px);
+    }
 
-    .download-menu {
-      display: none;
-      position: absolute; right: 0; top: calc(100% + 8px);
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      border-radius: 12px;
-      box-shadow: var(--shadow-lg);
-      min-width: 210px;
-      z-index: 200;
+    /* Bottom download bar */
+    .notes-download-bar {
+      padding: 26px 36px;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(124,58,237,0.06) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .notes-download-info {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .notes-download-title {
+      font-size: 1rem; font-weight: 800; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .notes-download-sub {
+      font-size: 0.82rem; color: var(--muted);
+    }
+
+    /* Hero Large Download PDF Button */
+    .notes-dl-pdf-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 38px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 45%, #9333ea 100%);
+      background-size: 200% 200%;
+      animation: pulseGlow 4s ease infinite;
+      color: #ffffff;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 8px 26px rgba(79, 70, 229, 0.45), 0 2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
       overflow: hidden;
-      animation: fadeDown 0.15s ease;
     }
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes pulseGlow {
+      0%, 100% { background-position: 0% 50%; box-shadow: 0 8px 26px rgba(79, 70, 229, 0.45); }
+      50% { background-position: 100% 50%; box-shadow: 0 12px 34px rgba(147, 51, 234, 0.55); }
     }
-    .download-wrap.open .download-menu { display: block; }
-    .dl-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 11px 16px; font-size: 0.82rem; font-weight: 500;
-      color: var(--text); cursor: pointer;
-      transition: background 0.15s;
-      border: none; background: none; width: 100%; text-align: left;
+    .notes-dl-pdf-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+      transform: skewX(-25deg);
+      transition: none;
     }
-    .dl-item:hover { background: var(--surface3); }
-    .dl-item .dl-desc { font-size: 0.72rem; color: var(--muted); display: block; margin-top: 1px; }
-    .dl-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+    .notes-dl-pdf-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 16px 40px rgba(79, 70, 229, 0.6), 0 0 24px rgba(147, 51, 234, 0.4);
+    }
+    .notes-dl-pdf-btn:hover::before {
+      left: 140%;
+      transition: all 0.8s ease-in-out;
+    }
+    .notes-dl-pdf-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+    .notes-dl-pdf-btn svg {
+      transition: transform 0.25s ease;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+    .notes-dl-pdf-btn:hover svg {
+      transform: translateY(2px) scale(1.15);
+    }
+    .notes-dl-pdf-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
 
     /* Toast */
     .toast {
@@ -1218,9 +1297,9 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Edit
           </button>
-          <button class="download-btn" id="dl-btn" onclick="openPrintView()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Save as PDF
+          <button class="download-pdf-header-btn" id="dl-btn" onclick="downloadPDF()" title="Download notes as PDF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download PDF</span>
           </button>
         </div>
       </div>
@@ -1233,6 +1312,19 @@
         <span style="color:var(--border2)">·</span>
         <span>Ctrl+S to save</span>
         <span class="editor-hint">Changes save to disk instantly</span>
+      </div>
+      <div class="notes-download-bar" id="notes-download-bar">
+        <div class="notes-download-info">
+          <span class="notes-download-title">
+            <span>Export Notes as Document</span>
+            <span class="notes-dl-pdf-badge">Print-Ready</span>
+          </span>
+          <span class="notes-download-sub">Save a high-resolution, beautifully formatted PDF with MathJax formulas</span>
+        </div>
+        <button class="notes-dl-pdf-btn" id="bottom-dl-btn" onclick="downloadPDF()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Download as PDF</span>
+        </button>
       </div>
     </div>
 
@@ -1651,6 +1743,47 @@ function toggleDownload() {
 function downloadMarkdown() {
   window.location.href = `/api/notes/${currentLevel}/${currentLang}/download`;
 }
+
+function downloadPDF() {
+  const topBtn = document.getElementById('dl-btn');
+  const bottomBtn = document.getElementById('bottom-dl-btn');
+  
+  const origTopHtml = topBtn ? topBtn.innerHTML : '';
+  const origBottomHtml = bottomBtn ? bottomBtn.innerHTML : '';
+
+  if (topBtn) {
+    topBtn.innerHTML = '<span>⏳ Preparing…</span>';
+    topBtn.disabled = true;
+  }
+  if (bottomBtn) {
+    bottomBtn.innerHTML = '<span>⏳ Generating & Downloading PDF…</span>';
+    bottomBtn.disabled = true;
+    bottomBtn.style.opacity = '0.8';
+  }
+
+  // Direct download link
+  const link = document.createElement('a');
+  link.href = `/api/notes/${currentLevel}/${currentLang}/pdf`;
+  link.download = `RecallAI_Notes_${currentLevel}_${currentLang}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  showToast('📄 Downloading PDF…', 'success');
+
+  setTimeout(() => {
+    if (topBtn) {
+      topBtn.innerHTML = origTopHtml;
+      topBtn.disabled = false;
+    }
+    if (bottomBtn) {
+      bottomBtn.innerHTML = origBottomHtml;
+      bottomBtn.disabled = false;
+      bottomBtn.style.opacity = '1';
+    }
+  }, 3000);
+}
+
 
 function openPrintView() {
   window.open(`/api/notes/${currentLevel}/${currentLang}/print`, '_blank');

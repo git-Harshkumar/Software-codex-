@@ -41,3 +41,14 @@ sticky_notes.json
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+!terraform/terraform.tfvars.example
+terraform/*.pem
+terraform/.terraform.lock.hcl
+*.pem
+

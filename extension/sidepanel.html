@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RecallAI Side Panel</title>
+  <link rel="stylesheet" href="sidepanel.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Kalam:wght@300;400;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="sp-container">
+    <!-- Header -->
+    <header class="sp-header">
+      <div class="sp-brand">
+        <div class="sp-icon">&#9889;</div>
+        <span class="sp-title">RecallAI Companion</span>
+      </div>
+      <div class="sp-header-right" style="display:flex;align-items:center;gap:6px;">
+        <button id="sp-timeline-toggle-btn" class="sp-icon-btn" title="Toggle Video Timeline">&#9203;</button>
+        <button id="sp-key-btn" class="sp-icon-btn" title="API Key Settings">&#128273;</button>
+      </div>
+    </header>
+
+    <!-- Video Tracker -->
+    <div class="sp-tracker">
+      <div class="sp-live-badge">
+        <span class="sp-pulse"></span>
+        <span id="sp-status">Ready</span>
+      </div>
+      <span id="sp-time" style="font-family:'JetBrains Mono',monospace;">0:00 / 0:00</span>
+    </div>
+
+    <!-- VIDEO TIMELINE PANEL (collapsible, hidden by default) -->
+    <div id="sp-timeline-panel" class="sp-timeline-panel hidden">
+      <div class="sp-timeline-header">
+        <div class="sp-timeline-title">
+          <span>&#128205; Video Timeline</span>
+          <span id="sp-timeline-count" class="sp-timeline-count"></span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:10px;color:var(--muted);">Click to jump &bull; &#8599; to open on YouTube</span>
+          <button id="sp-timeline-close" class="sp-icon-btn" style="width:22px;height:22px;font-size:11px;" title="Hide Timeline">&#10005;</button>
+        </div>
+      </div>
+      <div id="sp-timeline-list" class="sp-timeline-list">
+        <div class="sp-timeline-empty">Timeline will appear after generating notes.</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="sp-controls">
+      <!-- Levels -->
+      <div class="sp-btn-group">
+        <button class="sp-tab-btn active-l1" data-level="overview" id="sp-l1">Overview</button>
+        <button class="sp-tab-btn" data-level="summary" id="sp-l2">Summary</button>
+        <button class="sp-tab-btn" data-level="detailed" id="sp-l3">Detailed</button>
+      </div>
+
+      <!-- Languages -->
+      <div class="sp-btn-group">
+        <button class="sp-tab-btn active-lang" data-lang="english" id="sp-en">English</button>
+        <button class="sp-tab-btn" data-lang="hindi" id="sp-hi">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368;</button>
+        <button class="sp-tab-btn" data-lang="hinglish" id="sp-hing">Hinglish</button>
+      </div>
+
+      <!-- Toggles -->
+      <div class="sp-toggle-row">
+        <button class="sp-switch-btn" id="sp-toggle-handwritten">
+          &#9997;&#65039; <span>Handwritten</span>
+        </button>
+        <button class="sp-switch-btn" id="sp-toggle-live">
+          &#128308; <span>Live Parallel Mode</span>
+        </button>
+      </div>
+
+      <!-- Action -->
+      <button class="sp-action-btn" id="sp-generate-btn">
+        <span>&#10024; Generate Structured Notes</span>
+      </button>
+    </div>
+
+    <!-- Notes View -->
+    <main class="sp-body" id="sp-body">
+      <div class="sp-empty">
+        <div class="sp-empty-icon">&#128221;</div>
+        <div style="font-weight:600;color:#fff;">Parallel Lecture Notes</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+          Open a YouTube video and click <b>Generate Structured Notes</b>, or turn on <b>Live Parallel Mode</b> to capture notes while watching.
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="sp-footer">
+      <span id="sp-footer-info" style="font-size:11px;">Captions: auto-sync</span>
+      <div class="sp-footer-btns">
+        <button class="sp-footer-btn" id="sp-pdf-btn" style="color:var(--primary);border-color:rgba(79,158,248,0.4);">&#128196; Download PDF</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

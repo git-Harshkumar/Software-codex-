@@ -21,7 +21,7 @@ client = genai.Client(
     api_key=API_KEY
 )
 
-MODEL = "gemini-3.5-flash"
+MODEL = "gemini-3.6-flash"
 
 TRANSCRIPT_FILE = "clean_transcript.json"
 VISUAL_FILE = "visual_analysis.json"

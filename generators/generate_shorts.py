@@ -99,8 +99,8 @@ def parse_args():
 
     parser.add_argument(
         "--model",
-        default="gemini-3.5-flash",
-        help="Gemini model to use (default: gemini-3.5-flash).",
+        default="gemini-3.6-flash",
+        help="Gemini model to use (default: gemini-3.6-flash).",
     )
 
     return parser.parse_args()
