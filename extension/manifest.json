@@ -16,7 +16,9 @@
     "https://image.pollinations.ai/*",
     "https://*.pollinations.ai/*",
     "http://localhost:5000/*",
-    "http://127.0.0.1:5000/*"
+    "http://127.0.0.1:5000/*",
+    "http://*/*",
+    "https://*/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -32,6 +34,12 @@
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*"],
+      "js": ["player_bridge.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
@@ -39,7 +47,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["content.css", "icons/*"],
+      "resources": ["player_bridge.js", "content.css", "print.html", "studio.html", "studio.js", "studio.css", "icons/*"],
       "matches": ["https://www.youtube.com/*"]
     }
   ]

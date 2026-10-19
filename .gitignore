@@ -49,6 +49,7 @@ terraform/*.tfstate.*
 terraform/*.tfvars
 !terraform/terraform.tfvars.example
 terraform/*.pem
-terraform/.terraform.lock.hcl
 *.pem
 
+# Local scratch / helper scripts
+extension/search.py

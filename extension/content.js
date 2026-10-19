@@ -33,17 +33,81 @@
     checkForVideo();
   }
 
+  function getMainVideoElement() {
+    // 1. Primary main video element inside YouTube's main movie player
+    const mainPlayerVid = document.querySelector('#movie_player video.html5-main-video')
+      || document.querySelector('#movie_player video');
+    if (mainPlayerVid) return mainPlayerVid;
+
+    // 2. Fallback: find any video element that is NOT inside sidebar hover preview or thumbnail
+    const allVideos = Array.from(document.querySelectorAll('video'));
+    for (const v of allVideos) {
+      if (v.closest('ytd-video-preview, ytd-thumbnail, ytd-compact-video-renderer, #inline-preview-player, ytd-moving-thumbnail-renderer')) {
+        continue;
+      }
+      if (v.classList.contains('html5-main-video')) return v;
+    }
+
+    const nonPreview = allVideos.find(v => !v.closest('ytd-video-preview, ytd-thumbnail, ytd-compact-video-renderer, #inline-preview-player, ytd-moving-thumbnail-renderer'));
+    return nonPreview || allVideos[0] || null;
+  }
+
+  function getYouTubeTitle() {
+    const el = document.querySelector('h1.ytd-watch-metadata yt-formatted-string')
+      || document.querySelector('h1.ytd-watch-metadata')
+      || document.querySelector('#title h1')
+      || document.querySelector('#container h1.title');
+    return el?.textContent?.trim() || document.title.replace(' - YouTube', '').trim() || 'YouTube Video';
+  }
+
+  function getYouTubeChannel() {
+    const el = document.querySelector('#upload-info #channel-name a')
+      || document.querySelector('ytd-watch-metadata #channel-name a')
+      || document.querySelector('ytd-video-owner-renderer #channel-name a')
+      || document.querySelector('#owner-name a')
+      || document.querySelector('ytd-channel-name yt-formatted-string')
+      || document.querySelector('#channel-name');
+    return el?.textContent?.trim() || '';
+  }
+
+  function getYouTubeDescription() {
+    return document.querySelector('#description-inline-expander yt-attributed-string')?.textContent?.trim()
+      || document.querySelector('#description-inline-expander')?.textContent?.trim()
+      || '';
+  }
+
+  function updateSidebarMetadata() {
+    const titleEl = document.getElementById('rc-video-title');
+    const chanEl = document.getElementById('rc-channel-text');
+    if (!titleEl) return;
+    const title = getYouTubeTitle();
+    const channel = getYouTubeChannel();
+    if (title && title !== 'YouTube Video') {
+      titleEl.textContent = title;
+      titleEl.title = title;
+    }
+    if (chanEl && channel) {
+      chanEl.textContent = channel;
+    }
+  }
+
   function hookYouTubeEvents() {
     window.addEventListener('yt-navigate-finish', checkForVideo);
+    window.addEventListener('yt-page-data-updated', checkForVideo);
     window.addEventListener('popstate', checkForVideo);
 
-    // Re-check periodically for video element if not mounted yet
+    // Continuous watch for video changes and SPA navigation
     setInterval(() => {
-      const vid = document.querySelector('video');
+      const vId = getVideoId();
+      if (vId && vId !== currentVideoId) {
+        checkForVideo();
+      }
+      const vid = getMainVideoElement();
       if (vid && vid !== videoEl) {
         attachVideoListeners(vid);
       }
-    }, 1500);
+      updateSidebarMetadata();
+    }, 1000);
   }
 
   function getVideoId() {
@@ -84,7 +148,7 @@
           liveCaptionsBuffer.push(item);
           if (!videoTranscript.some(t => Math.abs(t.start - curTime) < 3 && t.text === full)) {
             videoTranscript.push(item);
-            saveTranscriptToStorage(currentVideoId || getVideoId(), videoTranscript);
+            saveTranscriptToStorage(getVideoId() || currentVideoId, videoTranscript);
           }
         }
       }
@@ -100,22 +164,56 @@
     if (vId) {
       if (trigger) trigger.style.display = 'flex';
       if (vId !== currentVideoId) {
+        console.log('[RecallAI] Detected new video:', vId, '(was:', currentVideoId, ')');
         currentVideoId = vId;
         cachedNotes = { overview: {}, summary: {}, detailed: {} };
         liveNotesList = [];
         videoTranscript = [];
         liveCaptionsBuffer = [];
         capturedKeyframes = {};
-        chrome.storage.local.get([`rc_keyframes_${vId}`], res => {
+
+        // Reset sidebar notes body immediately so previous video's notes do not linger
+        const body = document.getElementById('rc-notes-body');
+        if (body) {
+          body.innerHTML = `
+            <div class="rc-empty-state">
+              <div class="rc-empty-icon">${currentLevel.toUpperCase()}</div>
+              <div style="font-weight:600;color:#fff;">${currentLevel.toUpperCase()} Notes Not Generated Yet</div>
+              <div style="font-size:12px;color:var(--rc-muted);line-height:1.5;margin-top:6px;max-width:280px;">
+                Click below to run the pipeline and generate full ${currentLevel.toUpperCase()} notes for this lecture.
+              </div>
+              <button id="rc-quick-gen" class="rc-action-btn" style="margin-top:14px;width:auto;padding:8px 18px;">
+                Generate ${currentLevel.toUpperCase()} Notes
+              </button>
+            </div>
+          `;
+          document.getElementById('rc-quick-gen')?.addEventListener('click', generateCurrentNotes);
+        }
+
+        chrome.storage.local.get([`rc_keyframes_${vId}`, `rc_transcript_${vId}`, `rc_cached_notes_${vId}`], res => {
           if (res && res[`rc_keyframes_${vId}`]) {
             capturedKeyframes = res[`rc_keyframes_${vId}`];
+          }
+          if (res && Array.isArray(res[`rc_transcript_${vId}`]) && res[`rc_transcript_${vId}`].length > 0) {
+            videoTranscript = res[`rc_transcript_${vId}`];
+            const statusEl = document.getElementById('rc-transcript-status');
+            if (statusEl) statusEl.textContent = `Captions: cached (${videoTranscript.length} lines)`;
+          }
+          if (res && res[`rc_cached_notes_${vId}`]) {
+            cachedNotes = res[`rc_cached_notes_${vId}`];
+            const cached = cachedNotes[currentLevel]?.[currentLang];
+            if (cached) {
+              renderMarkdownNotes(cached);
+            }
           }
         });
         fetchYouTubeTranscript(vId);
       }
-      const vid = document.querySelector('video');
+      const vid = getMainVideoElement();
       if (vid) attachVideoListeners(vid);
       setupLiveCaptionObserver();
+      setTimeout(updateSidebarMetadata, 500);
+      setTimeout(updateSidebarMetadata, 1500);
     } else {
       if (trigger) trigger.style.display = 'none';
       closeSidebar();
@@ -171,7 +269,7 @@
     const btn = document.createElement('div');
     btn.id = 'recall-ai-trigger';
     btn.title = 'Open RecallAI Parallel Notes';
-    btn.innerHTML = `<div class="trigger-icon">⚡</div>`;
+    btn.innerHTML = `<span class="trigger-label">Notes</span>`;
     btn.addEventListener('click', toggleSidebar);
     document.body.appendChild(btn);
   }
@@ -185,15 +283,11 @@
       <!-- Header -->
       <div class="rc-header">
         <div class="rc-brand">
-          <div class="rc-brand-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0-5H20"/>
-            </svg>
-          </div>
           <span class="rc-brand-title">RecallAI Companion</span>
         </div>
         <div class="rc-header-controls">
-          <button class="rc-icon-btn" id="rc-key-btn" title="Gemini API Key Settings">🔑</button>
+          <button class="rc-icon-btn" id="rc-cloud-save-btn" title="Save Notes to AWS DynamoDB" style="display:flex;align-items:center;gap:3px;padding:3px 8px;font-size:11px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);color:#38bdf8;border-radius:6px;cursor:pointer;">☁️ Save</button>
+          <button class="rc-icon-btn" id="rc-key-btn" title="Gemini API Key Settings">Key</button>
           <button class="rc-icon-btn" id="rc-close-btn" title="Close Sidebar">✕</button>
         </div>
       </div>
@@ -205,6 +299,15 @@
           <span id="rc-status-text">Ready to sync</span>
         </div>
         <span id="rc-time-display" style="font-family:'JetBrains Mono',monospace;font-size:11px;">0:00 / 0:00</span>
+      </div>
+
+      <!-- Current Video & Channel Bar -->
+      <div class="rc-video-meta" id="rc-video-meta">
+        <div class="rc-video-title" id="rc-video-title" title="Current Video">Detecting video...</div>
+        <div class="rc-channel-name" id="rc-channel-name">
+          <span class="rc-channel-badge">CHANNEL</span>
+          <span id="rc-channel-text">Detecting channel...</span>
+        </div>
       </div>
 
       <!-- Controls -->
@@ -226,23 +329,23 @@
         <!-- Toggles -->
         <div class="rc-toggle-row">
           <button class="rc-switch-btn" id="rc-toggle-handwritten" title="Toggle handwritten font style">
-            ✍️ <span>Handwritten</span>
+            <span>Handwritten</span>
           </button>
           <button class="rc-switch-btn" id="rc-toggle-live" title="Generate notes live in parallel as you watch">
-            🔴 <span>Live Parallel Mode</span>
+            <span>Live Parallel Mode</span>
           </button>
         </div>
 
         <!-- Primary Action -->
         <button class="rc-action-btn" id="rc-generate-btn">
-          <span>✨ Generate Notes for Video</span>
+          <span>Generate Notes for Video</span>
         </button>
       </div>
 
       <!-- Notes Body -->
       <div class="rc-body" id="rc-notes-body">
         <div class="rc-empty-state">
-          <div class="rc-empty-icon">📝</div>
+          <div class="rc-empty-icon">Notes</div>
           <div style="font-weight:600;color:#fff;">Parallel Video Notes</div>
           <div style="font-size:12px;line-height:1.5;">Click <b>"Generate Notes"</b> to create full structured notes, or enable <b>"Live Parallel Mode"</b> to take notes alongside the video as you watch.</div>
         </div>
@@ -252,6 +355,12 @@
       <div class="rc-footer">
         <span id="rc-transcript-status" style="font-size:11px;color:var(--rc-muted);">Captions: detecting…</span>
         <div class="rc-footer-actions">
+          <button class="rc-footer-btn" id="rc-cloud-save-footer-btn" title="Save Active Notes to AWS DynamoDB" style="display:flex;align-items:center;gap:4px;border:1px solid rgba(56,189,248,0.4);color:#38bdf8;">
+            <span>☁️ Save AWS</span>
+          </button>
+          <button class="rc-footer-btn" id="rc-studio-footer-btn" title="Open Interactive Notes Studio: Edit, Draw & Share" style="display:flex;align-items:center;gap:4px;border:1px solid rgba(139,92,246,0.4);color:#c084fc;">
+            <span>✏️ Studio</span>
+          </button>
           <button class="rc-footer-btn rc-pdf-btn-hero" id="rc-pdf-btn" title="Download Notes as PDF">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Download PDF</span>
@@ -264,7 +373,7 @@
       <div id="rc-key-modal" class="hidden">
         <div class="rc-modal-card">
           <div class="rc-modal-title">
-            <span>🔑 Gemini API Key</span>
+            <span>Gemini API Key</span>
           </div>
           <div style="font-size:12px;color:var(--rc-muted);">Enter your Google Gemini API key to enable instant parallel note generation. Key is stored securely in your browser.</div>
           <input type="password" id="rc-key-input" class="rc-modal-input" placeholder="AIzaSy..." />
@@ -320,7 +429,33 @@
     document.getElementById('rc-key-save').addEventListener('click', saveApiKey);
 
     // Download PDF
-    document.getElementById('rc-pdf-btn').addEventListener('click', downloadPdfNotes);
+    document.getElementById('rc-pdf-btn')?.addEventListener('click', downloadPdfNotes);
+
+    // Notes Studio
+    document.getElementById('rc-studio-footer-btn')?.addEventListener('click', openStudioFromContent);
+
+    // AWS Cloud Save
+    const cloudSaveBtn = document.getElementById('rc-cloud-save-btn');
+    if (cloudSaveBtn) cloudSaveBtn.addEventListener('click', saveActiveNotesToAws);
+    const cloudSaveFooterBtn = document.getElementById('rc-cloud-save-footer-btn');
+    if (cloudSaveFooterBtn) cloudSaveFooterBtn.addEventListener('click', saveActiveNotesToAws);
+  }
+
+  function openStudioFromContent() {
+    const text = cachedNotes[currentLevel]?.[currentLang] || liveNotesList.join('\n\n');
+    const vId = currentVideoId || getVideoId();
+    const title = `RecallAI — ${currentLevel.toUpperCase()} Notes (${currentLang.toUpperCase()})`;
+    chrome.runtime.sendMessage({
+      action: 'OPEN_STUDIO_PAGE',
+      data: {
+        markdown: text,
+        title: title,
+        videoId: vId,
+        level: currentLevel,
+        lang: currentLang,
+        keyframes: capturedKeyframes
+      }
+    });
   }
 
   function toggleSidebar() {
@@ -350,13 +485,13 @@
       const body = document.getElementById('rc-notes-body');
       body.innerHTML = `
         <div class="rc-empty-state">
-          <div class="rc-empty-icon">📝</div>
+          <div class="rc-empty-icon">${lvl.toUpperCase()}</div>
           <div style="font-weight:600;color:#fff;">${lvl.toUpperCase()} Notes Not Generated Yet</div>
           <div style="font-size:12px;color:var(--rc-muted);line-height:1.5;margin-top:6px;max-width:280px;">
             Click below to run the pipeline and generate full ${lvl.toUpperCase()} notes for this lecture.
           </div>
           <button id="rc-quick-gen" class="rc-action-btn" style="margin-top:14px;width:auto;padding:8px 18px;">
-            ✨ Generate ${lvl.toUpperCase()} Notes
+            Generate ${lvl.toUpperCase()} Notes
           </button>
         </div>
       `;
@@ -376,13 +511,13 @@
       const body = document.getElementById('rc-notes-body');
       body.innerHTML = `
         <div class="rc-empty-state">
-          <div class="rc-empty-icon">🌐</div>
+          <div class="rc-empty-icon">${lang.toUpperCase()}</div>
           <div style="font-weight:600;color:#fff;">${currentLevel.toUpperCase()} in ${lang.toUpperCase()} Not Generated</div>
           <div style="font-size:12px;color:var(--rc-muted);line-height:1.5;margin-top:6px;max-width:280px;">
             Click below to generate ${currentLevel.toUpperCase()} in ${lang.toUpperCase()}.
           </div>
           <button id="rc-quick-gen" class="rc-action-btn" style="margin-top:14px;width:auto;padding:8px 18px;">
-            ✨ Generate in ${lang.toUpperCase()}
+            Generate in ${lang.toUpperCase()}
           </button>
         </div>
       `;
@@ -448,49 +583,38 @@
     });
   }
 
+  let bridgeCaptionTracks = [];
+
+  window.addEventListener('__RC_RESP_TRACKS__', (e) => {
+    if (e.detail?.tracks && Array.isArray(e.detail.tracks) && e.detail.tracks.length > 0) {
+      bridgeCaptionTracks = e.detail.tracks;
+    }
+  });
+
   async function getCaptionTracks(vId) {
-    // Strategy 1: ytInitialPlayerResponse in page window
+    // 1. Direct from player bridge (MAIN world)
+    if (bridgeCaptionTracks.length > 0) return bridgeCaptionTracks;
+
     try {
       const tracks = await new Promise(resolve => {
-        const s = document.createElement('script');
-        s.textContent = `
-          (() => {
-            try {
-              let pr = window.ytInitialPlayerResponse;
-              if ((!pr || !pr.captions) && window.yt?.player) {
-                try { pr = window.yt.player.getPlayerByElement(document.querySelector('#movie_player'))?.getPlayerResponse?.(); } catch(e2){}
-              }
-              const tr = pr?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
-              window.postMessage({ type: '__RC_CAPTIONS__', tracks: tr }, '*');
-            } catch(e) {
-              window.postMessage({ type: '__RC_CAPTIONS__', tracks: [] }, '*');
-            }
-          })();
-        `;
-        const handler = e => {
-          if (e.data?.type === '__RC_CAPTIONS__') {
-            window.removeEventListener('message', handler);
-            s.remove();
-            resolve(e.data.tracks || []);
-          }
+        const handler = (e) => {
+          window.removeEventListener('__RC_RESP_TRACKS__', handler);
+          resolve(e.detail?.tracks || []);
         };
-        window.addEventListener('message', handler);
-        (document.head || document.documentElement).appendChild(s);
-        setTimeout(() => { window.removeEventListener('message', handler); s.remove(); resolve([]); }, 2000);
+        window.addEventListener('__RC_RESP_TRACKS__', handler);
+        window.dispatchEvent(new CustomEvent('__RC_REQ_TRACKS__'));
+        setTimeout(() => {
+          window.removeEventListener('__RC_RESP_TRACKS__', handler);
+          resolve(bridgeCaptionTracks);
+        }, 400);
       });
-      if (tracks.length > 0) { console.log('[RecallAI] Strategy 1:', tracks.length, 'tracks'); return tracks; }
-    } catch(e) {}
+      if (tracks.length > 0) {
+        bridgeCaptionTracks = tracks;
+        return tracks;
+      }
+    } catch (e) {}
 
-    // Strategy 2: scan inline <script> tags
-    for (const script of document.scripts) {
-      if (!script.textContent?.includes('captionTracks')) continue;
-      try {
-        const m = script.textContent.match(/"captionTracks"\s*:\s*(\[[\s\S]+?\])\s*,\s*"(?:audioTracks|translationLanguages|defaultAudioTrackIndex)"/);
-        if (m) { const p = JSON.parse(m[1]); if (p?.length) { console.log('[RecallAI] Strategy 2:', p.length, 'tracks'); return p; } }
-      } catch(e) {}
-    }
-
-    // Strategy 3: background worker fetches the YouTube page (no CORS)
+    // 2. Background worker fetch
     try {
       const r = await new Promise(resolve => {
         chrome.runtime.sendMessage({ action: 'FETCH_CAPTION_TRACKS', videoId: vId }, res => {
@@ -498,19 +622,10 @@
           else resolve(res || { ok: false, tracks: [] });
         });
       });
-      if (r.ok && r.tracks?.length) { console.log('[RecallAI] Strategy 3 (bg):', r.tracks.length, 'tracks'); return r.tracks; }
+      if (r.ok && r.tracks?.length) return r.tracks;
     } catch(e) {}
 
-    // Strategy 4: hardcoded timedtext fallback
-    console.log('[RecallAI] Using timedtext fallback for', vId);
-    return [
-      { baseUrl: `https://www.youtube.com/api/timedtext?v=${vId}&lang=en&fmt=json3` },
-      { baseUrl: `https://www.youtube.com/api/timedtext?v=${vId}&lang=en&kind=asr&fmt=json3` },
-      { baseUrl: `https://www.youtube.com/api/timedtext?v=${vId}&lang=en` },
-      { baseUrl: `https://www.youtube.com/api/timedtext?v=${vId}&lang=en&kind=asr` },
-      { baseUrl: `https://www.youtube.com/api/timedtext?v=${vId}&lang=hi&fmt=json3` },
-      { baseUrl: `https://www.youtube.com/api/timedtext?v=${vId}&lang=hi` },
-    ];
+    return [];
   }
 
   async function fetchYouTubeTranscript(vId) {
@@ -519,6 +634,71 @@
 
     try {
       const tracks = await getCaptionTracks(vId);
+
+      if (tracks && tracks.length > 0) {
+        // Sort: English first, then Hindi, then any
+        const sorted = [...tracks].sort((a, b) => {
+          const ae = (a.languageCode || '').startsWith('en') ? 0 : 1;
+          const be = (b.languageCode || '').startsWith('en') ? 0 : 1;
+          return ae - be;
+        });
+
+        for (const track of sorted) {
+          if (!track.baseUrl) continue;
+          const base = track.baseUrl;
+          const urls = base.includes('fmt=') ? [base] : [base + '&fmt=json3', base];
+
+          for (const url of urls) {
+            // Use bg worker fetch to avoid CORS in content script
+            const rawText = await bgFetch(url);
+            if (!rawText) continue;
+            const parsed = parseTranscriptData(rawText);
+            if (parsed.length > 0) {
+              videoTranscript = parsed;
+              console.log(`[RecallAI] ${parsed.length} caption lines from`, url);
+              if (statusEl) statusEl.textContent = `Captions: ready (${parsed.length} lines)`;
+              saveTranscriptToStorage(vId, videoTranscript);
+              return videoTranscript;
+            }
+          }
+        }
+      }
+
+      // Live stream fallback: read visible on-screen captions
+      const onscreen = Array.from(document.querySelectorAll('.ytp-caption-segment'))
+        .map(el => el.textContent.trim()).filter(Boolean);
+      if (onscreen.length > 0) {
+        const t = videoEl?.currentTime || 0;
+        videoTranscript = [{ start: t, duration: 10, text: onscreen.join(' ') }];
+        if (statusEl) statusEl.textContent = 'Captions: live tracking';
+        saveTranscriptToStorage(vId, videoTranscript);
+        return videoTranscript;
+      }
+
+      // Background InnerTube fallback
+      const bgRes = await new Promise(res => {
+        chrome.runtime.sendMessage({ action: 'GET_VIDEO_TRANSCRIPT', videoId: vId }, r => {
+          if (chrome.runtime.lastError) res({ ok: false, transcript: [] });
+          else res(r || { ok: false, transcript: [] });
+        });
+      });
+      if (bgRes?.ok && Array.isArray(bgRes.transcript) && bgRes.transcript.length > 0) {
+        videoTranscript = bgRes.transcript;
+        if (statusEl) statusEl.textContent = `Captions: ready (${videoTranscript.length} lines)`;
+        saveTranscriptToStorage(vId, videoTranscript);
+        return videoTranscript;
+      }
+
+      saveTranscriptToStorage(vId, []);
+      if (statusEl) statusEl.textContent = 'Captions: not found (topic mode)';
+      return [];
+
+    } catch (e) {
+      console.error('[RecallAI] Transcript error:', e);
+      if (statusEl) statusEl.textContent = 'Captions: error';
+      return [];
+    }
+  }
 
       // Sort: English first, then any
       const sorted = [...tracks].sort((a, b) => {
@@ -529,6 +709,10 @@
 
       for (const track of sorted) {
         if (!track.baseUrl) continue;
+        if (track.baseUrl.includes('v=') && !track.baseUrl.includes(`v=${vId}`)) {
+          console.warn('[RecallAI] Skipping foreign caption track:', track.baseUrl);
+          continue;
+        }
         const base = track.baseUrl;
         const urls = base.includes('fmt=') ? [base] : [base + '&fmt=json3', base];
 
@@ -539,7 +723,7 @@
           const parsed = parseTranscriptData(rawText);
           if (parsed.length > 0) {
             videoTranscript = parsed;
-            console.log(`[RecallAI] ✅ ${parsed.length} caption lines from`, url);
+            console.log(`[RecallAI] ${parsed.length} caption lines from`, url);
             if (statusEl) statusEl.textContent = `Captions: ready (${parsed.length} lines)`;
             saveTranscriptToStorage(vId, videoTranscript);
             return videoTranscript;
@@ -571,23 +755,23 @@
   }
 
   function saveTranscriptToStorage(vId, transcript) {
-    const vTitle = document.querySelector('h1.ytd-watch-metadata yt-formatted-string')?.textContent?.trim()
-      || document.querySelector('h1.ytd-watch-metadata')?.textContent?.trim()
-      || document.title.replace(' - YouTube', '').trim();
-    const vDesc = document.querySelector('#description-inline-expander yt-attributed-string')?.textContent?.trim()
-      || document.querySelector('#description-inline-expander')?.textContent?.trim()
-      || '';
+    const vTitle = getYouTubeTitle();
+    const vChannel = getYouTubeChannel();
+    const vDesc = getYouTubeDescription();
     const chapters = Array.from(document.querySelectorAll('ytd-macro-markers-list-item-renderer'))
       .map(el => el.innerText?.trim()).filter(Boolean).join('\n');
 
     chrome.storage.local.set({
       rc_video_id: vId,
       rc_video_title: vTitle,
+      rc_video_channel: vChannel,
       rc_video_desc: vDesc.slice(0, 3000),
       rc_chapters: chapters,
-      rc_transcript: transcript
+      rc_transcript: transcript,
+      [`rc_transcript_${vId}`]: transcript,
+      [`rc_meta_${vId}`]: { title: vTitle, channel: vChannel, desc: vDesc.slice(0, 3000), chapters }
     });
-    console.log('[RecallAI] Saved to storage — title:', vTitle, '| transcript lines:', transcript.length);
+    console.log('[RecallAI] Saved to storage — title:', vTitle, '| channel:', vChannel, '| transcript lines:', transcript.length);
   }
 
   // ============================================================
@@ -710,8 +894,9 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
   let lastCapturedTimeSec = -100;
 
   function sampleFrameIfNeeded() {
-    if (!videoEl || videoEl.paused || !videoEl.videoWidth) return;
-    const cur = videoEl.currentTime || 0;
+    const el = getMainVideoElement() || videoEl;
+    if (!el || el.paused || !el.videoWidth) return;
+    const cur = el.currentTime || 0;
     if (Math.abs(cur - lastCapturedTimeSec) >= 20) {
       lastCapturedTimeSec = cur;
       const f = captureCurrentFrame();
@@ -719,7 +904,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
         const key = Math.floor(cur);
         const dataUrl = `data:image/jpeg;base64,${f.base64}`;
         capturedKeyframes[key] = { timestamp: cur, timeStr: formatTime(cur), dataUrl };
-        const vId = currentVideoId || getVideoId();
+        const vId = getVideoId() || currentVideoId;
         if (vId) {
           chrome.storage.local.set({ [`rc_keyframes_${vId}`]: capturedKeyframes });
         }
@@ -728,18 +913,19 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
   }
 
   function captureCurrentFrame() {
-    if (!videoEl || !videoEl.videoWidth) return null;
+    const el = getMainVideoElement() || videoEl;
+    if (!el || !el.videoWidth) return null;
     try {
       const canvas = document.createElement('canvas');
-      const width = Math.min(800, videoEl.videoWidth || 640);
-      const height = Math.round(width * ((videoEl.videoHeight || 360) / (videoEl.videoWidth || 640)));
+      const width = Math.min(800, el.videoWidth || 640);
+      const height = Math.round(width * ((el.videoHeight || 360) / (el.videoWidth || 640)));
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoEl, 0, 0, width, height);
+      ctx.drawImage(el, 0, 0, width, height);
       const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
       return {
-        timestamp: videoEl.currentTime || 0,
+        timestamp: el.currentTime || 0,
         base64: dataUrl.split(',')[1]
       };
     } catch (e) {
@@ -835,15 +1021,19 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     }, response => {
       isGenerating = false;
       genBtn.disabled = false;
-      genBtn.innerHTML = '<span>✨ Regenerate Notes</span>';
+      genBtn.innerHTML = '<span>Regenerate Notes</span>';
 
       if (response && response.ok && response.note) {
+        if (!cachedNotes[currentLevel]) cachedNotes[currentLevel] = {};
         cachedNotes[currentLevel][currentLang] = response.note;
         renderMarkdownNotes(response.note);
+        if (vId) {
+          chrome.storage.local.set({ [`rc_cached_notes_${vId}`]: cachedNotes });
+        }
 
         const statusEl = document.getElementById('rc-transcript-status');
         if (statusEl) {
-          statusEl.textContent = `✅ Complete • ${response.cleanSentenceCount || 0} sentences • Synced to platform`;
+          statusEl.textContent = `Complete • ${response.cleanSentenceCount || 0} sentences • Synced to platform`;
         }
       } else {
         const err = response?.error || 'Pipeline execution failed';
@@ -881,7 +1071,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       return `
         <div class="rc-diagram-box">
           <div class="rc-diagram-box-header">
-            <span>📐 Flow &amp; Structure Diagram</span>
+            <span>Flow &amp; Structure Diagram</span>
           </div>
           <pre class="rc-ascii-art"><code>${escaped}</code></pre>
         </div>
@@ -893,7 +1083,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       <div class="rc-code-container">
         <div class="rc-code-header">
           <span class="rc-code-lang">${langLabel}</span>
-          <button class="rc-code-copy-btn" title="Copy code">📋 Copy</button>
+          <button class="rc-code-copy-btn" title="Copy code">Copy</button>
         </div>
         <pre class="rc-code-pre"><code class="language-${cb.lang || 'text'}">${escaped}</code></pre>
       </div>
@@ -904,8 +1094,8 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     return `
       <div class="rc-graph-card">
         <div class="rc-graph-header">
-          <span class="rc-graph-tag">${label || '📈 Concept Graph &amp; Diagram'}</span>
-          <button class="rc-graph-expand-btn" title="Inspect &amp; Zoom in HD">🔍 Expand</button>
+          <span class="rc-graph-tag">${label || 'Concept Graph &amp; Diagram'}</span>
+          <button class="rc-graph-expand-btn" title="Inspect &amp; Zoom in HD">Expand</button>
         </div>
         <div class="rc-graph-viewport">${svgHtml}</div>
       </div>
@@ -917,12 +1107,12 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       <div class="rc-code-visual-split" id="rc-split-${splitId}">
         <div class="rc-split-nav">
           <div class="rc-split-title">
-            <span class="rc-split-badge">⚡ CODE &amp; SIDEWISE VISUALIZATION</span>
+            <span class="rc-split-badge">CODE &amp; SIDEWISE VISUALIZATION</span>
           </div>
           <div class="rc-split-tabs">
             <button class="rc-split-tab active" data-view="split" title="View side-by-side">◫ Side-by-Side</button>
-            <button class="rc-split-tab" data-view="code" title="View code box only">💻 Code Box</button>
-            <button class="rc-split-tab" data-view="visual" title="View visualization only">📈 Visualization</button>
+            <button class="rc-split-tab" data-view="code" title="View code box only">Code Box</button>
+            <button class="rc-split-tab" data-view="visual" title="View visualization only">Visualization</button>
           </div>
         </div>
         <div class="rc-split-panes view-split">
@@ -947,11 +1137,11 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
         <div class="rc-lightbox-backdrop" id="rc-lb-backdrop"></div>
         <div class="rc-lightbox-dialog">
           <div class="rc-lightbox-header">
-            <span class="rc-lightbox-title" id="rc-lb-title">🔍 Visual Inspection</span>
+            <span class="rc-lightbox-title" id="rc-lb-title">Visual Inspection</span>
             <div class="rc-lightbox-controls">
-              <button class="rc-lightbox-btn" id="rc-lb-zoom-out" title="Zoom Out">➖</button>
+              <button class="rc-lightbox-btn" id="rc-lb-zoom-out" title="Zoom Out">−</button>
               <button class="rc-lightbox-btn" id="rc-lb-zoom-reset" title="Reset Zoom">↺ 100%</button>
-              <button class="rc-lightbox-btn" id="rc-lb-zoom-in" title="Zoom In">➕</button>
+              <button class="rc-lightbox-btn" id="rc-lb-zoom-in" title="Zoom In">+</button>
               <button class="rc-lightbox-btn rc-lightbox-close" id="rc-lb-close" title="Close (Esc)">✕</button>
             </div>
           </div>
@@ -1000,7 +1190,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     clone.style.transform = 'scale(1)';
     vp.appendChild(clone);
 
-    title.textContent = titleText || '🔍 Visual Inspection';
+    title.textContent = titleText || 'Visual Inspection';
     if (captionText) {
       cap.textContent = captionText;
       cap.style.display = 'block';
@@ -1044,7 +1234,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
         e.stopPropagation();
         const card = btn.closest('.rc-graph-card');
         const svg = card?.querySelector('svg');
-        const tag = card?.querySelector('.rc-graph-tag')?.innerText || '📈 Concept Graph & Diagram';
+        const tag = card?.querySelector('.rc-graph-tag')?.innerText || 'Concept Graph & Diagram';
         if (svg) openLightbox(svg, tag, '');
       });
     });
@@ -1053,7 +1243,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     container.querySelectorAll('.rc-graph-viewport').forEach(vp => {
       vp.addEventListener('dblclick', () => {
         const svg = vp.querySelector('svg');
-        if (svg) openLightbox(svg, '📈 Concept Graph & Diagram', '');
+        if (svg) openLightbox(svg, 'Concept Graph & Diagram', '');
       });
     });
 
@@ -1065,7 +1255,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
         const fig = btn.closest('.rc-figure-card');
         const img = fig?.querySelector('img');
         const cap = fig?.querySelector('.rc-figure-caption')?.innerText || '';
-        if (img) openLightbox(img, '🤖 AI Concept Visual (HD)', cap);
+        if (img) openLightbox(img, 'Concept Visual (HD)', cap);
       });
     });
 
@@ -1074,7 +1264,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       img.addEventListener('click', () => {
         const fig = img.closest('.rc-figure-card');
         const cap = fig?.querySelector('.rc-figure-caption')?.innerText || '';
-        openLightbox(img, '🤖 AI Concept Visual (HD)', cap);
+        openLightbox(img, 'Concept Visual (HD)', cap);
       });
     });
   }
@@ -1098,7 +1288,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
         if (codeText) {
           navigator.clipboard.writeText(codeText).then(() => {
             const original = btn.innerHTML;
-            btn.innerHTML = '✅ Copied!';
+            btn.innerHTML = 'Copied!';
             btn.classList.add('copied');
             setTimeout(() => {
               btn.innerHTML = original;
@@ -1453,46 +1643,42 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       return `\n\n<figure class="rc-figure-card ${isAiGen ? 'rc-ai-image-card' : ''}">
         <div class="rc-figure-badge">
           <div style="display:flex;align-items:center;gap:6px;">
-            <span class="rc-badge-icon">${isAiGen ? '🤖' : '📊'}</span>
             <span>${isAiGen ? 'AI Concept Visual' : 'Concept Diagram'}</span>
           </div>
-          <button class="rc-expand-card-btn" title="Inspect &amp; Zoom in HD">🔍 Expand</button>
+          <button class="rc-expand-card-btn" title="Inspect &amp; Zoom in HD">Expand</button>
         </div>
         <div class="rc-figure-img-container">
           <img src="${imgSrc}" alt="${escapeHtml(alt || 'AI Concept Visual')}" class="rc-figure-img" loading="lazy" />
         </div>
-        ${alt ? `<figcaption class="rc-figure-caption"><span class="rc-caption-tag">💡 Concept:</span> ${escapeHtml(alt)}</figcaption>` : ''}
+        ${alt ? `<figcaption class="rc-figure-caption"><span class="rc-caption-tag">Concept:</span> ${escapeHtml(alt)}</figcaption>` : ''}
       </figure>\n\n`;
     });
 
     // 6. Interactive Timestamps: [04:23] -> clickable chips
     md = md.replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, (match, timeStr) => {
       const sec = parseTimeStr(timeStr);
-      return ` <span class="rc-timestamp" data-sec="${sec}">⏱️ ${timeStr}</span> `;
+      return ` <span class="rc-timestamp" data-sec="${sec}">${timeStr}</span> `;
     });
 
-    // 7. Callout Quotes (> 💡, > ⚠️, > 🎯, > normal blockquote)
-    md = md.replace(/^>\s*(.*?)$/gim, (match, content) => {
+    // 7. Callout Quotes (> Intuition, > Warning, > Exam Strategy, > normal blockquote)
+    md = md.replace(/^>\s*(.*?)$/gim, (match, rawContent) => {
+      let content = rawContent.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}]/gu, '').trim();
       let type = 'default';
-      let icon = '📌';
+      let label = 'Note:';
 
-      if (content.includes('💡') || /intuition|mental model/i.test(content)) {
+      if (/intuition|mental model/i.test(content)) {
         type = 'intuition';
-        icon = '💡';
-        content = content.replace(/💡/g, '').trim();
-      } else if (content.includes('⚠️') || /common mistake|trap|warning|edge case/i.test(content)) {
+        label = 'Core Intuition:';
+      } else if (/common mistake|trap|warning|edge case/i.test(content)) {
         type = 'warning';
-        icon = '⚠️';
-        content = content.replace(/⚠️/g, '').trim();
-      } else if (content.includes('🎯') || /exam|strategy|key takeaway/i.test(content)) {
+        label = 'Important / Warning:';
+      } else if (/exam|strategy|key takeaway/i.test(content)) {
         type = 'exam';
-        icon = '🎯';
-        content = content.replace(/🎯/g, '').trim();
+        label = 'Exam Strategy:';
       }
 
       return `<div class="rc-callout rc-callout-${type}">
-        <div class="rc-callout-icon">${icon}</div>
-        <div class="rc-callout-body">${content}</div>
+        <div class="rc-callout-body"><strong>${label}</strong> ${content}</div>
       </div>`;
     });
 
@@ -1550,7 +1736,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
           codeBlocks[cIdx]._used = true;
           svgBlocks[sIdx]._used = true;
           const codeHtml = buildCodeCard(codeBlocks[cIdx]);
-          const svgHtml = buildSvgCard(svgBlocks[sIdx], '📈 Sidewise Visual Walkthrough');
+          const svgHtml = buildSvgCard(svgBlocks[sIdx], 'Sidewise Visual Walkthrough');
           return `\n\n${buildSplitCard(splitCounter++, codeHtml, svgHtml)}\n\n`;
         }
         return match;
@@ -1567,7 +1753,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
           codeBlocks[cIdx]._used = true;
           svgBlocks[sIdx]._used = true;
           const codeHtml = buildCodeCard(codeBlocks[cIdx]);
-          const svgHtml = buildSvgCard(svgBlocks[sIdx], '📈 Sidewise Visual Walkthrough');
+          const svgHtml = buildSvgCard(svgBlocks[sIdx], 'Sidewise Visual Walkthrough');
           return `\n\n${buildSplitCard(splitCounter++, codeHtml, svgHtml)}\n\n`;
         }
         return match;
@@ -1670,7 +1856,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     const key = input.value.trim();
 
     if (!key) {
-      msg.textContent = '⚠️ Please enter an API key.';
+      msg.textContent = 'Please enter an API key.';
       msg.style.display = 'block';
       return;
     }
@@ -1693,20 +1879,20 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
         if (chrome.runtime.lastError) {
           // Extension communication issue, but key is already saved in storage
           console.warn('[RecallAI]', chrome.runtime.lastError.message);
-          msg.innerHTML = '<span style="color:var(--rc-green)">✅ Key saved locally!</span> <span style="font-size:11px;color:var(--rc-muted);">(Background worker inactive - reload extension if needed)</span>';
+          msg.innerHTML = '<span style="color:var(--rc-green)">Key saved locally.</span> <span style="font-size:11px;color:var(--rc-muted);">(Reload extension if needed)</span>';
           msg.style.display = 'block';
           setTimeout(() => modal.classList.add('hidden'), 1500);
           return;
         }
 
         if (res && res.ok) {
-          msg.innerHTML = '<span style="color:var(--rc-green)">✅ Key verified & saved!</span>';
+          msg.innerHTML = '<span style="color:var(--rc-green)">Key verified &amp; saved.</span>';
           msg.style.display = 'block';
           setTimeout(() => modal.classList.add('hidden'), 1000);
         } else {
           // Key was saved anyway, but Google API returned an error
           const errMsg = res?.error || 'Could not verify with Google API';
-          msg.innerHTML = `<span style="color:var(--rc-yellow)">⚠️ Saved, but check note: ${errMsg}</span><br><button id="rc-force-close" style="margin-top:6px;background:var(--rc-surface3);color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Continue Anyway ↗</button>`;
+          msg.innerHTML = `<span style="color:var(--rc-yellow)">Saved, note: ${errMsg}</span><br><button id="rc-force-close" style="margin-top:6px;background:var(--rc-surface3);color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Continue Anyway ↗</button>`;
           msg.style.display = 'block';
           document.getElementById('rc-force-close')?.addEventListener('click', () => modal.classList.add('hidden'));
         }
@@ -1714,7 +1900,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     } catch (err) {
       saveBtn.disabled = false;
       saveBtn.textContent = 'Save Key';
-      msg.innerHTML = '<span style="color:var(--rc-green)">✅ Key saved locally!</span>';
+      msg.innerHTML = '<span style="color:var(--rc-green)">Key saved locally.</span>';
       msg.style.display = 'block';
       setTimeout(() => modal.classList.add('hidden'), 1200);
     }
@@ -1729,8 +1915,8 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('rc-copy-btn');
-      btn.textContent = '✅ Copied!';
-      setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
     });
   }
 
@@ -1739,7 +1925,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     if (!text) return;
 
     const dlBtn = document.getElementById('rc-dl-btn');
-    if (dlBtn) { dlBtn.textContent = '⏳ Saving…'; }
+    if (dlBtn) { dlBtn.textContent = 'Saving…'; }
 
     chrome.runtime.sendMessage({
       action: 'DOWNLOAD_FILE',
@@ -1747,7 +1933,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       mimeType: 'text/markdown;charset=utf-8',
       filename: `RecallAI_Notes_${currentLevel}_${currentLang}.md`
     }, (res) => {
-      if (dlBtn) setTimeout(() => { dlBtn.textContent = '💾 Download .md'; }, 1500);
+      if (dlBtn) setTimeout(() => { dlBtn.textContent = 'Download .md'; }, 1500);
       if (chrome.runtime.lastError || !res?.ok) {
         // Fallback: blob URL anchor
         const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
@@ -1768,13 +1954,13 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     
     if (!text) {
       if (pdfBtn) {
-        pdfBtn.innerHTML = '<span>⚠️ Generate notes first</span>';
+        pdfBtn.innerHTML = '<span>Generate notes first</span>';
         setTimeout(() => { pdfBtn.innerHTML = defaultBtnHtml; }, 2200);
       }
       return;
     }
 
-    if (pdfBtn) { pdfBtn.innerHTML = '<span>⏳ Preparing PDF…</span>'; }
+    if (pdfBtn) { pdfBtn.innerHTML = '<span>Preparing PDF…</span>'; }
 
     const vId = currentVideoId || getVideoId();
     const title = `RecallAI — ${currentLevel.toUpperCase()} Notes (${currentLang.toUpperCase()})`;
@@ -2023,56 +2209,170 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
     setTimeout(() => { if (pdfBtn) pdfBtn.innerHTML = defaultBtnHtml; }, 1000);
   }
 
+  // =============================================================
+  // AWS DYNAMODB CLOUD SAVING (IN-EXTENSION)
+  // =============================================================
+
+  async function saveActiveNotesToAws() {
+    const rawNote = cachedNotes[currentLevel]?.[currentLang];
+    if (!rawNote || !rawNote.trim()) {
+      showRcToast('Please generate notes first before saving to AWS.', 'error');
+      return;
+    }
+
+    const vId = getVideoId() || currentVideoId || 'unknown_video';
+    const vTitle = getYouTubeTitle() || 'YouTube Lecture';
+    const vChannel = getYouTubeChannel() || '';
+
+    const btn = document.getElementById('rc-cloud-save-btn');
+    const footerBtn = document.getElementById('rc-cloud-save-footer-btn');
+    const origBtnHtml = btn ? btn.innerHTML : '';
+    const origFooterHtml = footerBtn ? footerBtn.innerHTML : '';
+
+    if (btn) btn.innerHTML = '⏳ Saving...';
+    if (footerBtn) footerBtn.innerHTML = '<span>⏳ Saving...</span>';
+
+    try {
+      chrome.runtime.sendMessage({
+        action: 'SAVE_NOTE_TO_AWS',
+        payload: {
+          video_id: vId,
+          video_title: vTitle,
+          channel_name: vChannel,
+          level: currentLevel,
+          language: currentLang,
+          markdown: rawNote
+        }
+      }, (res) => {
+        if (btn) btn.innerHTML = origBtnHtml;
+        if (footerBtn) footerBtn.innerHTML = origFooterHtml;
+
+        if (res && (res.ok || res.success)) {
+          const chunkCount = res.chunks_saved || res.saved_chunks || 0;
+          showRcToast(`Saved to AWS DynamoDB! (${chunkCount} topics indexed)`, 'success');
+        } else {
+          showRcToast(`AWS Save failed: ${res?.error || 'Unknown error'}`, 'error');
+        }
+      });
+    } catch (err) {
+      if (btn) btn.innerHTML = origBtnHtml;
+      if (footerBtn) footerBtn.innerHTML = origFooterHtml;
+      showRcToast(`Error saving to AWS: ${err.message}`, 'error');
+    }
+  }
+
+  function showRcToast(message, type = 'info') {
+    let toast = document.getElementById('rc-toast-notice');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'rc-toast-notice';
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 2147483647;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 12.5px;
+        font-weight: 500;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        opacity: 0;
+        transform: translateY(10px);
+        pointer-events: none;
+      `;
+      document.body.appendChild(toast);
+    }
+
+    if (type === 'success') {
+      toast.style.background = '#064e3b';
+      toast.style.color = '#34d399';
+      toast.style.border = '1px solid rgba(52, 211, 153, 0.4)';
+    } else if (type === 'error') {
+      toast.style.background = '#450a0a';
+      toast.style.color = '#f87171';
+      toast.style.border = '1px solid rgba(248, 113, 113, 0.4)';
+    } else {
+      toast.style.background = '#0f172a';
+      toast.style.color = '#38bdf8';
+      toast.style.border = '1px solid rgba(56, 189, 248, 0.4)';
+    }
+
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+    }, 4000);
+  }
 
   // Listen for messages from side panel and popup
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'GET_VIDEO_STATE') {
-      const vId = currentVideoId || getVideoId();
-      const vTitle = document.querySelector('h1.ytd-watch-metadata yt-formatted-string')?.textContent?.trim()
-        || document.querySelector('h1.ytd-watch-metadata')?.textContent?.trim()
-        || document.title.replace(' - YouTube', '').trim();
-      const vDesc = document.querySelector('#description-inline-expander yt-attributed-string')?.textContent?.trim()
-        || document.querySelector('#description-inline-expander')?.textContent?.trim()
-        || '';
-      const chapters = Array.from(document.querySelectorAll('ytd-macro-markers-list-item-renderer'))
-        .map(el => el.innerText?.trim()).filter(Boolean).join('\n');
+      (async () => {
+        const vId = getVideoId() || currentVideoId;
+        const el = getMainVideoElement() || videoEl;
+        if (el) videoEl = el;
 
-      const live = isLiveVideo();
-      const curTime = videoEl ? (videoEl.currentTime || 0) : 0;
-      const dur = videoEl ? (videoEl.duration || 0) : 0;
-      const t = videoTranscript.length > 0 ? videoTranscript : liveCaptionsBuffer;
+        const vTitle = getYouTubeTitle();
+        const vChannel = getYouTubeChannel();
+        const vDesc = getYouTubeDescription();
+        const chapters = Array.from(document.querySelectorAll('ytd-macro-markers-list-item-renderer'))
+          .map(el => el.innerText?.trim()).filter(Boolean).join('\n');
 
-      const frame = captureCurrentFrame();
-      if (frame && frame.base64) {
-        const curSec = Math.floor(frame.timestamp);
-        capturedKeyframes[curSec] = {
-          timestamp: frame.timestamp,
-          timeStr: formatTime(frame.timestamp),
-          dataUrl: `data:image/jpeg;base64,${frame.base64}`
-        };
-      }
+        const live = isLiveVideo();
+        const curTime = el ? (el.currentTime || 0) : 0;
+        const dur = el ? (el.duration || 0) : 0;
 
-      const allFrames = Object.values(capturedKeyframes);
-      const keyframes = allFrames.slice(-4).map(f => ({
-        timestamp: f.timestamp,
-        base64: f.dataUrl ? f.dataUrl.split(',')[1] : null
-      })).filter(f => f.base64);
+        // If transcript not yet captured or forced, retrieve right now via bridge
+        if ((!videoTranscript || videoTranscript.length === 0) || request.forceFetchTranscript) {
+          try {
+            await fetchYouTubeTranscript(vId);
+          } catch (e) {}
+        }
 
-      sendResponse({
-        ok: true,
-        videoId: vId,
-        title: vTitle,
-        description: vDesc.slice(0, 3000),
-        chapters: chapters,
-        transcript: t,
-        keyframes: keyframes,
-        keyframesMap: capturedKeyframes,
-        currentTime: curTime,
-        duration: dur,
-        isLive: live,
-        isPaused: videoEl ? videoEl.paused : true,
-        transcriptCount: t.length
-      });
+        const t = (videoTranscript && videoTranscript.length > 0) ? videoTranscript : liveCaptionsBuffer;
+
+        const frame = captureCurrentFrame();
+        if (frame && frame.base64) {
+          const curSec = Math.floor(frame.timestamp);
+          capturedKeyframes[curSec] = {
+            timestamp: frame.timestamp,
+            timeStr: formatTime(frame.timestamp),
+            dataUrl: `data:image/jpeg;base64,${frame.base64}`
+          };
+        }
+
+        const allFrames = Object.values(capturedKeyframes);
+        const keyframes = allFrames.slice(-4).map(f => ({
+          timestamp: f.timestamp,
+          base64: f.dataUrl ? f.dataUrl.split(',')[1] : null
+        })).filter(f => f.base64);
+
+        sendResponse({
+          ok: true,
+          videoId: vId,
+          title: vTitle,
+          channel: vChannel,
+          description: vDesc.slice(0, 3000),
+          chapters: chapters,
+          transcript: t,
+          keyframes: keyframes,
+          keyframesMap: capturedKeyframes,
+          currentTime: curTime,
+          duration: dur,
+          isLive: live,
+          isPaused: el ? el.paused : true,
+          transcriptCount: t.length
+        });
+      })();
       return true;
     }
 

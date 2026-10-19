@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecallAI Notes Studio — Educational Ownership & Whiteboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Kalam:wght@300;400;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="studio.css">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="studio-navbar">
+      <div class="nav-left">
+        <a href="#" class="brand-badge" id="btn-toggle-sidebar" title="Toggle Sidebar Outline">
+          <div class="brand-icon-box">🧠</div>
+          <span class="brand-name">RecallAI</span>
+          <span class="brand-scope-tag">Notes Studio</span>
+        </a>
+
+        <input type="text" id="doc-title-input" class="doc-title-input" value="Machine Learning: Gradient Descent & Optimization" title="Click to rename lecture note" />
+
+        <div class="save-status-pill" id="save-status-pill">
+          <span class="save-dot"></span>
+          <span id="save-status-text">Saved Locally</span>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <button class="view-mode-btn active" id="view-mode-studio" title="Notion + Google Docs Block Editor">
+          <span>⚡ Studio Editor</span>
+        </button>
+        <button class="view-mode-btn" id="view-mode-whiteboard" title="Open Fullscreen Whiteboard">
+          <span>🎨 Whiteboard</span>
+        </button>
+        <button class="view-mode-btn" id="view-mode-reading" title="Obsidian Distraction-free Reading Mode">
+          <span>📖 Reading Mode</span>
+        </button>
+      </div>
+
+      <div class="nav-right">
+        <button class="btn btn-whiteboard" id="nav-btn-draw" title="Draw handwritten diagrams and insert into notes">
+          <span>✏️ Draw Diagram</span>
+        </button>
+
+        <button class="btn btn-secondary" id="nav-btn-theme" title="Toggle Dark/Light Mode">
+          <span id="theme-icon">🌙</span>
+        </button>
+
+        <button class="btn btn-secondary" id="nav-btn-print" title="Print or Save as Academic PDF">
+          <span>🖨️ PDF</span>
+        </button>
+
+        <button class="btn btn-share" id="nav-btn-share" title="Share with classmates, export standalone notebook">
+          <span>📤 Share with Classmates</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace with Sidebar Outline -->
+    <div class="studio-main">
+      <!-- Left Sidebar (Obsidian-Style Outline & Concept Map) -->
+      <aside class="studio-sidebar" id="studio-sidebar">
+        <div class="sidebar-tabs">
+          <button class="sidebar-tab-btn active" data-tab="tab-outline" id="btn-tab-outline">
+            <span>📑 Outline</span>
+          </button>
+          <button class="sidebar-tab-btn" data-tab="tab-highlights" id="btn-tab-highlights">
+            <span>🎯 Highlights (<span id="count-highlights">0</span>)</span>
+          </button>
+          <button class="sidebar-tab-btn" data-tab="tab-sketches" id="btn-tab-sketches">
+            <span>🎨 Drawings (<span id="count-sketches">0</span>)</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Outline & Reordering -->
+        <div class="sidebar-content-pane" id="pane-outline">
+          <div class="sidebar-section-title">
+            <span>Sections (Drag to Reorder)</span>
+            <span style="font-size:10px;color:var(--text-accent);">Live Sync</span>
+          </div>
+          <ul class="outline-list" id="outline-list">
+            <!-- Dynamically populated from sections -->
+          </ul>
+
+          <div style="margin-top:20px;border-top:1px dashed var(--border-subtle);padding-top:14px;">
+            <div class="sidebar-section-title">Lecture Meta</div>
+            <div style="font-size:12px;color:var(--text-secondary);display:flex;flex-direction:column;gap:6px;" id="sidebar-meta-info">
+              <div>📹 Video: <b id="meta-video-id" style="color:var(--text-accent);">ML-Lecture-01</b></div>
+              <div>⏱️ Duration: <b>Full Lecture Note</b></div>
+              <div>⚡ Mode: <b style="color:var(--accent-emerald);">Student Ownership Active</b></div>
+            </div>
+            <button class="btn btn-secondary" id="btn-reset-original" style="width:100%;margin-top:14px;font-size:11.5px;">
+              <span>🔄 Reset to AI Original</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab 2: Obsidian Concept Highlights -->
+        <div class="sidebar-content-pane" id="pane-highlights" style="display:none;">
+          <div class="sidebar-section-title">
+            <span>Highlighted Concepts</span>
+            <button id="btn-clear-all-hl" style="background:none;border:none;color:var(--accent-rose);font-size:10px;cursor:pointer;">Clear All</button>
+          </div>
+          <p style="font-size:11.5px;color:var(--text-muted);margin-bottom:12px;">
+            Select any text in your notes to highlight with concept tags. Click any highlight to jump directly to it.
+          </p>
+          <div id="highlights-container">
+            <!-- Highlight pills injected here -->
+          </div>
+        </div>
+
+        <!-- Tab 3: Handwritten Diagrams -->
+        <div class="sidebar-content-pane" id="pane-sketches" style="display:none;">
+          <div class="sidebar-section-title">
+            <span>Handwritten Diagrams</span>
+            <button class="btn btn-primary" id="btn-sidebar-add-sketch" style="padding:2px 8px;font-size:10px;">+ New</button>
+          </div>
+          <div class="sketches-grid" id="sketches-container">
+            <!-- Sketches injected here -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Document Workspace -->
+      <main class="studio-workspace" id="studio-workspace">
+        <div class="doc-sheet" id="doc-sheet">
+
+          <!-- Hero Banner -->
+          <div class="doc-hero-banner" id="doc-hero-banner">
+            <div class="doc-badge-row">
+              <span class="meta-chip">📘 MACHINE LEARNING</span>
+              <span class="meta-chip" id="chip-level">LEVEL: DETAILED NOTES</span>
+              <span class="meta-chip" id="chip-lang">LANG: ENGLISH</span>
+              <span class="meta-chip" style="background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(16,185,129,0.3);">✨ EDITABLE &amp; INTERACTIVE</span>
+            </div>
+            <h1 class="doc-main-heading" id="doc-heading" contenteditable="true" spellcheck="false">
+              Machine Learning: Gradient Descent &amp; Cost Function Optimization
+            </h1>
+            <p class="doc-summary-subtitle" id="doc-subtitle" contenteditable="true" spellcheck="false">
+              Comprehensive student notebook covering mathematical formulations, intuitive analogies, handwritten loss landscapes, and practical Python implementations.
+            </p>
+          </div>
+
+          <!-- Quick Add Section Toolbar -->
+          <div class="quick-add-toolbar">
+            <span class="quick-add-label">➕ Add Modular Block:</span>
+            <div class="quick-add-buttons">
+              <button class="add-block-btn" data-type="definition"><span>📘 Definition</span></button>
+              <button class="add-block-btn" data-type="explanation"><span>💡 Explanation</span></button>
+              <button class="add-block-btn" data-type="formula"><span>📐 Formula</span></button>
+              <button class="add-block-btn" data-type="example"><span>🔬 Example &amp; Code</span></button>
+              <button class="add-block-btn" data-type="whiteboard"><span>🎨 Whiteboard Diagram</span></button>
+              <button class="add-block-btn" data-type="summary"><span>📝 Summary Checklist</span></button>
+            </div>
+          </div>
+
+          <!-- Draggable Notion-Style Section Cards -->
+          <div id="sections-container" class="sections-container">
+            <!-- Dynamic sections inserted by studio.js -->
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- Floating Text Selection Highlighter Toolbar (Google Docs / Obsidian Style) -->
+    <div id="floating-toolbar">
+      <div class="hl-swatch swatch-yellow" data-color="yellow" title="Highlight: Key Concept (Yellow)"></div>
+      <div class="hl-swatch swatch-green"  data-color="green"  title="Highlight: High Yield / Exam (Green)"></div>
+      <div class="hl-swatch swatch-pink"   data-color="pink"   title="Highlight: Definition (Pink)"></div>
+      <div class="hl-swatch swatch-blue"   data-color="blue"   title="Highlight: Core Formula (Blue)"></div>
+      <div class="hl-swatch swatch-orange" data-color="orange" title="Highlight: Question / Review (Orange)"></div>
+      
+      <div class="float-divider"></div>
+
+      <button class="float-tool-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button class="float-tool-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+      <button class="float-tool-btn" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+      
+      <div class="float-divider"></div>
+
+      <button class="float-tool-btn" id="btn-float-comment" title="Add Student Margin Note">💬</button>
+      <button class="float-tool-btn" id="btn-float-clear-hl" title="Remove Highlight" style="color:#f43f5e;">✕</button>
+    </div>
+
+    <!-- Digital Whiteboard Modal -->
+    <div class="modal-overlay" id="whiteboard-modal">
+      <div class="whiteboard-modal-card">
+        <!-- Whiteboard Header -->
+        <div class="whiteboard-header">
+          <div class="wb-title">
+            <span>🎨 Digital Whiteboard &amp; Handwritten Sketches</span>
+            <span style="font-size:11px;background:rgba(16,185,129,0.15);color:#34d399;padding:2px 8px;border-radius:4px;">High-Precision Canvas</span>
+          </div>
+          <div class="wb-header-actions">
+            <button class="btn btn-secondary" id="wb-btn-clear" title="Clear all canvas strokes">🗑️ Clear</button>
+            <button class="btn btn-secondary" id="wb-btn-undo" title="Undo stroke (Ctrl+Z)">↩️ Undo</button>
+            <button class="btn btn-secondary" id="wb-btn-redo" title="Redo stroke (Ctrl+Y)">↪️ Redo</button>
+            <button class="btn btn-primary" id="wb-btn-insert" style="background:#10b981;border-color:#34d399;">
+              <span>💾 Insert into Notes</span>
+            </button>
+            <button class="btn btn-secondary" id="wb-btn-close" style="padding:6px 10px;">✕</button>
+          </div>
+        </div>
+
+        <!-- Whiteboard Toolbar Strip -->
+        <div class="wb-toolbar">
+          <!-- Drawing Tools -->
+          <div class="wb-tool-group">
+            <button class="wb-btn active" data-tool="pen" id="wb-tool-pen">✏️ Pen</button>
+            <button class="wb-btn" data-tool="highlighter" id="wb-tool-highlighter">🖌️ Marker</button>
+            <button class="wb-btn" data-tool="eraser" id="wb-tool-eraser">🧹 Eraser</button>
+            <button class="wb-btn" data-tool="line" id="wb-tool-line">📏 Line</button>
+            <button class="wb-btn" data-tool="arrow" id="wb-tool-arrow">↗️ Arrow</button>
+            <button class="wb-btn" data-tool="rect" id="wb-tool-rect">▭ Rect</button>
+            <button class="wb-btn" data-tool="circle" id="wb-tool-circle">◯ Circle</button>
+          </div>
+
+          <div class="float-divider" style="height:24px;"></div>
+
+          <!-- Color Palette -->
+          <div class="wb-tool-group" id="wb-colors-group">
+            <div class="wb-color-dot active" data-color="#0f172a" style="background:#0f172a;" title="Dark Slate"></div>
+            <div class="wb-color-dot" data-color="#2563eb" style="background:#2563eb;" title="Electric Blue"></div>
+            <div class="wb-color-dot" data-color="#dc2626" style="background:#dc2626;" title="Crimson Red"></div>
+            <div class="wb-color-dot" data-color="#16a34a" style="background:#16a34a;" title="Emerald Green"></div>
+            <div class="wb-color-dot" data-color="#9333ea" style="background:#9333ea;" title="Purple"></div>
+            <div class="wb-color-dot" data-color="#ea580c" style="background:#ea580c;" title="Amber Orange"></div>
+            <div class="wb-color-dot" data-color="#0891b2" style="background:#0891b2;" title="Cyan"></div>
+          </div>
+
+          <div class="float-divider" style="height:24px;"></div>
+
+          <!-- Stroke Size -->
+          <div class="wb-tool-group">
+            <button class="wb-btn active" data-size="2" id="wb-size-sm">Thin</button>
+            <button class="wb-btn" data-size="5" id="wb-size-md">Medium</button>
+            <button class="wb-btn" data-size="12" id="wb-size-lg">Thick</button>
+          </div>
+
+          <div class="float-divider" style="height:24px;"></div>
+
+          <!-- Background Grid Pattern -->
+          <div class="wb-tool-group">
+            <span style="font-size:11px;color:var(--text-muted);font-weight:600;">Paper:</span>
+            <button class="wb-btn active" data-grid="grid-dots">Dotted</button>
+            <button class="wb-btn" data-grid="grid-graph">Grid</button>
+            <button class="wb-btn" data-grid="grid-lined">Lined</button>
+            <button class="wb-btn" data-grid="grid-plain">Plain</button>
+          </div>
+        </div>
+
+        <!-- Canvas Drawing Viewport -->
+        <div class="wb-canvas-container grid-dots" id="wb-canvas-container">
+          <canvas id="wb-drawing-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share with Classmates Modal -->
+    <div class="modal-overlay" id="share-modal">
+      <div class="share-modal-card">
+        <div class="share-header">
+          <div class="share-title">📤 Share Notes with Classmates</div>
+          <button class="btn btn-secondary" id="share-close-btn" style="padding:4px 8px;">✕</button>
+        </div>
+
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;">
+          Allow your classmates to learn from your personalized study notes, including your handwritten diagrams, custom highlights, and rearranged sections.
+        </p>
+
+        <div class="share-options-list">
+          <!-- 1. Standalone Interactive HTML Notebook -->
+          <div class="share-option-card" id="opt-share-html">
+            <div class="share-option-info">
+              <h4>🌐 Interactive Student Notebook (.html)</h4>
+              <p>Self-contained file. Classmates can open in any browser, see your highlights &amp; diagrams, and add their own notes!</p>
+            </div>
+            <span style="font-size:11px;background:rgba(59,130,246,0.15);color:#60a5fa;padding:4px 8px;border-radius:6px;font-weight:700;">Recommended</span>
+          </div>
+
+          <!-- 2. Student Study Pack JSON -->
+          <div class="share-option-card" id="opt-share-json">
+            <div class="share-option-info">
+              <h4>📦 RecallAI Study Pack (.json)</h4>
+              <p>Full serialized study pack. Classmates with this extension can import and study your exact session.</p>
+            </div>
+            <span style="font-size:11px;background:rgba(139,92,246,0.15);color:#c084fc;padding:4px 8px;border-radius:6px;font-weight:700;">Extension Format</span>
+          </div>
+
+          <!-- 3. Copy Markdown Summary with Highlights -->
+          <div class="share-option-card" id="opt-share-md">
+            <div class="share-option-info">
+              <h4>📋 Copy Markdown Study Summary</h4>
+              <p>Formatted text ready for Discord, WhatsApp, Notion, or Obsidian.</p>
+            </div>
+            <span style="font-size:11px;background:rgba(16,185,129,0.15);color:#34d399;padding:4px 8px;border-radius:6px;font-weight:700;">Copy Text</span>
+          </div>
+
+          <!-- 4. Import Notes from Classmate -->
+          <div class="share-option-card" id="opt-import-pack">
+            <div class="share-option-info">
+              <h4>📥 Import Notes from Classmate</h4>
+              <p>Upload a shared .json study pack to view their customized notes and diagrams.</p>
+            </div>
+            <input type="file" id="import-file-input" accept=".json,.html" style="display:none;" />
+            <span style="font-size:11px;background:rgba(245,158,11,0.15);color:#fbbf24;padding:4px 8px;border-radius:6px;font-weight:700;">Upload File</span>
+          </div>
+        </div>
+
+        <div style="font-size:11px;color:var(--text-muted);text-align:center;">
+          🔒 Private &amp; Local &bull; All annotations and drawings stay in the student's control
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="studio-toast">
+      <span id="toast-icon">✨</span>
+      <span id="toast-text">Notes updated successfully</span>
+    </div>
+
+  </div>
+
+  <script src="studio.js"></script>
+</body>
+</html>

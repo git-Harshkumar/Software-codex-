@@ -20,7 +20,13 @@ An AI-powered browser extension that generates structured lecture notes **in par
 - 📌 **Dual Experience**:
   - **In-Page Companion Sidebar**: Clean docked companion directly inside YouTube watch pages.
   - **Chrome Native Side Panel**: Docked alongside the browser window using Chrome's Side Panel API.
-- 📋 **Export Options**: 1-click copy to clipboard and `.md` file download.
+- 🎨 **Scope 2: Student Ownership Notes Studio (Notion • Obsidian • Google Docs • Digital Whiteboard)**:
+  - **Inline Rich-Text Editing**: Direct Google Docs / Notion block editing for definitions, explanations, formulas, examples, and summaries.
+  - **Drag-and-Drop Section Rearranging**: Notion-style modular cards with drag handles (`⋮⋮`), move up/down controls, and live table of contents sync.
+  - **Obsidian Concept Highlighting**: Floating multi-color highlighter toolbar (🟡 Key Concept, 🟢 Exam Yield, 🌸 Definition, 🔷 Formula, 🟠 Doubt) with margin notes and live concept index.
+  - **Digital Whiteboard & Handwritten Diagrams**: High-precision HTML5 canvas with pen, marker, eraser, geometric shapes (arrows, lines, rectangles, circles), grid patterns, and 1-click diagram embedding into notes.
+  - **Classmate Collaboration & Sharing**: Export self-contained standalone `.html` notebooks (openable in any browser without dependencies), study pack `.json`, copy Markdown summaries, and academic PDF printing.
+- 📋 **Export Options**: 1-click copy to clipboard, interactive HTML, JSON study pack, and `.md` file download.
 - 🔑 **Direct Gemini 2.5 Flash Integration**: Ultra-fast, high-quality responses using your Google Gemini API key.
 
 ---
@@ -33,10 +39,7 @@ An AI-powered browser extension that generates structured lecture notes **in par
    - **Brave Browser**: `brave://extensions`
 2. Turn ON **"Developer mode"** in the top-right corner.
 3. Click the **"Load unpacked"** button in the top-left corner.
-4. Select the `extension` folder located at:
-   ```
-   c:\Users\harsh\OneDrive\Desktop\notes_gen\video2\extension
-   ```
+4. Select the `extension` folder from this repository (or the folder where you cloned/downloaded this repo).
 5. The **RecallAI — YouTube Parallel Lecture Notes** extension is now installed! 🎉
 6. *(Optional)* Click the puzzle piece icon in Chrome's toolbar and **pin** RecallAI for 1-click access.
 

@@ -15,17 +15,17 @@
   --rc-text:      #e8edf5;
   --rc-muted:     #7a8ba8;
   --rc-muted2:    #5a6a82;
-  --rc-primary:   #4f9ef8;
-  --rc-primary-d: #1a5fd4;
-  --rc-primary-g: linear-gradient(135deg, #4f9ef8, #7c5bfa);
+  --rc-primary:   #2563eb;
+  --rc-primary-d: #1d4ed8;
+  --rc-primary-g: #2563eb;
   --rc-green:     #34d399;
-  --rc-purple:    #a78bfa;
-  --rc-orange:    #fb923c;
-  --rc-red:       #f87171;
-  --rc-cyan:      #22d3ee;
-  --rc-yellow:    #fbbf24;
-  --rc-radius:    12px;
-  --rc-shadow:    0 12px 48px rgba(0,0,0,0.65);
+  --rc-purple:    #8b5cf6;
+  --rc-orange:    #f97316;
+  --rc-red:       #ef4444;
+  --rc-cyan:      #06b6d4;
+  --rc-yellow:    #f59e0b;
+  --rc-radius:    10px;
+  --rc-shadow:    0 10px 30px rgba(0,0,0,0.5);
 }
 
 /* ═══ Floating Trigger Badge ═══ */
@@ -37,31 +37,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  padding: 0;
-  background: linear-gradient(135deg, #1a5fd4, #7c5bfa);
-  border: 2px solid rgba(79, 158, 248, 0.5);
-  border-radius: 50%;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(79,158,248,0.35);
+  min-width: 44px;
+  height: 44px;
+  padding: 0 14px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 22px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   user-select: none;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f8fafc;
 }
 #recall-ai-trigger:hover {
-  transform: translateY(-3px) scale(1.08);
-  border-color: #4f9ef8;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.6), 0 0 30px rgba(79,158,248,0.5);
+  background: #2563eb;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
 }
-#recall-ai-trigger .trigger-icon {
+#recall-ai-trigger .trigger-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 20px;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 /* ═══ Main Companion Sidebar ═══ */
@@ -118,9 +122,7 @@
 .rc-brand-title {
   font-size: 15px;
   font-weight: 700;
-  background: linear-gradient(120deg, #fff, #93c5fd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #f8fafc;
 }
 .rc-header-controls {
   display: flex;
@@ -177,6 +179,50 @@
 @keyframes rcPulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.3); opacity: 0.5; }
+}
+
+/* ── Active Video & Channel Bar ── */
+.rc-video-meta {
+  padding: 8px 18px;
+  background: rgba(15, 23, 42, 0.7);
+  border-bottom: 1px solid var(--rc-border);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.rc-video-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.rc-channel-name {
+  font-size: 11px;
+  color: var(--rc-cyan);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rc-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--rc-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 3px;
+  font-size: 8.5px;
+  font-weight: 700;
+  padding: 1px 4px;
+  letter-spacing: 0.5px;
+  line-height: 1;
 }
 
 /* ── Control Panel (Level, Lang, Toggles) ── */
@@ -1274,32 +1320,31 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  padding: 10px 22px !important;
-  border-radius: 10px !important;
-  background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 50%, #9333ea 100%) !important;
-  background-size: 200% 200% !important;
+  padding: 8px 18px !important;
+  border-radius: 8px !important;
+  background: #2563eb !important;
   color: #ffffff !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  font-size: 13.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.02em !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  border: 1px solid #3b82f6 !important;
   cursor: pointer !important;
   white-space: nowrap !important;
-  box-shadow: 0 4px 18px rgba(79, 70, 229, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+  transition: all 0.2s ease !important;
 }
 
 .rc-footer-btn.rc-pdf-btn-hero:hover,
 #rc-pdf-btn:hover {
-  transform: translateY(-2px) scale(1.04) !important;
-  background: linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #a855f7 100%) !important;
-  box-shadow: 0 8px 26px rgba(79, 70, 229, 0.6), 0 0 16px rgba(168, 85, 247, 0.4) !important;
+  background: #1d4ed8 !important;
+  border-color: #60a5fa !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
 }
 
 .rc-footer-btn.rc-pdf-btn-hero:active,
 #rc-pdf-btn:active {
-  transform: translateY(0) scale(0.98) !important;
+  transform: translateY(1px) !important;
 }
 
 .rc-footer-btn.rc-pdf-btn-hero svg,

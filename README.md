@@ -7,6 +7,7 @@ and a full web platform from any lecture video.
 
 ```
 video2/
+├── extension/         RecallAI Chrome Extension (Manifest V3)
 ├── pipeline/          Processing scripts (frames, transcript, OCR)
 ├── generators/        Note generation, PDF, translation, shorts
 ├── notes/
@@ -23,6 +24,17 @@ video2/
 ├── requirements.txt
 └── README.md
 ```
+
+## ⚡ Chrome Extension (YouTube Parallel Lecture Notes)
+
+You can run the Chrome Extension independently without running any local backend!
+
+1. Open `chrome://extensions` in Chrome, Edge, or Brave.
+2. Enable **Developer mode** (top-right corner).
+3. Click **Load unpacked** and select the [`extension/`](extension/) directory.
+4. Pin RecallAI in your toolbar, enter your free Gemini API key, and open any YouTube video to generate live notes!
+5. See [extension/README.md](extension/README.md) for full features & documentation.
+
 
 ## Setup
 
