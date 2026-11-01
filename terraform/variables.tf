@@ -34,3 +34,9 @@ variable "gemini_api_key" {
   default     = ""
   sensitive   = true
 }
+
+variable "pdf_bucket_name" {
+  description = "Optional globally unique S3 bucket name for generated PDFs. Leave blank to use a generated name."
+  type        = string
+  default     = ""
+}

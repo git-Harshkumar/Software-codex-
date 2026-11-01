@@ -22,3 +22,6 @@ allowed_ssh_cidr = "0.0.0.0/0"
 # Optional: Google Gemini API key to automatically inject into the server's .env
 # If left empty, you can also edit /var/www/lecturenotes/.env via SSH
 gemini_api_key = ""
+
+# Optional: set a globally unique bucket name. Leave blank to generate one from the AWS account ID.
+pdf_bucket_name = ""

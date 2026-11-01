@@ -995,6 +995,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.action === 'UPLOAD_RENDERED_PDF') {
+    sendToCloudBackend('/api/extension/upload-pdf', 'POST', request.payload)
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
   if (request.action === 'OPEN_STUDIO_PAGE' || request.action === 'OPEN_NOTES_STUDIO') {
     const data = request.data || {};
     chrome.storage.local.set({ rc_studio_data: data, rc_print_data: data }, () => {
@@ -1360,7 +1367,10 @@ async function sendToCloudBackend(endpoint, method = 'GET', body = null) {
     try {
       const url = `${base}${endpoint}`;
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        endpoint === '/api/extension/upload-pdf' ? 60000 : 6000
+      );
 
       const options = {
         method,

@@ -24,18 +24,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dlBtn   = document.getElementById('sp-dl-notes-btn') || document.getElementById('sp-dl-btn');
   const pdfBtn  = document.getElementById('sp-pdf-btn');
 
-  // Cloud Save & Topic Search UI Elements
+  // Cloud Save UI Elements
   const cloudSaveBtn       = document.getElementById('sp-cloud-save-btn');
   const cloudSaveFooterBtn = document.getElementById('sp-cloud-save-footer-btn');
-  const searchToggleBtn    = document.getElementById('sp-search-toggle-btn');
-  const searchPanel        = document.getElementById('sp-search-panel');
-  const searchCloseBtn     = document.getElementById('sp-search-close-btn');
-  const searchInput        = document.getElementById('sp-search-input');
-  const searchClearBtn     = document.getElementById('sp-search-clear-btn');
-  const searchExecBtn      = document.getElementById('sp-search-exec-btn');
-  const searchScope        = document.getElementById('sp-search-scope');
-  const searchBody         = document.getElementById('sp-search-body');
-  const searchStats        = document.getElementById('sp-search-stats');
+  const studioBtn           = document.getElementById('sp-studio-btn');
 
   // Timeline UI Elements
   const timelineToggleBtn = document.getElementById('sp-timeline-toggle-btn');
@@ -54,6 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       timelinePanel.classList.add('hidden');
     });
   }
+
+  if (studioBtn) studioBtn.addEventListener('click', openNotesStudio);
 
   function showEmptyNotesState(lvl = currentLevel, lang = currentLang) {
     body.innerHTML = `
@@ -289,6 +283,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     return null;
   }
 
+  async function getLiveYouTubeMetadata(tabId) {
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          const video = document.querySelector('#movie_player video.html5-main-video')
+            || document.querySelector('#movie_player video')
+            || document.querySelector('video');
+          const player = document.getElementById('movie_player');
+          const channel = document.querySelector('#owner-name a')?.textContent?.trim()
+            || document.querySelector('#owner-name yt-formatted-string')?.textContent?.trim()
+            || document.querySelector('#upload-info #channel-name a')?.textContent?.trim()
+            || document.querySelector('ytd-watch-metadata #channel-name')?.textContent?.trim()
+            || document.querySelector('meta[itemprop="author"]')?.getAttribute('content')?.trim()
+            || player?.getPlayerResponse?.()?.videoDetails?.author?.trim()
+            || '';
+          const currentTime = Number.isFinite(video?.currentTime)
+            ? video.currentTime
+            : Number(player?.getCurrentTime?.()) || 0;
+          const duration = Number.isFinite(video?.duration) && video.duration > 0
+            ? video.duration
+            : Number(player?.getDuration?.())
+              || Number(player?.getPlayerResponse?.()?.videoDetails?.lengthSeconds)
+              || 0;
+          return {
+            title: document.querySelector('h1.ytd-watch-metadata yt-formatted-string')?.textContent?.trim()
+              || document.title.replace(' - YouTube', '').trim(),
+            channel,
+            currentTime,
+            duration
+          };
+        }
+      });
+      return results?.[0]?.result || {};
+    } catch (error) {
+      console.warn('[RecallAI Sidepanel] Direct YouTube metadata lookup failed:', error);
+      return {};
+    }
+  }
+
   // ── Live mode toggle & sync ──────────────────────────────────
   liveBtn.addEventListener('click', async () => {
     liveBtn.classList.toggle('active-live');
@@ -322,15 +356,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      chrome.tabs.sendMessage(tab.id, { action: 'GET_VIDEO_STATE' }, response => {
+      chrome.tabs.sendMessage(tab.id, { action: 'GET_VIDEO_STATE' }, async response => {
         if (chrome.runtime.lastError || !response || !response.ok) {
-          // Tab title fallback
-          if (titleEl && tab.title) {
-            const cleanTitle = tab.title.replace(' - YouTube', '').trim();
+          const live = await getLiveYouTubeMetadata(tab.id);
+          const cleanTitle = live.title || (tab.title || '').replace(' - YouTube', '').trim();
+          if (titleEl && cleanTitle) {
             titleEl.textContent = cleanTitle;
             titleEl.title = cleanTitle;
           }
+          if (channelEl) channelEl.textContent = live.channel || 'Detecting channel...';
+          if (timeEl) timeEl.textContent = `${formatTime(live.currentTime)} / ${formatTime(live.duration)}`;
           return;
+        }
+
+        if (!response.channel || !response.duration) {
+          const live = await getLiveYouTubeMetadata(tab.id);
+          response = {
+            ...response,
+            title: response.title || live.title,
+            channel: response.channel || live.channel,
+            currentTime: live.currentTime || response.currentTime,
+            duration: response.duration || live.duration
+          };
         }
 
         const footerInfo = document.getElementById('sp-footer-info');
@@ -340,10 +387,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           titleEl.title = response.title;
         }
 
-        if (channelEl && response.channel) {
-          channelEl.textContent = response.channel;
-        } else if (channelEl && !channelEl.textContent.trim()) {
-          channelEl.textContent = 'YouTube Creator';
+        if (channelEl) {
+          channelEl.textContent = response.channel || 'Detecting channel...';
         }
 
         if (timeEl) {
@@ -1993,11 +2038,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           Directly download notes to your computer with the full <b>Important Timeline</b> and video jump links included.
         </p>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <button id="sp-dlm-studio" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);border:1px solid #60a5fa;border-radius:8px;
-            color:#fff;padding:10px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-            <span>✏️ Notes Studio & Whiteboard</span>
-            <span style="font-size:10px;color:#fff;background:rgba(255,255,255,0.25);padding:2px 6px;border-radius:4px;">Edit & Draw</span>
-          </button>
           <button id="sp-dlm-html" style="background:#161e2e;border:1px solid #1e2d45;border-radius:8px;
             color:#fff;padding:10px 12px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
             <span>Interactive HTML Notes (.html)</span>
@@ -2010,7 +2050,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </button>
           <button id="sp-dlm-pdf" style="background:#2563eb;border:1px solid #3b82f6;border-radius:8px;
             color:#fff;padding:10px 12px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-            <span>Print / Save as PDF (.pdf)</span>
+            <span>Download PDF (.pdf)</span>
             <span style="font-size:10px;color:#fff;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;">PDF</span>
           </button>
         </div>
@@ -2020,12 +2060,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     modal.querySelector('#sp-dlm-close').addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-
-    // Notes Studio
-    modal.querySelector('#sp-dlm-studio')?.addEventListener('click', () => {
-      modal.remove();
-      openNotesStudio();
-    });
 
     // HTML Download
     modal.querySelector('#sp-dlm-html').addEventListener('click', () => {
@@ -2080,13 +2114,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     dlBtn.addEventListener('click', showDownloadMenu);
   }
 
-  const studioFooterBtn = document.getElementById('sp-studio-btn');
-  if (studioFooterBtn) {
-    studioFooterBtn.addEventListener('click', openNotesStudio);
-  }
-
   function openNotesStudio() {
     const rawNote = cachedNotes[currentLevel]?.[currentLang] || '';
+    if (!rawNote) {
+      if (genBtn) {
+        genBtn.textContent = 'Generate notes first';
+        setTimeout(() => { genBtn.textContent = 'Generate Structured Notes'; }, 2000);
+      }
+      return;
+    }
     const vId = curVideoId || '';
     const title = curVideoTitle ? `${curVideoTitle} — RecallAI Notes` : `RecallAI ${currentLevel.toUpperCase()} Lecture Notes`;
     
@@ -2104,7 +2140,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ── Download PDF (Clean in-place print without permanent blank tabs) ──
+  function createDirectPdf(text, title) {
+    const clean = String(text || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/[`*_>#]/g, '')
+      .replace(/\r/g, '')
+      .replace(/[^\x20-\x7E\n]/g, '');
+    const lines = [`${title}`, '', ...clean.split('\n').flatMap(line => {
+      const value = line.trim();
+      if (!value) return [''];
+      const chunks = [];
+      let current = '';
+      value.split(/\s+/).forEach(word => {
+        if ((current + ' ' + word).trim().length > 88) {
+          if (current) chunks.push(current);
+          current = word;
+        } else {
+          current = `${current} ${word}`.trim();
+        }
+      });
+      if (current) chunks.push(current);
+      return chunks;
+    })];
+    const pageLines = 50;
+    const pages = [];
+    for (let i = 0; i < lines.length; i += pageLines) pages.push(lines.slice(i, i + pageLines));
+    if (!pages.length) pages.push(['RecallAI Notes']);
+
+    const objects = [];
+    const addObject = value => { objects.push(value); return objects.length; };
+    const fontId = addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+    const pageIds = [];
+    const contentIds = [];
+    pages.forEach(page => {
+      const commands = ['BT', '/F1 10 Tf', '50 770 Td', '14 TL'];
+      page.forEach(line => {
+        const escaped = line.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+        commands.push(`(${escaped}) Tj`, '0 -14 Td');
+      });
+      commands.push('ET');
+      const stream = commands.join('\n');
+      contentIds.push(addObject(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`));
+      pageIds.push(addObject(''));
+    });
+    const pagesId = addObject('');
+    pageIds.forEach((id, index) => {
+      objects[id - 1] = `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentIds[index]} 0 R >>`;
+    });
+    objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pageIds.length} >>`;
+    const catalogId = addObject(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+    let pdf = '%PDF-1.4\n';
+    const offsets = [0];
+    objects.forEach((object, index) => {
+      offsets[index + 1] = pdf.length;
+      pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+    });
+    const xref = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    offsets.slice(1).forEach(offset => { pdf += `${String(offset).padStart(10, '0')} 00000 n \n`; });
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    return new Blob([pdf], { type: 'application/pdf' });
+  }
+
+  function downloadDirectPdf(text, title, filename) {
+    const url = URL.createObjectURL(createDirectPdf(text, title));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // ── Direct PDF download (does not open print preview) ──
   function triggerPdfPrint() {
     const rawNote = cachedNotes[currentLevel]?.[currentLang];
     if (!rawNote) {
@@ -2115,47 +2224,37 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    if (pdfBtn) pdfBtn.textContent = 'Preparing PDF…';
-
     const title = `RecallAI_${currentLevel.toUpperCase()}_Notes_${currentLang.toUpperCase()}`;
     const renderedHtml = renderMarkdown(rawNote, curVideoId, curKeyframesMap, curTimeline);
-    const fullHtml = buildStandaloneHtmlDoc(title, renderedHtml);
-
-    // In-place hidden iframe printing: opens browser print-to-PDF dialog with ZERO permanent tabs!
-    let iframe = document.getElementById('rc-sp-print-frame');
-    if (iframe) iframe.remove();
-
-    iframe = document.createElement('iframe');
-    iframe.id = 'rc-sp-print-frame';
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    iframe.style.zIndex = '-99999';
-    document.body.appendChild(iframe);
-
-    try {
-      const doc = iframe.contentWindow.document;
-      doc.open();
-      doc.write(fullHtml);
-      doc.close();
-
-      setTimeout(() => {
-        try {
-          iframe.contentWindow.focus();
-          iframe.contentWindow.print();
-          if (pdfBtn) pdfBtn.textContent = 'Download PDF';
-          setTimeout(() => iframe.remove(), 2500);
-        } catch (printErr) {
-          // If iframe printing restricted by browser sandbox, open clean self-closing print window
-          openSelfClosingPrintWin(fullHtml, title);
+    chrome.runtime.sendMessage({
+      action: 'UPLOAD_RENDERED_PDF',
+      payload: {
+        html: renderedHtml,
+        title,
+        level: currentLevel,
+        lang: currentLang,
+        filename: `${title}.pdf`
+      }
+    }, response => {
+      if (chrome.runtime.lastError || !response?.ok) {
+        console.warn('[RecallAI] PDF S3 upload failed:', response?.error || chrome.runtime.lastError?.message);
+      } else {
+        console.log('[RecallAI] PDF uploaded to S3:', response.key);
+      }
+      chrome.runtime.sendMessage({
+        action: 'OPEN_PRINT_PAGE',
+        data: { html: renderedHtml, title }
+      }, printResponse => {
+        if (chrome.runtime.lastError || !printResponse?.ok) {
+          if (pdfBtn) pdfBtn.textContent = 'PDF failed';
+          return;
         }
-      }, 700);
-    } catch (e) {
-      openSelfClosingPrintWin(fullHtml, title);
-    }
+        if (pdfBtn) {
+          pdfBtn.textContent = response?.ok ? 'Saved to S3' : 'Download PDF';
+          setTimeout(() => { pdfBtn.textContent = 'Download PDF'; }, 2000);
+        }
+      });
+    });
   }
 
   function openSelfClosingPrintWin(fullHtml, title) {
@@ -2927,40 +3026,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (cloudSaveBtn) cloudSaveBtn.addEventListener('click', saveActiveNoteToAws);
   if (cloudSaveFooterBtn) cloudSaveFooterBtn.addEventListener('click', saveActiveNoteToAws);
 
-  // ── Topic Search Panel Wiring ────────────────────────────────────
-  if (searchToggleBtn && searchPanel) {
-    searchToggleBtn.addEventListener('click', () => {
-      searchPanel.classList.toggle('hidden');
-      if (!searchPanel.classList.contains('hidden')) {
-        searchInput?.focus();
-      }
-    });
-  }
-
-  if (searchCloseBtn && searchPanel) {
-    searchCloseBtn.addEventListener('click', () => {
-      searchPanel.classList.add('hidden');
-    });
-  }
-
-  if (searchInput && searchClearBtn) {
-    searchInput.addEventListener('input', () => {
-      searchClearBtn.classList.toggle('hidden', !searchInput.value.trim());
-    });
-    searchClearBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      searchClearBtn.classList.add('hidden');
-      searchInput.focus();
-    });
-    searchInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') executeTopicSearch();
-    });
-  }
-
-  if (searchExecBtn) {
-    searchExecBtn.addEventListener('click', executeTopicSearch);
-  }
-
   // ── Execute Strict Grounded Search ───────────────────────────────
   // ── Open Note Section Directly in Main Viewer ─────────────────────
   function openNoteSection(level, lang, heading) {
@@ -2972,8 +3037,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const lngBtn = (lang === 'hindi') ? hiBtn : ((lang === 'hinglish') ? hingBtn : enBtn);
       if (lngBtn) setLang(lang, lngBtn);
     }
-
-    if (searchPanel) searchPanel.classList.add('hidden');
 
     setTimeout(() => {
       const cleanHeading = (heading || '')
@@ -3353,4 +3416,3 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 }); // end DOMContentLoaded
-

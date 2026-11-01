@@ -16,7 +16,7 @@
       </div>
       <div class="sp-header-right" style="display:flex;align-items:center;gap:6px;">
         <button id="sp-cloud-save-btn" class="sp-icon-btn" style="color:var(--cyan);font-weight:700;" title="Save Note to AWS DynamoDB Cloud">☁️ Save</button>
-        <button id="sp-search-toggle-btn" class="sp-icon-btn" style="color:var(--green);font-weight:700;" title="Search Topics in Stored Notes">🔍 Search</button>
+        <button id="sp-studio-btn" class="sp-icon-btn" style="color:var(--purple);font-weight:700;" title="Open Notes Studio">Studio</button>
         <button id="sp-timeline-toggle-btn" class="sp-icon-btn" title="Toggle Video Timeline">TL</button>
         <button id="sp-key-btn" class="sp-icon-btn" title="API Key Settings">Key</button>
       </div>
@@ -105,57 +105,10 @@
       <span id="sp-footer-info" style="font-size:11px;">Captions: auto-sync</span>
       <div class="sp-footer-btns">
         <button class="sp-footer-btn" id="sp-cloud-save-footer-btn" title="Save this lecture note to AWS DynamoDB">☁️ Save to AWS</button>
-        <button class="sp-footer-btn" id="sp-studio-btn" style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(139,92,246,0.2));border:1px solid rgba(139,92,246,0.4);color:#c084fc;font-weight:600;" title="Open Notes Studio: Edit notes, highlight concepts, draw diagrams & share with classmates">✏️ Studio</button>
         <button class="sp-footer-btn" id="sp-practice-open-btn" title="Start a Practice Session from your notes">🎯 Practice</button>
         <button class="sp-footer-btn" id="sp-dl-notes-btn" title="Download Notes (PDF, HTML, Markdown)">Download</button>
       </div>
     </footer>
-  </div>
-
-  <!-- ═══════════════ TOPIC SEARCH PANEL ═══════════════ -->
-  <div id="sp-search-panel" class="sp-search-panel hidden">
-    <!-- Search Header -->
-    <div class="sp-search-header">
-      <div class="sp-search-header-left">
-        <span class="sp-search-icon">🔍</span>
-        <span class="sp-search-title">Grounded Topic Search</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span class="sp-grounded-badge" title="Guaranteed: Only searches your saved notes on AWS, never hallucinates">🛡️ In-Context Only</span>
-        <button id="sp-search-close-btn" class="sp-icon-btn" style="width:24px;height:24px;font-size:12px;" title="Close Search">✕</button>
-      </div>
-    </div>
-
-    <!-- Search Input Bar -->
-    <div class="sp-search-bar-wrap">
-      <div class="sp-search-input-box">
-        <span class="sp-search-input-icon">🔍</span>
-        <input type="text" id="sp-search-input" class="sp-search-input" placeholder="Search topic (e.g. Backpropagation, Ohm's law…)" autocomplete="off" />
-        <button id="sp-search-clear-btn" class="sp-search-clear-btn hidden" title="Clear search">✕</button>
-      </div>
-      <button id="sp-search-exec-btn" class="sp-search-btn">Search</button>
-    </div>
-
-    <!-- Scope Filter -->
-    <div class="sp-search-filters">
-      <span style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;">Scope:</span>
-      <select id="sp-search-scope" class="sp-search-select">
-        <option value="all">All Saved Lectures (AWS Cloud)</option>
-        <option value="current">Current Lecture Only</option>
-      </select>
-      <span id="sp-search-stats" style="margin-left:auto;font-size:10px;color:var(--muted);"></span>
-    </div>
-
-    <!-- Search Body Results -->
-    <div id="sp-search-body" class="sp-search-body">
-      <div class="sp-search-empty">
-        <div style="font-size:28px;margin-bottom:8px;">📚</div>
-        <div style="font-weight:600;color:#fff;">Search Your Saved Knowledge</div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5;max-width:260px;">
-          Type any concept, equation, or topic above to find the exact explanation and jump directly to that timestamp in the lecture.
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ═══════════════ PRACTICE SESSION OVERLAY ═══════════════ -->

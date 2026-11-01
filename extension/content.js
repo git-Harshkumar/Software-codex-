@@ -62,12 +62,32 @@
 
   function getYouTubeChannel() {
     const el = document.querySelector('#upload-info #channel-name a')
+      || document.querySelector('#upload-info #channel-name yt-formatted-string')
       || document.querySelector('ytd-watch-metadata #channel-name a')
+      || document.querySelector('#owner #channel-name a')
+      || document.querySelector('ytd-watch-metadata #owner #channel-name yt-formatted-string')
+      || document.querySelector('#owner ytd-channel-name yt-formatted-string')
+      || document.querySelector('ytd-video-owner-renderer #channel-name yt-formatted-string')
       || document.querySelector('ytd-video-owner-renderer #channel-name a')
       || document.querySelector('#owner-name a')
+      || document.querySelector('#owner-name yt-formatted-string')
       || document.querySelector('ytd-channel-name yt-formatted-string')
+      || document.querySelector('#channel-name yt-formatted-string')
       || document.querySelector('#channel-name');
-    return el?.textContent?.trim() || '';
+    const channel = el?.textContent?.trim();
+    if (channel) return channel;
+
+    const authorMeta = document.querySelector('meta[itemprop="author"]');
+    const metaChannel = authorMeta?.getAttribute('content')?.trim();
+    if (metaChannel) return metaChannel;
+
+    const player = document.getElementById('movie_player');
+    if (player && typeof player.getPlayerResponse === 'function') {
+      const author = player.getPlayerResponse()?.videoDetails?.author?.trim();
+      if (author) return author;
+    }
+
+    return '';
   }
 
   function getYouTubeDescription() {
@@ -236,11 +256,28 @@
 
   function onTimeUpdate() {
     if (!videoEl) return;
-    const cur = videoEl.currentTime || 0;
-    const dur = videoEl.duration || 0;
+    const player = document.getElementById('movie_player');
+    const playerTime = player && typeof player.getCurrentTime === 'function'
+      ? Number(player.getCurrentTime())
+      : 0;
+    const cur = Number.isFinite(videoEl.currentTime) ? videoEl.currentTime : playerTime;
+    const dur = Number.isFinite(videoEl.duration) ? videoEl.duration : getPlayerDuration();
     const tracker = document.getElementById('rc-time-display');
     if (tracker) {
       tracker.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+    }
+
+    function getPlayerDuration() {
+      const player = document.getElementById('movie_player');
+      if (player && typeof player.getDuration === 'function') {
+        const duration = Number(player.getDuration());
+        return Number.isFinite(duration) && duration > 0 ? duration : 0;
+      }
+      if (player && typeof player.getPlayerResponse === 'function') {
+        const duration = Number(player.getPlayerResponse()?.videoDetails?.lengthSeconds);
+        return Number.isFinite(duration) && duration > 0 ? duration : 0;
+      }
+      return 0;
     }
     sampleFrameIfNeeded();
   }
@@ -358,12 +395,12 @@
           <button class="rc-footer-btn" id="rc-cloud-save-footer-btn" title="Save Active Notes to AWS DynamoDB" style="display:flex;align-items:center;gap:4px;border:1px solid rgba(56,189,248,0.4);color:#38bdf8;">
             <span>☁️ Save AWS</span>
           </button>
-          <button class="rc-footer-btn" id="rc-studio-footer-btn" title="Open Interactive Notes Studio: Edit, Draw & Share" style="display:flex;align-items:center;gap:4px;border:1px solid rgba(139,92,246,0.4);color:#c084fc;">
-            <span>✏️ Studio</span>
-          </button>
           <button class="rc-footer-btn rc-pdf-btn-hero" id="rc-pdf-btn" title="Download Notes as PDF">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Download PDF</span>
+          </button>
+          <button class="rc-footer-btn" id="rc-studio-btn" title="Open notes in RecallAI Studio">
+            <span>Studio</span>
           </button>
         </div>
       </div>
@@ -430,9 +467,7 @@
 
     // Download PDF
     document.getElementById('rc-pdf-btn')?.addEventListener('click', downloadPdfNotes);
-
-    // Notes Studio
-    document.getElementById('rc-studio-footer-btn')?.addEventListener('click', openStudioFromContent);
+    document.getElementById('rc-studio-btn')?.addEventListener('click', openStudioFromContent);
 
     // AWS Cloud Save
     const cloudSaveBtn = document.getElementById('rc-cloud-save-btn');
@@ -1960,10 +1995,108 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       return;
     }
 
+    const title = `RecallAI — ${currentLevel.toUpperCase()} Notes (${currentLang.toUpperCase()})`;
+    const renderedHtml = renderMarkdown(text, currentVideoId || getVideoId(), capturedKeyframes);
+    const pdfPayload = {
+      html: renderedHtml,
+      title,
+      level: currentLevel,
+      lang: currentLang,
+      filename: `RecallAI_Notes_${currentLevel}_${currentLang}.pdf`
+    };
+    chrome.runtime.sendMessage({ action: 'UPLOAD_RENDERED_PDF', payload: pdfPayload }, response => {
+      if (chrome.runtime.lastError || !response?.ok) {
+        console.warn('[RecallAI] PDF S3 upload failed:', response?.error || chrome.runtime.lastError?.message);
+      } else {
+        console.log('[RecallAI] PDF uploaded to S3:', response.key);
+      }
+      chrome.runtime.sendMessage({
+        action: 'OPEN_PRINT_PAGE',
+        data: { html: renderedHtml, title }
+      }, printResponse => {
+        if (chrome.runtime.lastError || !printResponse?.ok) {
+          if (pdfBtn) pdfBtn.innerHTML = defaultBtnHtml;
+          alert('Could not open the formatted PDF view.');
+          return;
+        }
+        if (pdfBtn) pdfBtn.innerHTML = '<span>Saved to S3 — Save PDF locally</span>';
+      });
+    });
+    return;
+
+    const clean = String(text)
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/[`*_>#]/g, '')
+      .replace(/\r/g, '')
+      .replace(/[^\x20-\x7E\n]/g, '');
+    const lines = [`${title}`, '', ...clean.split('\n').flatMap(line => {
+      const value = line.trim();
+      if (!value) return [''];
+      const chunks = [];
+      let current = '';
+      value.split(/\s+/).forEach(word => {
+        if ((current + ' ' + word).trim().length > 88) {
+          if (current) chunks.push(current);
+          current = word;
+        } else {
+          current = `${current} ${word}`.trim();
+        }
+      });
+      if (current) chunks.push(current);
+      return chunks;
+    })];
+    const pageLines = 50;
+    const pages = [];
+    for (let i = 0; i < lines.length; i += pageLines) pages.push(lines.slice(i, i + pageLines));
+    const objects = [];
+    const addObject = value => { objects.push(value); return objects.length; };
+    const fontId = addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+    const pageIds = [];
+    const contentIds = [];
+    pages.forEach(page => {
+      const commands = ['BT', '/F1 10 Tf', '50 770 Td', '14 TL'];
+      page.forEach(line => {
+        const escaped = line.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+        commands.push(`(${escaped}) Tj`, '0 -14 Td');
+      });
+      commands.push('ET');
+      const stream = commands.join('\n');
+      contentIds.push(addObject(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`));
+      pageIds.push(addObject(''));
+    });
+    const pagesId = addObject('');
+    pageIds.forEach((id, index) => {
+      objects[id - 1] = `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentIds[index]} 0 R >>`;
+    });
+    objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pageIds.length} >>`;
+    const catalogId = addObject(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+    let pdf = '%PDF-1.4\n';
+    const offsets = [0];
+    objects.forEach((object, index) => {
+      offsets[index + 1] = pdf.length;
+      pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+    });
+    const xref = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    offsets.slice(1).forEach(offset => { pdf += `${String(offset).padStart(10, '0')} 00000 n \n`; });
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    const url = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `RecallAI_Notes_${currentLevel}_${currentLang}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (pdfBtn) {
+      pdfBtn.innerHTML = '<span>Downloaded PDF</span>';
+      setTimeout(() => { pdfBtn.innerHTML = defaultBtnHtml; }, 2000);
+    }
+    return;
+
     if (pdfBtn) { pdfBtn.innerHTML = '<span>Preparing PDF…</span>'; }
 
     const vId = currentVideoId || getVideoId();
-    const title = `RecallAI — ${currentLevel.toUpperCase()} Notes (${currentLang.toUpperCase()})`;
     const renderedHtml = renderMarkdown(text, vId, capturedKeyframes);
 
     const printWin = window.open('', '_blank');
@@ -2328,8 +2461,14 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
           .map(el => el.innerText?.trim()).filter(Boolean).join('\n');
 
         const live = isLiveVideo();
-        const curTime = el ? (el.currentTime || 0) : 0;
-        const dur = el ? (el.duration || 0) : 0;
+        const player = document.getElementById('movie_player');
+        const playerTime = player && typeof player.getCurrentTime === 'function'
+          ? Number(player.getCurrentTime())
+          : 0;
+        const curTime = el && Number.isFinite(el.currentTime) ? el.currentTime : playerTime;
+        const dur = el && Number.isFinite(el.duration) && el.duration > 0
+          ? el.duration
+          : getPlayerDuration();
 
         // If transcript not yet captured or forced, retrieve right now via bridge
         if ((!videoTranscript || videoTranscript.length === 0) || request.forceFetchTranscript) {

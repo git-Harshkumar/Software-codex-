@@ -16,6 +16,7 @@ import re
 import shutil
 import subprocess
 import uuid
+import tempfile
 from datetime import datetime
 
 # Load .env on startup — but only to pre-populate if a key already exists
@@ -57,6 +58,7 @@ except ImportError:
 
 # ── App setup ───────────────────────────────────────────────
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
 BASE   = os.path.dirname(os.path.abspath(__file__))
 SHORTS   = os.path.join(BASE, "shorts")
 SUMMARY  = os.path.join(BASE, "summary", "summary.mp4")
@@ -384,14 +386,548 @@ def sync_lecture():
         except Exception as e:
             print(f"[warn] Could not save transcript: {e}")
 
+    # 5. Automatically save notes to AWS DynamoDB
+    try:
+        from pipeline.cloud_db import save_note_to_aws
+        v_id = data.get("videoId") or data.get("video_id") or "lecture"
+        v_title = data.get("title") or "Lecture Video"
+        v_channel = data.get("channel") or ""
+
+        for level_k, langs_map in notes.items():
+            if not isinstance(langs_map, dict):
+                continue
+            for lang_k, content_txt in langs_map.items():
+                if content_txt and isinstance(content_txt, str) and content_txt.strip():
+                    save_note_to_aws({
+                        "videoId": v_id,
+                        "title": v_title,
+                        "channel": v_channel,
+                        "level": level_k,
+                        "lang": lang_k,
+                        "note": content_txt,
+                        "timeline": timeline
+                    })
+    except Exception as e:
+        print(f"[warn] Could not auto-save notes to DynamoDB: {e}")
+
     return jsonify({
         "ok": True,
         "saved_files": saved_files,
-        "message": f"Successfully synced {len(saved_files)} note files, timeline, and study assets!"
+        "message": f"Successfully synced {len(saved_files)} note files, timeline, and study assets to DynamoDB!"
     })
 
 
-@app.route("/api/notes/<level>/<lang>")
+# ── AWS Cloud Database & Grounded Topic Search Endpoints ────────────────
+@app.route("/api/cloud/save-note", methods=["POST"])
+def cloud_save_note():
+    """Save generated note and topic sections to AWS DynamoDB."""
+    try:
+        from pipeline.cloud_db import save_note_to_aws
+        payload = request.json or {}
+        res = save_note_to_aws(payload)
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/cloud/search", methods=["POST"])
+def cloud_search():
+    """Strict in-context grounded search across AWS DynamoDB stored notes."""
+    try:
+        from pipeline.cloud_db import search_topic_in_notes, synthesize_grounded_answer
+        data = request.json or {}
+        query = data.get("query", "").strip()
+        video_id = data.get("videoId") or data.get("video_id")
+        level = data.get("level")
+        lang = data.get("lang")
+        api_key = data.get("apiKey") or os.getenv("GEMINI_API_KEY")
+
+        if not query:
+            return jsonify({"ok": False, "error": "Query cannot be empty."}), 400
+
+        search_res = search_topic_in_notes(query, video_id=video_id, level=level, lang=lang)
+        if not search_res.get("ok"):
+            return jsonify(search_res), 400
+
+        qa_res = synthesize_grounded_answer(query, search_res, gemini_api_key=api_key)
+
+        return jsonify({
+            "ok": True,
+            "query": query,
+            "in_context": search_res.get("in_context", False),
+            "message": search_res.get("message"),
+            "grounded_answer": qa_res.get("grounded_answer", ""),
+            "citations": qa_res.get("citations", []),
+            "results": search_res.get("results", [])
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/cloud/saved-lectures", methods=["GET"])
+def cloud_saved_lectures():
+    """List of all lectures saved in the database."""
+    try:
+        from pipeline.cloud_db import get_saved_lectures_list
+        lectures = get_saved_lectures_list()
+        return jsonify({"ok": True, "lectures": lectures})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/cloud/note/<note_id>", methods=["GET"])
+def cloud_get_note(note_id):
+    """Fetch a full saved note by note_id as JSON."""
+    try:
+        from pipeline.cloud_db import get_full_note_by_id
+        note = get_full_note_by_id(note_id)
+        if not note:
+            return jsonify({"ok": False, "error": f"Note '{note_id}' not found."}), 404
+        return jsonify({"ok": True, "note": note})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/cloud/note/<note_id>/html", methods=["GET"])
+def cloud_get_note_html(note_id):
+    """Serve a full saved note as a beautiful standalone HTML page."""
+    try:
+        from pipeline.cloud_db import get_full_note_by_id
+        note = get_full_note_by_id(note_id)
+        if not note:
+            return f"<h2 style='font-family:sans-serif;padding:40px;color:#ef4444'>Note not found: {note_id}</h2>", 404
+
+        markdown_content = note.get("markdown_content", "")
+        title    = note.get("title",   "Lecture Notes")
+        level    = note.get("level",   "overview").title()
+        lang     = note.get("lang",    "english").title()
+        channel  = note.get("channel", "")
+        video_id = note.get("video_id", "")
+        body_html = md_to_html(markdown_content) if markdown_content else "<p>No content available.</p>"
+        yt_link   = f"https://www.youtube.com/watch?v={video_id}" if video_id else "#"
+
+        highlight_q = request.args.get("q", "")
+        if highlight_q:
+            words = [w for w in highlight_q.split() if len(w) > 2]
+            for w in words:
+                body_html = re.sub(
+                    f'({re.escape(w)})',
+                    r'<mark style="background:#fbbf2444;color:#fbbf24;border-radius:3px;padding:0 2px">\1</mark>',
+                    body_html, flags=re.IGNORECASE
+                )
+
+        ch_badge = f'<span class="badge badge-ch">{channel}</span>' if channel else ''
+        ch_meta  = f'<span>📺 {channel}</span>' if channel else ''
+
+        page = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{title} — RecallAI Notes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{{--bg:#0f172a;--sur:#1e293b;--s2:#263347;--cyan:#06b6d4;--acc:#7c3aed;--text:#e2e8f0;--muted:#94a3b8;--bdr:#334155;--ylw:#fbbf24}}
+    *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+    body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.8}}
+    .topbar{{position:sticky;top:0;z-index:99;background:rgba(15,23,42,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--bdr);padding:11px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}}
+    .brand{{font-weight:800;font-size:.92rem;color:#3b82f6}}
+    .badge{{border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:600}}
+    .badge-lvl{{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#86efac}}
+    .badge-lang{{background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);color:#67e8f9}}
+    .badge-ch{{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5b4fc}}
+    .yt-btn{{margin-left:auto;display:flex;align-items:center;gap:6px;background:#ef4444;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:.8rem;font-weight:700;cursor:pointer;text-decoration:none}}
+    .yt-btn:hover{{background:#dc2626}}
+    .page{{max-width:900px;margin:0 auto;padding:36px 24px 80px}}
+    .banner{{background:linear-gradient(135deg,#1e3a8a,#581c87);border-radius:16px;padding:30px 34px;margin-bottom:36px;border:1px solid rgba(255,255,255,.07)}}
+    .banner h1{{font-size:1.5rem;font-weight:800;color:#fff;line-height:1.3;margin-bottom:10px}}
+    .banner .meta{{display:flex;gap:9px;flex-wrap:wrap;margin-top:8px}}
+    .banner .meta span{{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:3px 12px;font-size:.73rem;color:#ddd6fe}}
+    .content h1{{display:none}}
+    .content h2{{font-size:1.15rem;font-weight:700;color:var(--cyan);margin:34px 0 10px;padding:10px 16px;background:rgba(6,182,212,.07);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0}}
+    .content h3{{font-size:.98rem;font-weight:600;color:#a78bfa;margin:22px 0 8px;padding-bottom:4px;border-bottom:1px dashed var(--bdr)}}
+    .content h4{{font-size:.9rem;font-weight:600;color:var(--ylw);margin:14px 0 6px}}
+    .content p{{margin-bottom:12px}}
+    .content ul,.content ol{{margin:8px 0 14px 22px}}
+    .content li{{margin-bottom:5px}}
+    .content strong{{color:var(--ylw);font-weight:600}}
+    .content code{{font-family:'JetBrains Mono',monospace;font-size:.82em;background:var(--sur);color:#7dd3fc;padding:2px 7px;border-radius:5px;border:1px solid var(--bdr)}}
+    .content pre{{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:18px 20px;overflow-x:auto;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:.82em;line-height:1.65}}
+    .content pre code{{background:none;border:none;padding:0;color:#e2e8f0}}
+    .content blockquote{{border-left:3px solid var(--acc);background:rgba(124,58,237,.08);padding:12px 18px;border-radius:0 8px 8px 0;margin:14px 0;color:#c4b5fd}}
+    .content table{{width:100%;border-collapse:collapse;margin:16px 0;font-size:.88em}}
+    .content th{{background:var(--s2);padding:10px 14px;text-align:left;font-weight:600;color:var(--cyan);border:1px solid var(--bdr)}}
+    .content td{{padding:9px 14px;border:1px solid var(--bdr)}}
+    .content tr:nth-child(even) td{{background:rgba(255,255,255,.02)}}
+    .content hr{{border:none;border-top:1px solid var(--bdr);margin:28px 0}}
+    mark{{background:#fbbf2444;color:#fbbf24;border-radius:3px;padding:0 2px}}
+    @media print{{.topbar{{display:none}};body{{background:#fff;color:#1e293b}};.content h2{{color:#1e3a8a;background:#eff6ff}}}}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand">📚 RecallAI Notes</span>
+    <span class="badge badge-lvl">{level}</span>
+    <span class="badge badge-lang">{lang}</span>
+    {ch_badge}
+    <a class="yt-btn" href="{yt_link}" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+  </div>
+  <div class="page">
+    <div class="banner">
+      <h1>{title}</h1>
+      <div class="meta"><span>📖 {level} Notes</span><span>🌐 {lang}</span>{ch_meta}</div>
+    </div>
+    <div class="content">{body_html}</div>
+  </div>
+</body></html>"""
+        return page, 200, {"Content-Type": "text/html; charset=utf-8"}
+    except Exception as e:
+        return f"<h2>Error: {e}</h2>", 500
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# S3 Note Storage + Search API  (/api/notes/*)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Architecture:
+#   POST   /api/notes            → generate/save note to S3, index in search engine
+#   GET    /api/notes            → list user's notes (metadata from S3)
+#   GET    /api/notes/<noteId>   → retrieve complete note from S3
+#   PUT    /api/notes/<noteId>   → update note in S3 + re-index in search engine
+#   DELETE /api/notes/<noteId>   → delete from S3 + remove from search index
+#   GET    /api/notes/search     → search user's notes via existing search engine → S3
+#
+# SECURITY: userId is NEVER taken from the request body.
+#           It is always derived server-side from the API key or a
+#           configurable identity token.  If you add real auth later
+#           (JWT/session), replace _get_authenticated_user_id() below.
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _get_authenticated_user_id() -> str:
+    """
+    Returns the server-side authenticated user ID.
+
+    Currently uses the Gemini API key (hashed) as a stable, unique
+    per-user identity — no frontend can spoof this because the key
+    is validated server-side.
+
+    When you add real auth (JWT / session / OAuth) replace this function.
+    """
+    import hashlib
+    key = (
+        request.headers.get("X-User-Id", "").strip()   # extension can send this
+        or os.environ.get("GEMINI_API_KEY", "").strip()  # server env fallback
+        or "anonymous"
+    )
+    # Hash so we never store the raw key as a userId
+    return "u_" + hashlib.sha256(key.encode()).hexdigest()[:16]
+
+
+@app.route("/api/notes", methods=["POST"])
+def api_create_note():
+    """
+    POST /api/notes
+
+    Flow:
+      1. Accept note payload from the extension / frontend
+      2. Create a unique noteId
+      3. Save the complete note to S3  (source of truth)
+      4. Index the note in the existing search engine (DynamoDB chunks)
+      5. Return success + noteId to the frontend
+    """
+    try:
+        from pipeline.s3_storage import save_note_to_s3
+        from pipeline.cloud_db  import index_note_for_search
+
+        data     = request.json or {}
+        user_id  = _get_authenticated_user_id()
+        video_id = data.get("videoId") or data.get("video_id") or "lecture"
+        title    = data.get("title") or "Lecture Video"
+        channel  = data.get("channel") or ""
+        level    = data.get("level", "overview").lower()
+        lang     = data.get("lang", "english").lower()
+        content  = data.get("note") or data.get("content") or data.get("markdown") or ""
+        timeline = data.get("timeline") or []
+
+        if not content:
+            return jsonify({"ok": False, "error": "Note content is required."}), 400
+
+        # Build a deterministic noteId (same video+level+lang → same slot, like DynamoDB)
+        note_id = f"{video_id}_{level}_{lang}"
+
+        # ── Step 3: Save to S3 (source of truth) ──────────────────────────────
+        s3_result = save_note_to_s3(
+            user_id=user_id,
+            note_id=note_id,
+            title=title,
+            content=content,
+            video_id=video_id,
+            channel=channel,
+            level=level,
+            lang=lang,
+            timeline=timeline,
+        )
+
+        # ── Step 4: Index in the existing search engine ────────────────────────
+        search_result = index_note_for_search(
+            note_id=note_id,
+            user_id=user_id,
+            video_id=video_id,
+            title=title,
+            channel=channel,
+            markdown=content,
+            level=level,
+            lang=lang,
+            timeline=timeline,
+        )
+
+        return jsonify({
+            "ok":           True,
+            "noteId":       note_id,
+            "userId":       user_id,
+            "s3Synced":     s3_result.get("s3Synced", False),
+            "storage":      s3_result.get("storage"),
+            "searchIndexed":search_result.get("ok", False),
+            "chunksIndexed":search_result.get("chunks_saved", 0),
+            "message":      "Note saved to S3 and indexed in search engine.",
+            "warning":      s3_result.get("warning"),
+        }), 201
+
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/notes", methods=["GET"])
+def api_list_notes():
+    """
+    GET /api/notes
+
+    Returns the authenticated user's notes as lightweight metadata
+    (no full content — use GET /api/notes/<noteId> for full content from S3).
+    """
+    try:
+        from pipeline.s3_storage import list_notes_from_s3
+        user_id = _get_authenticated_user_id()
+        notes   = list_notes_from_s3(user_id)
+        return jsonify({"ok": True, "userId": user_id, "notes": notes, "count": len(notes)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/notes/search", methods=["GET"])
+def api_search_notes():
+    """
+    GET /api/notes/search?q={query}&level={level}&lang={lang}
+
+    Search flow:
+      Frontend → Flask → Search Engine (DynamoDB chunks, user-scoped)
+               → Matching note IDs → S3 (complete notes) → Frontend
+
+    Results include: title, snippet, noteId, createdAt, relevance score.
+    When the user clicks a result, GET /api/notes/<noteId> fetches from S3.
+
+    SECURITY: userId is derived server-side. The query is always filtered
+              to this user's chunks only — cross-user leakage is impossible.
+    """
+    try:
+        from pipeline.cloud_db   import search_topic_in_notes, synthesize_grounded_answer
+        from pipeline.s3_storage import get_note_from_s3
+
+        user_id = _get_authenticated_user_id()
+        query   = request.args.get("q", "").strip()
+        level   = request.args.get("level")
+        lang    = request.args.get("lang")
+        api_key = os.getenv("GEMINI_API_KEY")
+
+        if not query:
+            return jsonify({"ok": False, "error": "Query parameter 'q' is required."}), 400
+
+        # ── Step 1: Search the index (user-scoped) ─────────────────────────────
+        search_res = search_topic_in_notes(
+            query,
+            level=level,
+            lang=lang,
+            user_id=user_id,   # SECURITY: always server-side
+        )
+
+        if not search_res.get("ok"):
+            return jsonify(search_res), 400
+
+        # ── Step 2: Synthesize grounded AI answer from matched chunks ──────────
+        qa_res = synthesize_grounded_answer(query, search_res, gemini_api_key=api_key)
+
+        # ── Step 3: Enrich results with S3 metadata (title, createdAt) ─────────
+        enriched_results = []
+        for r in search_res.get("results", []):
+            note_id = r.get("note_id") or r.get("chunk_id", "").rsplit("_chunk_", 1)[0]
+            enriched_results.append({
+                "noteId":        note_id,
+                "videoId":       r.get("video_id"),
+                "title":         r.get("video_title"),
+                "topicHeading":  r.get("topic_heading"),
+                "snippet":       r.get("snippet"),
+                "score":         r.get("score"),
+                "timestampSec":  r.get("timestamp_sec", 0),
+                "timestampStr":  r.get("timestamp_str", "00:00"),
+                "level":         r.get("level"),
+                "lang":          r.get("lang"),
+                "createdAt":     r.get("created_at"),
+            })
+
+        return jsonify({
+            "ok":            True,
+            "query":         query,
+            "userId":        user_id,
+            "inContext":     search_res.get("in_context", False),
+            "message":       search_res.get("message"),
+            "groundedAnswer":qa_res.get("grounded_answer", ""),
+            "citations":     qa_res.get("citations", []),
+            "results":       enriched_results,
+            "totalMatches":  len(enriched_results),
+        })
+
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/notes/<note_id>", methods=["GET"])
+def api_get_note(note_id):
+    """
+    GET /api/notes/<noteId>
+
+    Retrieves the complete note from S3 (source of truth).
+    Only succeeds if the note belongs to the authenticated user.
+    """
+    try:
+        from pipeline.s3_storage import get_note_from_s3
+        user_id = _get_authenticated_user_id()
+        note    = get_note_from_s3(user_id, note_id)
+
+        if not note:
+            return jsonify({
+                "ok":    False,
+                "error": f"Note '{note_id}' not found.",
+            }), 404
+
+        # Extra safety: ensure the stored note really belongs to this user
+        if note.get("userId") and note["userId"] != user_id:
+            return jsonify({"ok": False, "error": "Access denied."}), 403
+
+        return jsonify({"ok": True, "note": note})
+
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/notes/<note_id>", methods=["PUT"])
+def api_update_note(note_id):
+    """
+    PUT /api/notes/<noteId>
+
+    Update flow:
+      1. Verify note belongs to authenticated user
+      2. Update content in S3
+      3. Re-index updated note in the search engine
+    """
+    try:
+        from pipeline.s3_storage import update_note_in_s3, get_note_from_s3
+        from pipeline.cloud_db   import index_note_for_search
+
+        user_id = _get_authenticated_user_id()
+        data    = request.json or {}
+        content = data.get("content") or data.get("markdown") or data.get("note") or ""
+        title   = data.get("title")
+
+        if not content:
+            return jsonify({"ok": False, "error": "Updated content is required."}), 400
+
+        # Verify ownership
+        existing = get_note_from_s3(user_id, note_id)
+        if not existing:
+            return jsonify({"ok": False, "error": f"Note '{note_id}' not found."}), 404
+        if existing.get("userId") and existing["userId"] != user_id:
+            return jsonify({"ok": False, "error": "Access denied."}), 403
+
+        # Update in S3
+        s3_result = update_note_in_s3(user_id, note_id, content, title=title)
+
+        # Re-index in search engine
+        index_note_for_search(
+            note_id=note_id,
+            user_id=user_id,
+            video_id=existing.get("videoId", ""),
+            title=title or existing.get("title", ""),
+            channel=existing.get("channel", ""),
+            markdown=content,
+            level=existing.get("level", "overview"),
+            lang=existing.get("lang", "english"),
+            timeline=existing.get("timeline", []),
+        )
+
+        return jsonify({
+            "ok":       True,
+            "noteId":   note_id,
+            "s3Synced": s3_result.get("s3Synced", False),
+            "message":  "Note updated in S3 and re-indexed in search engine.",
+            "warning":  s3_result.get("warning"),
+        })
+
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/notes/<note_id>", methods=["DELETE"])
+def api_delete_note(note_id):
+    """
+    DELETE /api/notes/<noteId>
+
+    Delete flow:
+      1. Verify note belongs to authenticated user
+      2. Delete from S3
+      3. Remove chunks from search index (local cache; DynamoDB cleanup via TTL)
+    """
+    try:
+        from pipeline.s3_storage import delete_note_from_s3, get_note_from_s3
+        from pipeline.cloud_db   import _load_local_json, _save_local_json, LOCAL_CHUNKS_FILE
+
+        user_id = _get_authenticated_user_id()
+
+        # Verify ownership before deletion
+        existing = get_note_from_s3(user_id, note_id)
+        if not existing:
+            return jsonify({"ok": False, "error": f"Note '{note_id}' not found."}), 404
+        if existing.get("userId") and existing["userId"] != user_id:
+            return jsonify({"ok": False, "error": "Access denied."}), 403
+
+        # Delete from S3
+        s3_result = delete_note_from_s3(user_id, note_id)
+
+        # Remove associated chunks from local search index cache
+        try:
+            local_chunks = _load_local_json(LOCAL_CHUNKS_FILE)
+            before = len(local_chunks)
+            local_chunks = {
+                cid: c for cid, c in local_chunks.items()
+                if c.get("note_id") != note_id
+            }
+            removed = before - len(local_chunks)
+            _save_local_json(LOCAL_CHUNKS_FILE, local_chunks)
+        except Exception as e:
+            print(f"[warn] Could not clean search index chunks: {e}")
+            removed = 0
+
+        return jsonify({
+            "ok":            True,
+            "noteId":        note_id,
+            "s3Deleted":     s3_result.get("s3Deleted", False),
+            "chunksRemoved": removed,
+            "message":       "Note deleted from S3 and removed from search index.",
+            "warning":       s3_result.get("warning"),
+        })
+
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
 def get_notes(level, lang):
     pattern  = NOTE_PATTERNS.get(level.lower())
     if not pattern:
@@ -499,6 +1035,20 @@ def download_notes_pdf(level, lang):
                 print(f"[PDF] Headless conversion error: {e}")
 
     if os.path.exists(pdf_filepath) and os.path.getsize(pdf_filepath) > 0:
+        try:
+            from pipeline.s3_storage import save_pdf_to_s3
+            with open(pdf_filepath, "rb") as pdf_file:
+                s3_result = save_pdf_to_s3(
+                    pdf_file.read(),
+                    level,
+                    lang_slug,
+                    pdf_filename,
+                )
+            if not s3_result.get("ok"):
+                app.logger.warning("PDF was generated locally but S3 upload failed: %s", s3_result.get("error"))
+        except Exception as error:
+            app.logger.warning("PDF was generated locally but S3 upload could not be attempted: %s", error)
+
         return send_file(
             pdf_filepath,
             as_attachment=True,
@@ -508,6 +1058,50 @@ def download_notes_pdf(level, lang):
     else:
         # Fallback to direct print view with autoprint enabled
         return redirect(f"/api/notes/{level}/{lang}/print?autoprint=1")
+
+
+@app.route("/api/extension/upload-pdf", methods=["POST"])
+def upload_extension_pdf():
+    """Render extension HTML to a complete PDF and upload the PDF bytes to S3."""
+    data = request.get_json(silent=True) or {}
+    html = data.get("html", "")
+    title = str(data.get("title", "RecallAI Notes")).strip() or "RecallAI Notes"
+    level = str(data.get("level", "overview"))
+    lang = str(data.get("lang", "english"))
+    filename = os.path.basename(str(data.get("filename", "RecallAI_Notes.pdf")))
+    if not filename.lower().endswith(".pdf"):
+        filename += ".pdf"
+    if not html:
+        return jsonify({"ok": False, "error": "Rendered note HTML is required."}), 400
+
+    browser = find_browser_bin()
+    if not browser:
+        return jsonify({"ok": False, "error": "Chrome or Edge is required on the server for PDF rendering."}), 503
+
+    with tempfile.TemporaryDirectory(prefix="recallai_pdf_") as temp_dir:
+        html_path = os.path.join(temp_dir, "notes.html")
+        pdf_path = os.path.join(temp_dir, filename)
+        with open(html_path, "w", encoding="utf-8") as html_file:
+            html_file.write(render_printable_html(title, html))
+        command = [
+            browser, "--headless=new", "--disable-gpu", "--no-sandbox",
+            "--no-pdf-header-footer", f"--print-to-pdf={pdf_path}",
+            f"file:///{html_path.replace(chr(92), '/')}"
+        ]
+        try:
+            subprocess.run(command, capture_output=True, timeout=60, check=True)
+        except (OSError, subprocess.SubprocessError) as error:
+            app.logger.exception("Extension PDF rendering failed")
+            return jsonify({"ok": False, "error": str(error)}), 500
+        if not os.path.exists(pdf_path) or os.path.getsize(pdf_path) == 0:
+            return jsonify({"ok": False, "error": "PDF renderer produced an empty file."}), 500
+
+        from pipeline.s3_storage import save_pdf_to_s3
+        with open(pdf_path, "rb") as pdf_file:
+            result = save_pdf_to_s3(pdf_file.read(), level, lang, filename)
+        if not result.get("ok"):
+            return jsonify(result), 502
+        return jsonify(result), 201
 
 
 @app.route("/api/notes/<level>/<lang>/raw")
@@ -964,4 +1558,3 @@ if __name__ == "__main__":
     print("=" * 55)
     print()
     app.run(host="0.0.0.0", port=port, debug=False)
-

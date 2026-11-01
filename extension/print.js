@@ -6,12 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const printBtn  = document.getElementById('rc-print-btn');
   const closeBtn  = document.getElementById('rc-close-btn');
 
-  const openStudioBtn = document.getElementById('rc-open-studio-btn');
-
-  openStudioBtn?.addEventListener('click', () => {
-    window.location.href = chrome.runtime.getURL('studio.html');
-  });
-
   printBtn?.addEventListener('click', () => {
     window.print();
   });

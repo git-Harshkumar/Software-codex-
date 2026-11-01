@@ -1,6 +1,7 @@
 # deploy.ps1 - Automated project sync for Windows to AWS EC2
 param (
-    [string]$KeyFile = "ai-lecture-notes-key.pem"
+    # Key is stored outside OneDrive to avoid Windows sync/permission conflicts
+    [string]$KeyFile = "C:\Users\harsh\terraform-keys\ec2-key.pem"
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,14 +18,17 @@ $publicIp = (terraform output -raw public_ip).Trim()
 if (-not $publicIp) {
     Write-Error "Could not retrieve public IP from terraform output."
 }
+$pdfBucket = (terraform output -raw pdf_s3_bucket).Trim()
+if (-not $pdfBucket) {
+    Write-Error "Could not retrieve PDF S3 bucket from Terraform output."
+}
+$awsRegion = (terraform output -raw aws_region).Trim()
+if (-not $awsRegion) {
+    Write-Error "Could not retrieve AWS region from Terraform output."
+}
 
 if (-not (Test-Path $KeyFile)) {
-    $foundKey = Get-ChildItem -Filter "*.pem" | Select-Object -First 1
-    if ($foundKey) {
-        $KeyFile = $foundKey.Name
-    } else {
-        Write-Error "Private key ($KeyFile) not found! Ensure your key is in this directory."
-    }
+    Write-Error "Private key not found at: $KeyFile`nRun 'terraform apply' first to generate the key."
 }
 
 Write-Host "Target EC2 Instance: ubuntu@$publicIp" -ForegroundColor Green
@@ -128,7 +132,15 @@ set -e
 sudo tar -xzf /tmp/project.tar.gz -C /var/www/lecturenotes/
 rm -f /tmp/project.tar.gz
 sudo chown -R ubuntu:ubuntu /var/www/lecturenotes/
+if ! command -v google-chrome >/dev/null 2>&1 && ! command -v chromium >/dev/null 2>&1; then
+    sudo apt-get update -y
+    sudo apt-get install -y wget
+    wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/google-chrome.deb
+    sudo dpkg -i /tmp/google-chrome.deb || sudo apt-get install -f -y
+    rm -f /tmp/google-chrome.deb
+fi
 cd /var/www/lecturenotes
+./venv/bin/pip install boto3
 if [ -f requirements.txt ]; then
     ./venv/bin/pip install -r requirements.txt
 fi
@@ -140,6 +152,12 @@ echo "SUCCESS: Lecture Notes Platform is up to date and running!"
 & $sshCmd -o StrictHostKeyChecking=no -i $KeyFile "ubuntu@$publicIp" "bash -c '$remoteScript'"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Remote service restart failed!"
+}
+
+$envScript = "grep -q '^S3_NOTES_BUCKET=' /var/www/lecturenotes/.env && sudo sed -i 's|^S3_NOTES_BUCKET=.*|S3_NOTES_BUCKET=$pdfBucket|' /var/www/lecturenotes/.env || echo 'S3_NOTES_BUCKET=$pdfBucket' | sudo tee -a /var/www/lecturenotes/.env >/dev/null; grep -q '^AWS_REGION=' /var/www/lecturenotes/.env && sudo sed -i 's|^AWS_REGION=.*|AWS_REGION=$awsRegion|' /var/www/lecturenotes/.env || echo 'AWS_REGION=$awsRegion' | sudo tee -a /var/www/lecturenotes/.env >/dev/null; sudo systemctl restart lecturenotes"
+& $sshCmd -o StrictHostKeyChecking=no -i $KeyFile "ubuntu@$publicIp" $envScript
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to configure the PDF S3 bucket on the server."
 }
 
 Write-Host "`n>>> Deployment Successful! <<<" -ForegroundColor Green

@@ -1,0 +1,8 @@
+# Python / scratch
+*.py
+__pycache__/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

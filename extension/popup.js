@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tabStatus        = document.getElementById('tab-status');
   const openSidebarBtn   = document.getElementById('open-sidebar-btn');
   const openSidepanelBtn = document.getElementById('open-sidepanel-btn');
+  const openStudioBtn    = document.getElementById('open-studio-btn');
   const usageCard        = document.getElementById('usage-card');
   const usageModel       = document.getElementById('usage-model');
   const usageStatus      = document.getElementById('usage-status');
@@ -77,6 +78,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ── Active Tab Check ─────────────────────────────────────────
+  async function getLiveYouTubeMetadata(tabId) {
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          const video = document.querySelector('#movie_player video.html5-main-video')
+            || document.querySelector('#movie_player video')
+            || document.querySelector('video');
+          const player = document.getElementById('movie_player');
+          const title = document.querySelector('h1.ytd-watch-metadata yt-formatted-string')?.textContent?.trim()
+            || document.title.replace(' - YouTube', '').trim();
+          const channel = document.querySelector('#owner-name a')?.textContent?.trim()
+            || document.querySelector('#owner-name yt-formatted-string')?.textContent?.trim()
+            || document.querySelector('#upload-info #channel-name a')?.textContent?.trim()
+            || document.querySelector('ytd-watch-metadata #channel-name')?.textContent?.trim()
+            || document.querySelector('meta[itemprop="author"]')?.getAttribute('content')?.trim()
+            || player?.getPlayerResponse?.()?.videoDetails?.author?.trim()
+            || '';
+          const currentTime = Number.isFinite(video?.currentTime)
+            ? video.currentTime
+            : Number(player?.getCurrentTime?.()) || 0;
+          const duration = Number.isFinite(video?.duration) && video.duration > 0
+            ? video.duration
+            : Number(player?.getDuration?.())
+              || Number(player?.getPlayerResponse?.()?.videoDetails?.lengthSeconds)
+              || 0;
+          return { title, channel, currentTime, duration };
+        }
+      });
+      return results?.[0]?.result || {};
+    } catch (error) {
+      console.warn('[RecallAI Popup] Direct YouTube metadata lookup failed:', error);
+      return {};
+    }
+  }
+
   async function checkActiveTab() {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -93,15 +130,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         openSidebarBtn.style.display = 'flex';
 
         // Try getting real-time channel name & title
-        chrome.tabs.sendMessage(tab.id, { action: 'GET_VIDEO_STATE' }, resp => {
-          if (chrome.runtime.lastError || !resp || !resp.ok) return;
-          const displayTitle = resp.title || cleanTitle;
-          const channelBadge = resp.channel ? `<span style="display:inline-block;margin-top:3px;font-size:10px;color:var(--cyan);background:rgba(56,189,248,0.12);padding:1px 5px;border-radius:3px;">${resp.channel}</span>` : '';
-          tabStatus.innerHTML = `<b>YouTube Video Detected</b><br><span style="font-size:11px;font-weight:600;color:var(--text);">${displayTitle}</span><br>${channelBadge}`;
+        chrome.tabs.sendMessage(tab.id, { action: 'GET_VIDEO_STATE' }, async resp => {
+          chrome.storage.local.get(['rc_video_channel', 'rc_video_title'], stored => {
+            getLiveYouTubeMetadata(tab.id).then(live => {
+            if (chrome.runtime.lastError || !resp || !resp.ok) {
+              const storedChannel = stored?.rc_video_channel || '';
+              const channel = live.channel || storedChannel;
+              const timing = `${formatTime(live.currentTime)} / ${formatTime(live.duration)}`;
+              tabStatus.innerHTML = `<b>YouTube Video Detected</b><br><span style="font-size:11px;font-weight:600;color:var(--text);">${live.title || stored?.rc_video_title || cleanTitle}</span>${channel ? `<br><span style="display:inline-block;margin-top:3px;font-size:10px;color:var(--cyan);">${channel}</span>` : ''}<br><span style="font-size:10px;color:var(--muted);font-family:monospace;">${timing}</span>`;
+              return;
+            }
+            const displayTitle = live.title || resp.title || stored?.rc_video_title || cleanTitle;
+            const channel = live.channel || resp.channel || stored?.rc_video_channel || '';
+            const currentTime = live.currentTime || resp.currentTime;
+            const duration = live.duration || resp.duration;
+            const timing = resp.isLive ? 'LIVE' : `${formatTime(currentTime)} / ${formatTime(duration)}`;
+            const channelBadge = channel ? `<span style="display:inline-block;margin-top:3px;font-size:10px;color:var(--cyan);background:rgba(56,189,248,0.12);padding:1px 5px;border-radius:3px;">${channel}</span>` : '<span style="display:inline-block;margin-top:3px;font-size:10px;color:var(--muted);">Detecting channel...</span>';
+            tabStatus.innerHTML = `<b>YouTube Video Detected</b><br><span style="font-size:11px;font-weight:600;color:var(--text);">${displayTitle}</span><br>${channelBadge}<br><span style="font-size:10px;color:var(--muted);font-family:monospace;">${timing}</span>`;
+            });
+          });
         });
       } else {
         tabStatus.innerHTML = `Open any <b>YouTube video</b> to generate parallel lecture notes.`;
         tabStatus.style.borderColor = '';
+      }
+
+      function formatTime(seconds) {
+        const total = Math.max(0, Math.floor(Number(seconds) || 0));
+        const minutes = Math.floor(total / 60);
+        const secs = total % 60;
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
       }
     } catch (e) {
       tabStatus.textContent = 'Could not detect tab.';
@@ -231,13 +289,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // ── Open Notes Studio & Whiteboard ───────────────────────────
-  const openStudioBtn = document.getElementById('open-studio-btn');
-  openStudioBtn?.addEventListener('click', () => {
-    chrome.tabs.create({ url: chrome.runtime.getURL('studio.html') });
-    window.close();
-  });
-
   // ── Open Native Side Panel ────────────────────────────────────
   openSidepanelBtn?.addEventListener('click', async () => {
     try {
@@ -248,6 +299,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch (e) {
       console.warn('[RecallAI Popup] Side panel open failed:', e);
+    }
+  });
+
+  openStudioBtn?.addEventListener('click', async () => {
+    try {
+      const stored = await chrome.storage.local.get(['rc_studio_data', 'rc_print_data']);
+      const data = stored.rc_studio_data || stored.rc_print_data;
+      if (!data?.markdown) {
+        openStudioBtn.textContent = 'Generate notes first';
+        setTimeout(() => { openStudioBtn.innerHTML = '<span>Open Notes Studio</span>'; }, 2000);
+        return;
+      }
+      chrome.runtime.sendMessage({ action: 'OPEN_STUDIO_PAGE', data }, () => window.close());
+    } catch (e) {
+      console.warn('[RecallAI Popup] Studio open failed:', e);
     }
   });
 

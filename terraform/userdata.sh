@@ -26,8 +26,17 @@ apt-get install -y \
     git \
     nginx \
     curl \
+    wget \
     rsync \
     unzip
+
+# The extension PDF upload endpoint needs a browser renderer on EC2.
+if ! command -v google-chrome >/dev/null 2>&1 && ! command -v chromium >/dev/null 2>&1; then
+    wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+        -O /tmp/google-chrome.deb
+    dpkg -i /tmp/google-chrome.deb || apt-get install -f -y
+    rm -f /tmp/google-chrome.deb
+fi
 
 # ─────────────────────────────────────────────────────────────
 # 3. Setup Project Directory & Permissions
@@ -39,13 +48,15 @@ chown -R ubuntu:ubuntu "$APP_DIR"
 # Setup Python Virtual Environment
 sudo -u ubuntu python3 -m venv "$APP_DIR/venv"
 sudo -u ubuntu "$APP_DIR/venv/bin/pip" install --upgrade pip setuptools wheel
-sudo -u ubuntu "$APP_DIR/venv/bin/pip" install gunicorn flask markdown google-genai reportlab Pillow ffmpeg-python python-dotenv
+sudo -u ubuntu "$APP_DIR/venv/bin/pip" install gunicorn flask markdown google-genai reportlab Pillow ffmpeg-python python-dotenv boto3
 
 # ─────────────────────────────────────────────────────────────
 # 4. Create .env file
 # ─────────────────────────────────────────────────────────────
 cat <<EOF > "$APP_DIR/.env"
 GEMINI_API_KEY=${gemini_api_key}
+AWS_REGION=${aws_region}
+S3_NOTES_BUCKET=${pdf_bucket_name}
 EOF
 chown ubuntu:ubuntu "$APP_DIR/.env"
 chmod 600 "$APP_DIR/.env"

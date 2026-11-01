@@ -64,6 +64,7 @@ Run Terraform commands:
 
 ```bash
 terraform init
+terraform plan
 terraform apply
 ```
 
@@ -72,6 +73,7 @@ Type `yes` when prompted. Terraform will:
 2. Create an AWS Security Group allowing HTTP (Port 80) and SSH (Port 22).
 3. Launch the `t2.micro` EC2 Ubuntu 22.04 LTS instance with 20 GB gp3 volume.
 4. Run the automated bootstrap script (installs Python, ffmpeg, Gunicorn, and Nginx).
+5. Create a private, encrypted, versioned S3 bucket for generated PDF files and grant the EC2 IAM role permission to write only under `pdf/`.
 
 At the end of `terraform apply`, you will see outputs like:
 
@@ -97,6 +99,18 @@ The EC2 instance is now ready! Run the automated deployment script to package an
   ```
 
 This script compresses your code (excluding local `venv`, raw `.git`, and large videos), uploads it to `/var/www/lecturenotes/`, installs Python requirements, and restarts the Gunicorn service.
+
+### Generated PDF storage
+
+The server PDF endpoint generates the complete PDF, verifies that a non-empty local PDF exists, and uploads the exact bytes to:
+
+```text
+s3://<pdf_s3_bucket>/pdf/<level>/<language>/<filename>.pdf
+```
+
+The object is uploaded with `Content-Type: application/pdf` and server-side AES256 encryption. The bucket is private; access is through the EC2 IAM role, not a public URL. The `pdf_s3_bucket` Terraform output shows the actual bucket name.
+
+The Flask server endpoint (`/api/notes/<level>/<lang>/pdf`) uploads generated PDFs directly. The Chrome extension PDF action also calls `/api/extension/upload-pdf`; the server renders the extension's note HTML, uploads the complete binary PDF to the same private S3 bucket, and reports the S3 key. The browser print view is still opened so you can save a local copy.
 
 **Open `http://<YOUR_EC2_PUBLIC_IP>` in your browser to view your live AI Lecture Notes platform!**
 

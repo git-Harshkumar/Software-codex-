@@ -1,229 +1,318 @@
-# Detailed Lecture Notes
-
-## 1. Introduction to Graph Search
-
-Graph Search is the foundational algorithmic technique for exploring graphs. Given a graph $G = (V, E)$, graph search algorithms systematically traverse the structure to answer key computational questions:
-
-*   **Path Finding:** Given a starting vertex $s$ and a target vertex $t$, determine if a path exists from $s$ to $t$, and compute the optimal sequence of edges connecting them.
-*   **Reachable Nodes Exploration:** Given a single source vertex $s$, find every vertex in the graph that can be reached by following valid edges from $s$.
-*   **Complete Graph Exploration:** Visit every vertex and edge in the graph systematically (e.g., to detect connected components or cycles).
+# Detailed Lecture Notes: Level 2 NCEA Networks - Shortest Path (Dijkstra’s Algorithm)
 
 ---
 
-## 2. Graph Fundamentals & Representations
+## 1. Introduction & Learning Goals [00:00]
 
-### Graph Definition
-A graph $G = (V, E)$ consists of:
-1.  **Vertices ($V$):** A set of nodes or entities.
-2.  **Edges ($E$):** A set of connections between pairs of vertices.
-    *   **Undirected Graph:** Edges are **unordered pairs** $\{u, v\}$. Movement is bidirectional (e.g., friendship connections, reversible physical transitions).
-    *   **Directed Graph (Digraph):** Edges are **ordered pairs** $(u, v)$ pointing from $u$ to $v$. Movement is unidirectional (e.g., hyperlinks, one-way streets).
+Network analysis is a core branch of discrete mathematics and operations research evaluated in NCEA Level 2 Mathematics. The primary objective of the **Shortest Path Problem** is to determine the path between two specified vertices (or nodes) in a weighted network such that the sum of the weights of its constituent edges is minimized.
 
 ```
-[Undirected Graph Example — as drawn on board in MIT 6.006 Lecture 13]
-   a — b
-   |\ /
-   | X
-   |/ \
-   c — d
+       [ Start Node: A ] ───( Weight: 4 )───> [ Node B ]
+               │                                   │
+          ( Weight: 2 )                       ( Weight: 1 )
+               ▼                                   ▼
+          [ Node C ] ───( Weight: 3 )───> [ Destination: D ]
+```
 
-Vertices (V): {a, b, c, d}
-Edges (E):    {{a,b}, {a,c}, {b,c}, {c,d}}
+### Key Learning Objectives
+* Master the foundational terminology of network graphs: vertices, edges, weights, paths, and directed/undirected graphs.
+* Understand the conceptual framework of **Dijkstra's Algorithm**, including the distinction between **temporary labels** and **permanent labels**.
+* Perform step-by-step manual calculations using standard NCEA box and tabular notation.
+* Trace optimal routes backwards from the destination node to the starting node (Backtracking).
+* Analyze algorithmic efficiency, time/space complexity, and failure conditions such as negative edge weights.
 
-[Directed Graph Example — as drawn on board in MIT 6.006 Lecture 13]
-   b ——> a
-   ↓       ↘
-   c ↔ (b and c point to each other)
+---
 
-Vertices (V): {a, b, c}
-Edges (E):    {(a,c), (b,a), (b,c), (c,b)}
+## 2. Graph Foundations & Terminology in Network Analysis [01:15]
+
+### Concept Overview & Deep Intuition
+
+Before applying optimization algorithms, a network must be formally modeled using graph theory. A network consists of discrete points connected by lines. Weights assigned to these lines represent metrics such as physical distance, travel time, monetary cost, or energy consumption.
+
+> **Core Intuition & Mental Model**: Think of a network as an interconnected system of roads linking cities. Vertices are city intersections, while edges are the roads connecting them. Edge weights represent travel time in minutes. Finding the shortest path is equivalent to finding the fastest driving route between two cities under static traffic conditions.
+
+### Concept Visualization
+
+The following vector visual illustrates a weighted, undirected graph G = (V, E) with 6 vertices and 8 weighted edges.
+
+<svg width="100%" height="260" viewBox="0 0 650 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="650" height="260" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+  <text x="325" y="25" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#f8fafc" text-anchor="middle">Weighted Network Graph G = (V, E)</text>
+  
+  <!-- Connections / Edges -->
+  <line x1="80" y1="130" x2="200" y2="70" stroke="#64748b" stroke-width="2"/>
+  <line x1="80" y1="130" x2="200" y2="190" stroke="#64748b" stroke-width="2"/>
+  <line x1="200" y1="70" x2="360" y2="70" stroke="#64748b" stroke-width="2"/>
+  <line x1="200" y1="70" x2="200" y2="190" stroke="#64748b" stroke-width="2"/>
+  <line x1="200" y1="190" x2="360" y2="190" stroke="#64748b" stroke-width="2"/>
+  <line x1="360" y1="70" x2="360" y2="190" stroke="#64748b" stroke-width="2"/>
+  <line x1="360" y1="70" x2="520" y2="130" stroke="#64748b" stroke-width="2"/>
+  <line x1="360" y1="190" x2="520" y2="130" stroke="#64748b" stroke-width="2"/>
+  
+  <!-- Edge Weights Background Badges -->
+  <rect x="130" y="85" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="142" y="98" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">4</text>
+  
+  <rect x="130" y="165" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="142" y="178" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">2</text>
+  
+  <rect x="270" y="52" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="282" y="65" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">5</text>
+  
+  <rect x="188" y="122" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="200" y="135" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">1</text>
+  
+  <rect x="270" y="198" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="282" y="211" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">8</text>
+  
+  <rect x="348" y="122" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="360" y="135" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">3</text>
+  
+  <rect x="430" y="85" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="442" y="98" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">6</text>
+  
+  <rect x="430" y="165" width="24" height="18" rx="4" fill="#1e293b"/>
+  <text x="442" y="178" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#fbbf24" text-anchor="middle">2</text>
+  
+  <!-- Vertices -->
+  <!-- A (Start) -->
+  <circle cx="80" cy="130" r="22" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+  <text x="80" y="135" font-family="system-ui, sans-serif" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle">A</text>
+  
+  <!-- B -->
+  <circle cx="200" cy="70" r="20" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+  <text x="200" y="75" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">B</text>
+  
+  <!-- C -->
+  <circle cx="200" cy="190" r="20" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+  <text x="200" y="195" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">C</text>
+  
+  <!-- D -->
+  <circle cx="360" cy="70" r="20" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+  <text x="360" y="75" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">D</text>
+  
+  <!-- E -->
+  <circle cx="360" cy="190" r="20" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>
+  <text x="360" y="195" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">E</text>
+  
+  <!-- F (Destination) -->
+  <circle cx="520" cy="130" r="22" fill="#059669" stroke="#34d399" stroke-width="2"/>
+  <text x="520" y="135" font-family="system-ui, sans-serif" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle">F</text>
+</svg>
+
+### Formal Definitions & Equations
+
+* **Graph Representation**: A network graph G is defined as an ordered pair G = (V, E), where:
+  * V = { v₁, v₂, ..., vₙ } is the set of **Vertices** (nodes).
+  * E = { e₁, e₂, ..., eₘ } is the set of **Edges** (arcs), where each edge e = (u, v) connects vertex u to vertex v.
+* **Edge Weight Mapping**: A function w: E → ℝ⁺ assigning a non-negative real number weight to each edge e.
+* **Path Definition**: A path P from source vertex vₛ to target vertex vₜ is an sequence of vertices P = (v₀, v₁, v₂, ..., vₖ) such that v₀ = vₛ, vₖ = vₜ, and (vᵢ₋₁, vᵢ) ∈ E for all 1 ≤ i ≤ k.
+* **Total Path Weight**:
+  
+  $$L(P) = \sum_{i=1}^{k} w(v_{i-1}, v_i)$$
+
+* **Shortest Path Objective**: Find path P* such that:
+  
+  $$L(P^*) = \min_{P} L(P)$$
+
+---
+
+## 3. Core Principles of Dijkstra’s Algorithm [04:30]
+
+### Concept Overview & Deep Intuition
+
+Dijkstra's Algorithm (developed by Edsger W. Dijkstra in 1956) solves the single-source shortest path problem for a graph with non-negative edge weights. It is a **greedy algorithm**: at each step, it chooses the unvisited vertex with the smallest tentative distance, converts its label to permanent, and relaxes all of its adjacent neighbors.
+
+> **Core Intuition & Mental Model**: Imagine turning on a water faucet at the starting node. Water flows outward along all connected pipes at a uniform speed (1 unit of distance per second). The order in which water reaches each vertex corresponds to the exact chronological order in which Dijkstra's algorithm marks nodes as **permanent**. The first time water reaches a vertex, it has arrived via the absolute shortest path possible.
+
+### Concept Visualization: Wavefront Expansion Mechanics
+
+<svg width="100%" height="240" viewBox="0 0 650 240" xmlns="http://www.w3.org/2000/svg">
+  <rect width="650" height="240" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+  <text x="325" y="25" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#f8fafc" text-anchor="middle">Dijkstra Node State Transition Workflow</text>
+  
+  <!-- State 1: Unvisited -->
+  <g transform="translate(50, 60)">
+    <rect width="150" height="140" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+    <circle cx="75" cy="50" r="22" fill="#334155" stroke="#64748b" stroke-width="2"/>
+    <text x="75" y="55" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#94a3b8" text-anchor="middle">v</text>
+    <text x="75" y="95" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#cbd5e1" text-anchor="middle">Unvisited</text>
+    <text x="75" y="118" font-family="system-ui, sans-serif" font-size="11" fill="#64748b" text-anchor="middle">Label = (∞, None)</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <path d="M 210 130 L 240 130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- State 2: Tentative / Temporary -->
+  <g transform="translate(250, 60)">
+    <rect width="150" height="140" rx="8" fill="#1e293b" stroke="#0284c7" stroke-width="1.5"/>
+    <circle cx="75" cy="50" r="22" fill="#0369a1" stroke="#38bdf8" stroke-width="2"/>
+    <text x="75" y="55" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">v</text>
+    <text x="75" y="95" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#38bdf8" text-anchor="middle">Temporary</text>
+    <text x="75" y="118" font-family="system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle">Label = (d(v), u)</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <path d="M 410 130 L 440 130" stroke="#34d399" stroke-width="2"/>
+  
+  <!-- State 3: Permanent -->
+  <g transform="translate(450, 60)">
+    <rect width="150" height="140" rx="8" fill="#1e293b" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="75" cy="50" r="22" fill="#047857" stroke="#34d399" stroke-width="2"/>
+    <text x="75" y="55" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">v</text>
+    <text x="75" y="95" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#34d399" text-anchor="middle">Permanent</text>
+    <text x="75" y="118" font-family="system-ui, sans-serif" font-size="11" fill="#a7f3d0" text-anchor="middle">Final Shortest Distance</text>
+  </g>
+</svg>
+
+### Key Properties & Mathematical Definitions
+
+1. **Distance Function d(v)**: Stores the current shortest known distance from start vertex S to vertex v.
+2. **Predecessor Pointer p(v)**: Tracks the vertex immediately preceding v on the shortest path.
+3. **Edge Relaxation Equation**:
+   For an active edge (u, v) with weight w(u, v), if:
+   
+   $$d(u) + w(u, v) < d(v)$$
+   
+   Then update:
+   
+   $$d(v) = d(u) + w(u, v) \quad \text{and} \quad p(v) = u$$
+
+4. **Greedy Choice Property**: At any iteration, the unvisited node u with the smallest temporary label d(u) is guaranteed to have its shortest possible path established. Thus, d(u) becomes permanent.
+
+---
+
+## 4. Step-by-Step Manual Algorithm (NCEA Method) [08:45]
+
+In NCEA Level 2 examination papers, students are expected to use a systematic node-labeling box format or working table.
+
+### The NCEA Standard Node Label Format
+
+Each node in the network diagram is annotated with a multi-part label box:
+
+```
+┌───────────────────────────────────────────┐
+│ [ Order of Visit ]  |  [ Final Distance ] │
+├───────────────────────────────────────────┤
+│ [ Temporary Label Working Space / Predecessor ] │
+└───────────────────────────────────────────┘
+```
+
+### Algorithmic Sequence
+
+```
+[ Step 1: Initialize ]
+  ├── d(Start) = 0, Order(Start) = 1
+  └── d(v) = ∞ for all v ≠ Start
+
+[ Step 2: Select Current Node ]
+  └── Find unvisited vertex u with min temporary distance d(u)
+  └── Mark u as PERMANENT. Assign Order of Visit.
+
+[ Step 3: Edge Relaxation ]
+  └── For each unvisited neighbor v of u:
+        If d(u) + w(u,v) < d(v):
+           d(v) = d(u) + w(u,v)
+           Record u as predecessor of v
+
+[ Step 4: Repeat ]
+  └── Repeat Steps 2 & 3 until Target Destination is permanent (or all nodes visited)
+
+[ Step 5: Path Backtracking ]
+  └── Trace predecessor pointers from Destination back to Start
 ```
 
 ---
 
-### In-Memory Graph Representations
+## 5. Worked Example: Complete Network Solution Walkthrough [14:20]
 
-The efficiency of any graph search algorithm depends directly on how the graph is represented in memory.
-
-#### 1. Edge List (Naive Representation)
-*   **Structure:** An array of vertex identifiers and a separate array of edge pairs $[(u_1, v_1), (u_2, v_2), \dots]$.
-*   **Flaw:** Finding the neighbors of vertex $u$ requires scanning the entire edge list, costing $O(E)$ time per vertex. This makes graph exploration unacceptably slow ($O(V \cdot E)$).
-
-#### 2. Adjacency List (Standard Explicit Representation)
-*   **Structure:** An array or hash table `adj` of size $|V|$. For each vertex $u$, `adj[u]` stores an array or linked list containing all neighbors $v$ such that $(u, v) \in E$.
-*   **Space Complexity:** $\Theta(V + E)$
-    *   $|V|$ array entries to store the vertex headers.
-    *   $\sum_{u \in V} \text{deg}(u) = |E|$ list nodes for directed graphs, or $2|E|$ for undirected graphs.
-*   **Efficiency:** Accessing the neighbors of $u$ takes $\Theta(\text{deg}(u))$ time, which is optimal.
-
-#### 3. Implicit Graph Representation
-*   **Concept:** The graph is not stored explicitly in computer memory. Instead, vertices are states generated on demand, and a neighbor function `adj(u)` executes game rules or mathematical transformations to compute valid adjacent states on the fly.
-*   **Importance:** Essential for massive state spaces (e.g., Rubik's Cube with $4.3 \times 10^{19}$ states, chess configurations) where storing $V$ and $E$ in RAM is physically impossible.
-
----
-
-## 3. Configuration Graphs & State Spaces
-
-### Modeling Puzzles as Graphs
-A **Configuration Graph** models discrete physical systems and puzzles:
-*   **Vertex:** A specific configuration or board state.
-*   **Edge:** A legal transition or valid move between states.
-*   **Example (The 2×2×2 Pocket Cube — as shown in MIT 6.006 Lecture 13):**
-    *   **Vertices (states):** Each possible physical configuration of the cube.
-    *   **Edges (moves):** Each possible quarter-turn move transitions one state to another.
-    *   **Number of vertices calculation (as written on board):**
-        $$\text{# vertices} = \frac{8! \times 3^8}{24} \div 3 = \frac{264{,}539{,}520}{24 \times 3} \approx 3{,}674{,}160$$
-        *   $8!$ = permutations of 8 corner pieces
-        *   $3^8$ = orientations of 8 corners
-        *   Divide by **24**: 24 rotational symmetries (overall cube rotations)
-        *   Divide by **3**: only 1/3 of corner orientations are reachable via legal moves
-    *   **God's Number (Diameter):** The maximum distance from any configuration to the solved state.
-        *   **14 quarter turns** (or **11 half turns**) — as stated in the lecture.
-
-### BFS on the Pocket Cube (Backward Search from "Solved")
-The lecturer demonstrated a **backward BFS** starting from the solved state:
+### Problem Statement
+Find the shortest path and minimum total travel distance from **Node A** to **Node F** in the following network:
 
 ```
-BFS Tree — Backward from "solved" state (as drawn on board):
-
-          [solved]            ← Level 0 (root)
-         /   |   \  \
-        o    o    o   o       ← Level 1: states reachable in 1 move (possible moves)
-       /|   /|  ...  ...
-      o  o o  o               ← Level 2: states "reachable in 2" moves
+        (B)───[5]───(D)
+       / │           │ \
+     [4] [1]        [3] [6]
+     /   │           │   \
+   (A)   └───(C)     └───(F)
+     \       /       /
+     [2]   [8]     [2]
+       \   /       /
+        (E)───────┘
 ```
 
-By doing BFS from "solved", we find all configurations reachable in exactly $k$ moves — 
-this is equivalent to finding God's Number (the diameter of the configuration graph).
+#### Network Edge List & Weights
+* Edge (A, B) = 4
+* Edge (A, E) = 2
+* Edge (B, C) = 1
+* Edge (B, D) = 5
+* Edge (E, C) = 8
+* Edge (E, F) = 2
+* Edge (D, F) = 6
+* Edge (C, D) = 3
 
 ---
 
+### Step-by-Step Execution Table
 
-## 4. Breadth-First Search (BFS)
+| Step | Active Node | Permanent Dist | Unvisited Set (V \ S) | Temporary Distance Updates | Selected Min Node |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **0** | - | - | {A, B, C, D, E, F} | d(A)=0, d(B)=∞, d(C)=∞, d(D)=∞, d(E)=∞, d(F)=∞ | **A** (0) |
+| **1** | **A** | d(A) = 0 | {B, C, D, E, F} | d(B) = min(∞, 0+4) = **4** [via A]<br>d(E) = min(∞, 0+2) = **2** [via A] | **E** (2) |
+| **2** | **E** | d(E) = 2 | {B, C, D, F} | d(C) = min(∞, 2+8) = 10 [via E]<br>d(F) = min(∞, 2+2) = **4** [via E] | **B** (4) or **F** (4) → Select **B** |
+| **3** | **B** | d(B) = 4 | {C, D, F} | d(C) = min(10, 4+1) = **5** [via B]<br>d(D) = min(∞, 4+5) = **9** [via B] | **F** (4) |
+| **4** | **F** | d(F) = 4 | {C, D} | Destination F reaches permanent status with distance 4! | **Target Met** |
 
-### Algorithm Design & Layered Exploration
-Breadth-First Search systematically explores all vertices reachable from a starting vertex $s$ layer by layer according to their distance from $s$:
-*   **Level 0:** $\{s\}$
-*   **Level 1:** All immediate neighbors of $s$.
-*   **Level 2:** All unvisited neighbors of Level 1 vertices.
-*   **Level $i$:** All unvisited neighbors of Level $i-1$ vertices.
-
-### Core Data Structures
-1.  `level`: A dictionary/hash map mapping each discovered vertex $v$ to its shortest path distance $\text{dist}(s, v)$.
-2.  `parent`: A dictionary mapping each discovered vertex $v$ to the parent node $u$ that discovered it.
-3.  `frontier`: A list/queue containing all vertices at the current level $i-1$.
-
----
-
-### Detailed BFS Algorithm (Python Implementation)
-
-```python
-def breadth_first_search(adj, s):
-    """
-    Perform Breadth-First Search on a graph starting from source vertex s.
-    
-    Parameters:
-        adj: Adjacency list mapping u -> list of neighbors
-        s:   Starting source vertex
-        
-    Returns:
-        level:  Dict mapping vertex -> shortest distance from s
-        parent: Dict mapping vertex -> parent node in shortest-path tree
-    """
-    level = {s: 0}
-    parent = {s: None}
-    frontier = [s]
-    i = 1
-
-    while frontier:
-        next_level = []
-        for u in frontier:
-            for v in adj[u]:
-                if v not in level:
-                    level[v] = i
-                    parent[v] = u
-                    next_level.append(v)
-        frontier = next_level
-        i += 1
-
-    return level, parent
-```
+*Note*: For absolute completeness, let's observe node C and node D to confirm no smaller path reaches F.
+* Step 4 checks F: d(F) is already 4.
+* Let's check node C: d(C) = 5. Neighbor D: d(D) = min(9, 5+3) = 8 [via C].
+* Edge from D to F would yield 8 + 6 = 14 > 4. Thus distance 4 remains minimal.
 
 ---
 
-## 5. Shortest Path Reconstruction
+### Visualization of Final Permanent State
 
-BFS constructs a **Shortest-Path Tree** rooted at $s$. To retrieve the optimal path from $s$ to any reachable target $t$:
+<svg width="100%" height="260" viewBox="0 0 650 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="650" height="260" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+  <text x="325" y="25" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#f8fafc" text-anchor="middle">Shortest Path Solution Vector (A → E → F)</text>
+  
+  <!-- Active Path Highlight Lines (Green/Cyan) -->
+  <line x1="100" y1="130" x2="220" y2="200" stroke="#34d399" stroke-width="4"/>
+  <line x1="220" y1="200" x2="520" y2="130" stroke="#34d399" stroke-width="4"/>
+  
+  <!-- Inactive Network Lines (Gray) -->
+  <line x1="100" y1="130" x2="220" y2="60" stroke="#334155" stroke-width="1.5" stroke-dasharray="4"/>
+  <line x1="220" y1="60" x2="370" y2="60" stroke="#334155" stroke-width="1.5" stroke-dasharray="4"/>
+  <line x1="220" y1="60" x2="370" y2="140" stroke="#334155" stroke-width="1.5" stroke-dasharray="4"/>
+  <line x1="220" y1="200" x2="370" y2="140" stroke="#334155" stroke-width="1.5" stroke-dasharray="4"/>
+  <line x1="370" y1="60" x2="520" y2="130" stroke="#334155" stroke-width="1.5" stroke-dasharray="4"/>
+  <line x1="370" y1="140" x2="370" y2="60" stroke="#334155" stroke-width="1.5" stroke-dasharray="4"/>
+  
+  <!-- Node A (Start) -->
+  <g transform="translate(100, 130)">
+    <circle cx="0" cy="0" r="22" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+    <text x="0" y="5" font-family="system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">A</text>
+    <rect x="-25" y="-45" width="50" height="18" rx="4" fill="#0369a1"/>
+    <text x="0" y="-32" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#f8fafc" text-anchor="middle">[1] d=0</text>
+  </g>
 
-1.  Start at $t$.
-2.  Follow `parent[t]` iteratively back to $s$.
-3.  Reverse the accumulated sequence.
+  <!-- Node E -->
+  <g transform="translate(220, 200)">
+    <circle cx="0" cy="0" r="22" fill="#047857" stroke="#34d399" stroke-width="2"/>
+    <text x="0" y="5" font-family="system-ui, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">E</text>
+    <rect x="-25" y="25" width="50" height="18" rx="4" fill="#065f46"/>
+    <text x="0" y="38" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#a7f3d0" text-anchor="middle">[2] d=2</text>
+  </g>
 
-```python
-def reconstruct_shortest_path(parent, s, t):
-    """Reconstruct the shortest path from s to t using BFS parent pointers."""
-    if t not in parent:
-        return None  # t is not reachable from s
-    
-    path = []
-    curr = t
-    while curr is not None:
-        path.append(curr)
-        curr = parent[curr]
-    
-    path.reverse()
-    return path
-```
-
----
-
-## 6. Mathematical Complexity Analysis
-
-### Time Complexity: $O(V + E)$
-*   **Vertex Initialization:** Each reachable vertex enters the `frontier` list **at most once** because a vertex is only added if `v not in level`. Once added, `level[v]` is permanently set. Total vertex processing: $O(V)$.
-*   **Edge Traversals:** The adjacency list `adj[u]` is iterated over only when $u$ is in the frontier. Thus, each directed edge $(u, v)$ is inspected exactly once:
-    $$\sum_{u \in V} \text{deg}(u) = |E|$$
-*   **Combined Time Complexity:**
-    $$T(V, E) = O(V + E)$$
-    This running time is **linear in the size of the graph** and is asymptotically optimal.
-
-### Space Complexity:
-*   Explicit Graph: $\Theta(V + E)$ for the adjacency list + $O(V)$ for `level`, `parent`, and `frontier`.
-*   Implicit Graph: $O(V)$ space (only storing `level` and `parent` for visited states).
-
----
-
-## 7. Real-World Applications
-
-| Application | Vertices | Edges | BFS Goal |
-|---|---|---|---|
-| **Web Crawling** | Web pages (URLs) | Hyperlinks | Indexing reachable internet pages |
-| **Social Networks** | User profiles | Friendships / Follows | Degrees of separation, friend suggestions |
-| **Network Routing** | Routers / Switches | Network cables / links | Broadcasting packets with minimum hops |
-| **Garbage Collection** | Memory chunks | Pointers / references | Finding and freeing unreferenced memory |
-| **State Verification** | Circuit/Code states | Valid transitions | Model checking for unreachable error states |
-
----
-
-## 8. Exam-Focused Points
-
-### High-Yield Definitions & Distinctions
-*   **BFS Guarantees:** BFS guarantees the **shortest path in unweighted graphs** (i.e., path with the minimum number of edges). It does *not* compute shortest paths for graphs with variable edge weights (Dijkstra's algorithm is required for that).
-*   **Handling Cycles:** BFS avoids infinite loops in cyclic graphs by maintaining the `level` set / dictionary. If $v \in \text{level}$, the algorithm skips it.
-*   **Diameter of a Graph:** The largest shortest-path distance between any pair of vertices ($\max_{u, v} \text{dist}(u, v)$).
-*   **Adjacency Matrix vs. Adjacency List:**
-    *   *Adjacency Matrix:* Space $\Theta(V^2)$, neighbor scan $O(V)$, checking edge existence $O(1)$.
-    *   *Adjacency List:* Space $\Theta(V + E)$, neighbor scan $O(\text{deg}(u))$, checking edge existence $O(\text{deg}(u))$.
-    *   For sparse graphs ($E \ll V^2$), Adjacency List is vastly superior.
-
----
-
-## Quick Revision
-
-1.  **Graph Representation:** Adjacency List is the standard choice requiring optimal $\Theta(V + E)$ space.
-2.  **Implicit Representation:** Essential for massive state spaces like puzzle configurations where storing every node in RAM is infeasible.
-3.  **BFS Concept:** Explores the graph layer by layer ($\text{distance } 0, 1, 2, \dots$) using a frontier queue.
-4.  **Shortest Paths:** In an unweighted graph, BFS computes the optimal shortest path from $s$ to all reachable vertices.
-5.  **Parent Pointers:** Construct a shortest-path tree that allows backtracking from target $t$ to source $s$.
-6.  **Optimal Complexity:** BFS runs in $O(V + E)$ time, which is linear in the input size.
-7.  **Key Applications:** Web search indexing, social network analysis, network routing, and automated puzzle solving.
+  <!-- Node F (Target) -->
+  <g transform="translate(520, 130)">
+    <circle cx="0" cy="0" r="24" fill="#059669" stroke="#34d399" stroke-width="3"/>
+    <text x="0" y="5" font-family="system-ui, sans-serif" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle">F</text>
+    <rect x="-30" y="-48" width="60" height="20" rx="4" fill="#065f46"/>
+    <text x="0" y="-34" font-family="system-ui, sans-serif" font-size="11" font-weight="800" fill="#34d399" text-anchor="middle">[3] d=4 (★)</text>
+  </g>
+  
+  <!-- Other Nodes -->
+  <!-- B -->
+  <circle cx="220" cy="60" r="18" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+  <text x="220" y="64" font-family="system-ui, sans-

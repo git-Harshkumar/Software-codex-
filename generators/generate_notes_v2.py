@@ -154,8 +154,8 @@ Examples:
 
     parser.add_argument(
         "--model",
-        default="gemini-3.8-flash",
-        help="Gemini model (default: gemini-3.8-flash).",
+        default="gemini-2.5-flash",
+        help="Gemini model (default: gemini-2.5-flash).",
     )
 
     return parser.parse_args()
@@ -521,18 +521,40 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-print(f"Calling Gemini ({args.model})...")
-print()
+models_to_try = [
+    args.model,
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-flash-latest",
+    "gemini-flash-lite-latest",
+    "gemini-3-flash-preview",
+    "gemini-2.5-pro"
+]
+seen = set()
+unique_models = [m for m in models_to_try if not (m in seen or seen.add(m))]
 
-response = client.models.generate_content(
-    model=args.model,
-    contents=[
-        types.Content(
-            role="user",
-            parts=[types.Part(text=SYSTEM_PROMPT + "\n\n" + USER_PROMPT)]
+response = None
+for m in unique_models:
+    try:
+        print(f"Calling Gemini ({m})...")
+        response = client.models.generate_content(
+            model=m,
+            contents=[
+                types.Content(
+                    role="user",
+                    parts=[types.Part(text=SYSTEM_PROMPT + "\n\n" + USER_PROMPT)]
+                )
+            ]
         )
-    ]
-)
+        if response and response.text:
+            print(f"  Successfully generated notes using {m}!")
+            break
+    except Exception as exc:
+        print(f"  [WARN] Model {m} failed ({exc}). Trying next fallback model...")
+
+if not response or not response.text:
+    print("ERROR: Failed to generate notes from all Gemini models.")
+    sys.exit(1)
 
 notes_markdown = response.text.strip()
 
