@@ -27,7 +27,7 @@ An AI-powered browser extension that generates structured lecture notes **in par
   - **Digital Whiteboard & Handwritten Diagrams**: High-precision HTML5 canvas with pen, marker, eraser, geometric shapes (arrows, lines, rectangles, circles), grid patterns, and 1-click diagram embedding into notes.
   - **Classmate Collaboration & Sharing**: Export self-contained standalone `.html` notebooks (openable in any browser without dependencies), study pack `.json`, copy Markdown summaries, and academic PDF printing.
 - 📋 **Export Options**: 1-click copy to clipboard, interactive HTML, JSON study pack, and `.md` file download.
-- 🔑 **Direct Gemini 2.5 Flash Integration**: Ultra-fast, high-quality responses using your Google Gemini API key.
+- 🔑 **Direct Gemini Integration**: Note generation, visual analysis, practice tools, and note Q&A use your Gemini API key.
 
 ---
 
@@ -48,9 +48,17 @@ An AI-powered browser extension that generates structured lecture notes **in par
 ## 🔑 Setup Your Gemini API Key
 
 1. Click the **RecallAI** extension icon in your toolbar, or click the **🔑 icon** in the sidebar.
-2. Enter your Google Gemini API key.
-   - Don't have one? Get a free key at [Google AI Studio](https://aistudio.google.com/app/apikey).
-3. Click **"Save & Verify"**. The key is securely saved in your browser's local storage.
+2. Open [Google AI Studio](https://aistudio.google.com/apikey) and sign in.
+3. Click **"Create API Key"**, enter a name, and create the key.
+4. Copy the key immediately. Gemini keys usually start with `AIza` and may only be shown in full once.
+5. Paste it into RecallAI and click **"Verify & Save"**. The key is stored locally in your browser.
+
+## 💬 Ask AI About Your Notes
+
+After generating notes, click **"Ask AI"** in the side panel. The assistant automatically uses the currently selected level and language as its reference, so you can ask for explanations, examples, or clarification without pasting the notes.
+
+- **Gemini** is used for note generation, visual analysis, practice tools, and note Q&A. The key is stored locally in the extension.
+- Answers are instructed to stay grounded in the selected notes and to say when the notes do not contain enough information.
 
 ---
 
@@ -67,3 +75,4 @@ An AI-powered browser extension that generates structured lecture notes **in par
 5. Toggle **✍️ Handwritten** to see the notes rendered in handwriting style.
 6. Click any timestamp like `⏱️ 04:15` to seek the video to that exact second.
 7. Click **"📋 Copy"** or **"💾 Save .md"** to export your study notes.
+8. Click **"Ask AI"** to discuss the generated note with Gemini.

@@ -4,6 +4,9 @@
  */
 
 (() => {
+  if (window.__recallAIContentLoaded) return;
+  window.__recallAIContentLoaded = true;
+
   // State
   let sidebarOpen = false;
   let currentLevel = 'overview'; // overview, summary, detailed
@@ -27,10 +30,16 @@
   // ============================================================
 
   function init() {
+    if (!document.body) {
+      setTimeout(init, 250);
+      return;
+    }
     setupTriggerButton();
     setupSidebar();
     hookYouTubeEvents();
     checkForVideo();
+    setTimeout(ensureFloatingControls, 1000);
+    setTimeout(ensureFloatingControls, 3000);
   }
 
   function getMainVideoElement() {
@@ -115,6 +124,8 @@
     window.addEventListener('yt-navigate-finish', checkForVideo);
     window.addEventListener('yt-page-data-updated', checkForVideo);
     window.addEventListener('popstate', checkForVideo);
+    window.addEventListener('yt-navigate-finish', ensureFloatingControls);
+    window.addEventListener('yt-page-data-updated', ensureFloatingControls);
 
     // Continuous watch for video changes and SPA navigation
     setInterval(() => {
@@ -303,12 +314,30 @@
   function setupTriggerButton() {
     if (document.getElementById('recall-ai-trigger')) return;
 
-    const btn = document.createElement('div');
+    const btn = document.createElement('button');
     btn.id = 'recall-ai-trigger';
     btn.title = 'Open RecallAI Parallel Notes';
-    btn.innerHTML = `<span class="trigger-label">Notes</span>`;
-    btn.addEventListener('click', toggleSidebar);
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('aria-label', 'Open RecallAI Parallel Notes');
+    btn.tabIndex = 0;
+    btn.type = 'button';
+    btn.innerHTML = `<span class="trigger-icon" aria-hidden="true">AI</span>`;
+    btn.addEventListener('click', () => {
+      chrome.runtime.sendMessage({ action: 'TOGGLE_NATIVE_SIDE_PANEL' });
+    });
+    btn.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        chrome.runtime.sendMessage({ action: 'TOGGLE_NATIVE_SIDE_PANEL' });
+      }
+    });
     document.body.appendChild(btn);
+  }
+
+  function ensureFloatingControls() {
+    if (!document.body) return;
+    setupTriggerButton();
+    setupSidebar();
   }
 
   function setupSidebar() {
@@ -412,8 +441,12 @@
           <div class="rc-modal-title">
             <span>Gemini API Key</span>
           </div>
-          <div style="font-size:12px;color:var(--rc-muted);">Enter your Google Gemini API key to enable instant parallel note generation. Key is stored securely in your browser.</div>
-          <input type="password" id="rc-key-input" class="rc-modal-input" placeholder="AIzaSy..." />
+          <div style="font-size:12px;color:var(--rc-muted);line-height:1.5;">
+            1. Open <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#60a5fa;">Google AI Studio</a> and sign in.<br>
+            2. Click <b>Create API Key</b>, name it, and create it.<br>
+            3. Copy the key immediately, then paste it below. It is stored locally in your browser.
+          </div>
+          <input type="password" id="rc-key-input" class="rc-modal-input" placeholder="AIza..." />
           <div id="rc-key-msg" style="font-size:11.5px;color:var(--rc-red);display:none;"></div>
           <div class="rc-modal-actions">
             <button class="rc-footer-btn" id="rc-key-cancel">Cancel</button>
@@ -494,15 +527,31 @@
   }
 
   function toggleSidebar() {
-    sidebarOpen = !sidebarOpen;
-    const sidebar = document.getElementById('recall-ai-sidebar');
+    let sidebar = document.getElementById('recall-ai-sidebar');
+    if (!sidebar) {
+      setupSidebar();
+      sidebar = document.getElementById('recall-ai-sidebar');
+    }
+    sidebarOpen = !(sidebar && sidebar.classList.contains('open'));
     if (sidebar) sidebar.classList.toggle('open', sidebarOpen);
+    const trigger = document.getElementById('recall-ai-trigger');
+    if (trigger) {
+      trigger.classList.toggle('sidebar-visible', sidebarOpen);
+      trigger.title = sidebarOpen ? 'Minimize RecallAI Notes' : 'Open RecallAI Parallel Notes';
+      trigger.setAttribute('aria-label', trigger.title);
+    }
   }
 
   function closeSidebar() {
     sidebarOpen = false;
     const sidebar = document.getElementById('recall-ai-sidebar');
     if (sidebar) sidebar.classList.remove('open');
+    const trigger = document.getElementById('recall-ai-trigger');
+    if (trigger) {
+      trigger.classList.remove('sidebar-visible');
+      trigger.title = 'Open RecallAI Parallel Notes';
+      trigger.setAttribute('aria-label', trigger.title);
+    }
   }
 
   function setLevel(lvl, btn) {
@@ -566,7 +615,7 @@
 
   function parseTranscriptData(rawText) {
     if (!rawText || typeof rawText !== 'string') return [];
-    const trimmed = rawText.trim();
+    const trimmed = rawText.trim().replace(/^\)\]\}'\s*/, '');
 
     // 1. JSON3 format (modern YouTube)
     if (trimmed.startsWith('{')) {
@@ -603,6 +652,23 @@
         }
         if (items.length > 0) return items;
       } catch (e) {}
+    }
+
+    // 3. WebVTT format
+    if (/^WEBVTT(?:\r?\n|$)/i.test(trimmed)) {
+      const items = [];
+      for (const block of trimmed.split(/\r?\n\r?\n/)) {
+        const lines = block.split(/\r?\n/);
+        const index = lines.findIndex(line => /(?:\d{2}:)?\d{2}:\d{2}\.\d{3}\s+-->/i.test(line));
+        if (index < 0) continue;
+        const match = lines[index].match(/(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})/);
+        if (!match) continue;
+        const start = Number(match[1] || 0) * 3600 + Number(match[2]) * 60 + Number(match[3]) + Number(match[4]) / 1000;
+        const end = Number(match[5] || 0) * 3600 + Number(match[6]) * 60 + Number(match[7]) + Number(match[8]) / 1000;
+        const text = lines.slice(index + 1).join(' ').replace(/<[^>]+>/g, '').trim();
+        if (text) items.push({ start, duration: Math.max(0, end - start), text });
+      }
+      if (items.length > 0) return items;
     }
 
     return [];
@@ -680,8 +746,18 @@
 
         for (const track of sorted) {
           if (!track.baseUrl) continue;
-          const base = track.baseUrl;
-          const urls = base.includes('fmt=') ? [base] : [base + '&fmt=json3', base];
+          const urls = [];
+          for (const format of ['json3', 'srv3', 'vtt', '']) {
+            try {
+              const url = new URL(track.baseUrl);
+              if (format) url.searchParams.set('fmt', format);
+              else url.searchParams.delete('fmt');
+              urls.push(url.toString());
+            } catch (e) {
+              urls.push(track.baseUrl);
+              break;
+            }
+          }
 
           for (const url of urls) {
             // Use bg worker fetch to avoid CORS in content script
@@ -748,8 +824,18 @@
           console.warn('[RecallAI] Skipping foreign caption track:', track.baseUrl);
           continue;
         }
-        const base = track.baseUrl;
-        const urls = base.includes('fmt=') ? [base] : [base + '&fmt=json3', base];
+        const urls = [];
+        for (const format of ['json3', 'srv3', 'vtt', '']) {
+          try {
+            const url = new URL(track.baseUrl);
+            if (format) url.searchParams.set('fmt', format);
+            else url.searchParams.delete('fmt');
+            urls.push(url.toString());
+          } catch (e) {
+            urls.push(track.baseUrl);
+            break;
+          }
+        }
 
         for (const url of urls) {
           // Use bg worker fetch to avoid CORS in content script
@@ -895,7 +981,7 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
       action: 'CALL_GEMINI',
       apiKey: key,
       prompt: prompt,
-      model: 'gemini-2.5-flash'
+      model: 'gemini-3.8-flash'
     }, response => {
       if (response && response.ok && response.text) {
         liveNotesList.push(response.text.trim());
@@ -2448,6 +2534,11 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
 
   // Listen for messages from side panel and popup
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'RECALL_AI_PING') {
+      sendResponse({ ok: true });
+      return true;
+    }
+
     if (request.action === 'GET_VIDEO_STATE') {
       (async () => {
         const vId = getVideoId() || currentVideoId;
@@ -2532,6 +2623,12 @@ Preserve exact technical terminology, definitions, and equations. Do not repeat 
         else if (!request.enable && isLiveMode) toggleLiveMode();
       }
       sendResponse({ ok: true, isLiveMode });
+      return true;
+    }
+
+    if (request.action === 'TOGGLE_RECALL_SIDEBAR') {
+      toggleSidebar();
+      sendResponse({ ok: true, open: sidebarOpen });
       return true;
     }
   });

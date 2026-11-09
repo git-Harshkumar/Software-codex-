@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const copyBtn = document.getElementById('sp-copy-btn');
   const dlBtn   = document.getElementById('sp-dl-notes-btn') || document.getElementById('sp-dl-btn');
   const pdfBtn  = document.getElementById('sp-pdf-btn');
+  const askAiBtn = document.getElementById('sp-ask-ai-btn');
+  const askAiPanel = document.getElementById('sp-ask-ai-panel');
+  const askAiClose = document.getElementById('sp-ask-ai-close');
+  const askAiMessages = document.getElementById('sp-ask-ai-messages');
+  const askAiProvider = document.getElementById('sp-ask-ai-provider');
+  const askAiInput = document.getElementById('sp-ask-ai-input');
+  const askAiSend = document.getElementById('sp-ask-ai-send');
 
   // Cloud Save UI Elements
   const cloudSaveBtn       = document.getElementById('sp-cloud-save-btn');
@@ -167,14 +174,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
 
         <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;padding:10px;margin-bottom:12px;font-size:11.5px;color:#6b6b6b;line-height:1.6;">
-          Get your free key at <a href="https://aistudio.google.com/app/apikey" target="_blank"
-          style="color:#4a90d9;text-decoration:none;">Google AI Studio</a> &mdash; takes 30 seconds.
-          <br>Free: <strong style="color:#e0e0e0;">1,500 req/day</strong> &middot; No credit card needed.
+          1. Open <a href="https://aistudio.google.com/apikey" target="_blank"
+          style="color:#4a90d9;text-decoration:none;">Google AI Studio</a> and sign in.<br>
+          2. Click <strong style="color:#e0e0e0;">Create API Key</strong>.<br>
+          3. Name the key, create it, and copy it immediately. Use it for note generation and Q&amp;A.
         </div>
 
         <label style="font-size:10px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Your API Key</label>
         <div style="display:flex;gap:6px;margin-bottom:8px;">
-          <input id="sp-km-input" type="password" placeholder="AIzaSy..." spellcheck="false"
+          <input id="sp-km-input" type="password" placeholder="AIza..." spellcheck="false"
             style="flex:1;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;
                    padding:7px 9px;color:#e0e0e0;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;" />
           <button id="sp-km-show" style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;
@@ -244,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (res.ok) {
           if (res.modelUsed) chrome.storage.local.set({ last_verified_model: res.modelUsed });
-          statusEl.textContent = `Key verified — ${res.modelUsed || 'Gemini Flash'}.`;
+          statusEl.textContent = `Key verified — ${res.modelUsed || 'Gemini'}.`;
           statusEl.style.color = '#5a9e6f';
           setTimeout(closeModal, 1000);
         } else {
@@ -263,6 +271,82 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Focus the input
     setTimeout(() => document.getElementById('sp-km-input')?.focus(), 100);
   }
+
+  function appendAskAiMessage(role, text) {
+    const empty = askAiMessages?.querySelector('.sp-ask-ai-empty');
+    if (empty) empty.remove();
+    const message = document.createElement('div');
+    message.className = `sp-ask-ai-message ${role}`;
+    message.textContent = text;
+    askAiMessages?.appendChild(message);
+    if (askAiMessages) askAiMessages.scrollTop = askAiMessages.scrollHeight;
+  }
+
+  async function askAboutCurrentNotes() {
+    const question = askAiInput?.value?.trim() || '';
+    const notes = cachedNotes[currentLevel]?.[currentLang];
+    if (!notes) {
+      appendAskAiMessage('assistant', 'Generate or select a note before asking a question.');
+      return;
+    }
+    if (!question) {
+      askAiInput?.focus();
+      return;
+    }
+
+    const provider = 'gemini';
+    const keyName = 'gemini_api_key';
+    const stored = await new Promise(resolve => chrome.storage.local.get([keyName], resolve));
+    let apiKey = stored[keyName];
+    if (!apiKey) {
+      const label = 'Gemini';
+      const entered = prompt(`Enter your ${label} API key to use Ask AI:`);
+      if (!entered?.trim()) return;
+      apiKey = entered.trim();
+      await chrome.storage.local.set({ [keyName]: apiKey });
+    }
+
+    appendAskAiMessage('user', question);
+    askAiInput.value = '';
+    askAiSend.disabled = true;
+    askAiSend.textContent = 'Thinking...';
+    const loading = document.createElement('div');
+    loading.className = 'sp-ask-ai-message assistant';
+    loading.textContent = `Gemini is reading your ${currentLevel} notes...`;
+    askAiMessages?.appendChild(loading);
+
+    chrome.runtime.sendMessage({
+      action: 'ASK_NOTES_AI',
+      provider,
+      apiKey,
+      question,
+      notes
+    }, response => {
+      loading.remove();
+      askAiSend.disabled = false;
+      askAiSend.textContent = 'Ask';
+      if (chrome.runtime.lastError || !response?.ok) {
+        appendAskAiMessage('assistant', response?.error || 'The AI request failed. Check your API key and try again.');
+        return;
+      }
+      appendAskAiMessage('assistant', response.text);
+    });
+  }
+
+  if (askAiBtn && askAiPanel) {
+    askAiBtn.addEventListener('click', () => {
+      askAiPanel.classList.toggle('hidden');
+      if (!askAiPanel.classList.contains('hidden')) askAiInput?.focus();
+    });
+  }
+  askAiClose?.addEventListener('click', () => askAiPanel?.classList.add('hidden'));
+  askAiSend?.addEventListener('click', askAboutCurrentNotes);
+  askAiInput?.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      askAboutCurrentNotes();
+    }
+  });
 
   // ── Helper to check if tab is YouTube ────────────────────────
   function isYouTubeTab(tab) {
@@ -1388,7 +1472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function parseTranscriptData(rawText) {
     if (!rawText || typeof rawText !== 'string') return [];
-    const trimmed = rawText.trim();
+    const trimmed = rawText.trim().replace(/^\)\]\}'\s*/, '');
 
     // 1. JSON3 format (modern YouTube)
     if (trimmed.startsWith('{')) {
@@ -1432,13 +1516,34 @@ document.addEventListener('DOMContentLoaded', async () => {
       } catch (e) {}
     }
 
+    // 3. WebVTT format
+    if (/^WEBVTT(?:\r?\n|$)/i.test(trimmed)) {
+      const items = [];
+      const timestamp = /^(\d{2}:)?\d{2}:\d{2}\.\d{3}\s+-->\s+(\d{2}:)?\d{2}:\d{2}\.\d{3}/;
+      const blocks = trimmed.split(/\r?\n\r?\n/);
+      for (const block of blocks) {
+        const lines = block.split(/\r?\n/);
+        const timeLine = lines.find(line => timestamp.test(line));
+        if (!timeLine) continue;
+        const match = timeLine.match(/(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})/);
+        if (!match) continue;
+        const start = (Number(match[1] || 0) * 3600) + (Number(match[2]) * 60) + Number(match[3]) + Number(match[4]) / 1000;
+        const end = (Number(match[5] || 0) * 3600) + (Number(match[6]) * 60) + Number(match[7]) + Number(match[8]) / 1000;
+        const text = lines.slice(lines.indexOf(timeLine) + 1).join(' ').replace(/<[^>]+>/g, '').trim();
+        if (text) items.push({ start, duration: Math.max(0, end - start), text });
+      }
+      if (items.length > 0) return items;
+    }
+
     return [];
   }
 
   // Direct extraction from YouTube active tab DOM (MAIN world)
   async function getCaptionTracksFromTab(tabId, targetVideoId) {
     if (!tabId) return [];
-    try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise(resolve => setTimeout(resolve, 800));
+      try {
       const results = await chrome.scripting.executeScript({
         target: { tabId },
         world: 'MAIN',
@@ -1490,16 +1595,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log(`[RecallAI] Extracted ${res.tracks.length} caption tracks from tab (${res.source})`);
         return res.tracks;
       }
-    } catch (e) {
-      console.warn('[RecallAI] MAIN world script notice:', e);
+      } catch (e) {
+        console.warn('[RecallAI] MAIN world script notice:', e);
+      }
     }
     return [];
   }
 
-  async function fetchTranscriptFromTracks(tracks, vId) {
-    if (!tracks || tracks.length === 0) return [];
+  async function fetchTranscriptFromTracks(tracks, vId, tabId) {
+    const captionUrls = [];
+    for (const language of ['en', 'hi']) {
+      for (const kind of ['', 'asr']) {
+        const url = new URL('https://www.youtube.com/api/timedtext');
+        url.searchParams.set('v', vId);
+        url.searchParams.set('lang', language);
+        url.searchParams.set('fmt', 'json3');
+        if (kind) url.searchParams.set('kind', kind);
+        captionUrls.push(url.toString());
+      }
+    }
+
+    const candidates = Array.isArray(tracks) ? tracks.slice() : [];
+    if (candidates.length === 0) {
+      candidates.push(...captionUrls.map(baseUrl => ({ baseUrl })));
+    }
+
     // Prioritize English then Hindi
-    const sorted = [...tracks].sort((a, b) => {
+    const sorted = candidates.sort((a, b) => {
       const aLang = (a.languageCode || '').toLowerCase();
       const bLang = (b.languageCode || '').toLowerCase();
       const aScore = aLang.startsWith('en') ? (a.kind === 'asr' ? 2 : 1) : (aLang.startsWith('hi') ? 3 : 4);
@@ -1509,11 +1631,76 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     for (const track of sorted) {
       if (!track.baseUrl) continue;
-      const base = track.baseUrl;
-      const urls = base.includes('fmt=') ? [base] : [base + '&fmt=json3', base];
+      const urls = [];
+      for (const format of ['json3', 'srv3', 'vtt', '']) {
+        try {
+          const url = new URL(track.baseUrl);
+          if (format) url.searchParams.set('fmt', format);
+          else url.searchParams.delete('fmt');
+          urls.push(url.toString());
+        } catch (e) {
+          urls.push(track.baseUrl);
+          break;
+        }
+      }
 
       for (const u of urls) {
         try {
+          const tab = tabId ? { id: tabId } : await getActiveYouTubeTab();
+          if (tab?.id) {
+            const pageResult = await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              world: 'MAIN',
+              func: async (captionUrl) => {
+                try {
+                  const response = await fetch(captionUrl, { credentials: 'include' });
+                  if (!response.ok) return [];
+                  const raw = await response.text();
+                  const trimmed = raw.trim();
+                  if (trimmed.startsWith('{')) {
+                    const data = JSON.parse(trimmed);
+                    return (data.events || []).flatMap(event => {
+                      if (!event.segs?.length) return [];
+                      const text = event.segs.map(segment => segment.utf8 || '').join('').replace(/\n/g, ' ').trim();
+                      return text ? [{
+                        start: (event.tStartMs || 0) / 1000,
+                        duration: (event.dDurationMs || 0) / 1000,
+                        text
+                      }] : [];
+                    });
+                  }
+                  if (/^WEBVTT(?:\r?\n|$)/i.test(trimmed)) {
+                    return trimmed.split(/\r?\n\r?\n/).flatMap(block => {
+                      const lines = block.split(/\r?\n/);
+                      const index = lines.findIndex(line => /(?:\d{2}:)?\d{2}:\d{2}\.\d{3}\s+-->/i.test(line));
+                      if (index < 0) return [];
+                      const match = lines[index].match(/(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})/);
+                      if (!match) return [];
+                      const start = Number(match[1] || 0) * 3600 + Number(match[2]) * 60 + Number(match[3]) + Number(match[4]) / 1000;
+                      const end = Number(match[5] || 0) * 3600 + Number(match[6]) * 60 + Number(match[7]) + Number(match[8]) / 1000;
+                      const text = lines.slice(index + 1).join(' ').replace(/<[^>]+>/g, '').trim();
+                      return text ? [{ start, duration: Math.max(0, end - start), text }] : [];
+                    });
+                  }
+                  const xml = new DOMParser().parseFromString(raw, 'text/xml');
+                  return Array.from(xml.getElementsByTagName('text')).map(node => ({
+                    start: Number(node.getAttribute('start') || 0),
+                    duration: Number(node.getAttribute('dur') || 3),
+                    text: node.textContent.replace(/\s+/g, ' ').trim()
+                  })).filter(item => item.text);
+                } catch (error) {
+                  return [];
+                }
+              },
+              args: [u]
+            });
+            const pageLines = pageResult?.[0]?.result || [];
+            if (pageLines.length > 0) {
+              console.log(`[RecallAI] Retrieved ${pageLines.length} captions directly from YouTube`);
+              return pageLines;
+            }
+          }
+
           const res = await new Promise(r => {
             chrome.runtime.sendMessage({ action: 'FETCH_TRANSCRIPT_URL', url: u }, r);
           });
@@ -1527,6 +1714,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) {}
       }
     }
+
+    // Some YouTube player responses omit captionTracks even though timed text is available.
+    for (const u of captionUrls) {
+      try {
+        const tab = tabId ? { id: tabId } : await getActiveYouTubeTab();
+        if (tab?.id) {
+          const pageResult = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            world: 'MAIN',
+            func: async url => {
+              try {
+                const response = await fetch(url, { credentials: 'include' });
+                return response.ok ? await response.text() : '';
+              } catch (error) {
+                return '';
+              }
+            },
+            args: [u]
+          });
+          const parsed = parseTranscriptData(pageResult?.[0]?.result || '');
+          if (parsed.length > 0) return parsed;
+        }
+        const response = await new Promise(resolve => {
+          chrome.runtime.sendMessage({ action: 'FETCH_TRANSCRIPT_URL', url: u }, resolve);
+        });
+        const parsed = parseTranscriptData(response?.text || '');
+        if (parsed.length > 0) return parsed;
+      } catch (error) {
+        console.warn('[RecallAI] Timed-text fallback failed:', error);
+      }
+    }
+
     return [];
   }
 
@@ -1567,7 +1786,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const stored = await getStoredVideoData();
     let key = stored.gemini_api_key;
     if (!key) {
-      const entered = prompt('Please enter your Google Gemini API Key:');
+      const entered = prompt('Please enter your Gemini API Key:');
       if (entered && entered.trim()) {
         key = entered.trim();
         await chrome.storage.local.set({ gemini_api_key: key });
@@ -1587,6 +1806,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
       });
     } catch (e) {}
+
+    if (!liveState?.transcript?.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        liveState = await new Promise(res => {
+          chrome.tabs.sendMessage(tab.id, { action: 'GET_VIDEO_STATE', forceFetchTranscript: true }, r => {
+            if (chrome.runtime.lastError || !r) res(null);
+            else res(r);
+          });
+        });
+      } catch (e) {}
+    }
 
     // Track videoId and keyframesMap
     const urlVideoId = getVideoIdFromUrl(tab.url);
@@ -1633,7 +1864,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         const tabTracks = await getCaptionTracksFromTab(tab.id, curVideoId);
         if (tabTracks.length > 0) {
-          const parsedLines = await fetchTranscriptFromTracks(tabTracks, curVideoId);
+          const parsedLines = await fetchTranscriptFromTracks(tabTracks, curVideoId, tab.id);
           if (parsedLines.length > 0) {
             transcript = parsedLines;
             chrome.storage.local.set({ [`rc_transcript_${curVideoId}`]: transcript });

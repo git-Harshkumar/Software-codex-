@@ -11,90 +11,180 @@ chrome.runtime.onInstalled.addListener(() => {
   console.log('[RecallAI] Background pipeline service worker installed.');
 });
 
-// ── Confirmed available Gemini models (queried live from v1beta API) ──────────
-const GEMINI_MODELS = [
-  'gemini-2.5-flash',        // Primary high quality
-  'gemini-2.5-flash-lite',   // High speed, separate capacity pool
-  'gemini-flash-latest',     // Latest flash
-  'gemini-flash-lite-latest',// Latest flash lite
-  'gemini-3-flash-preview',  // Next-gen flash preview
-  'gemini-2.5-pro',          // Pro tier fallback
-  'gemini-pro-latest'        // Latest pro
-];
+const nativeSidePanelState = new Map();
 
-const sleepMs = ms => new Promise(resolve => setTimeout(resolve, ms));
+function isYouTubePage(url) {
+  try {
+    const parsed = new URL(url || '');
+    return parsed.protocol === 'https:'
+      && (parsed.hostname === 'youtube.com'
+        || parsed.hostname === 'www.youtube.com'
+        || parsed.hostname === 'm.youtube.com');
+  } catch (e) {
+    return false;
+  }
+}
 
-// ── Gemini API Caller with Fallback, Retry & Multimodal Vision Support ────────
-async function callGeminiApi(apiKey, contents, systemInstruction, preferredModel) {
-  const modelsToTry = preferredModel
-    ? [preferredModel, ...GEMINI_MODELS.filter(m => m !== preferredModel)]
-    : GEMINI_MODELS;
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status !== 'complete' || !isYouTubePage(tab.url)) return;
+  chrome.tabs.sendMessage(tabId, { action: 'RECALL_AI_PING' }, () => {
+    const needsInjection = Boolean(chrome.runtime.lastError);
+    const initialize = needsInjection
+      ? chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] })
+      : Promise.resolve();
+    initialize.catch(error => {
+      console.warn('[RecallAI] Could not initialize YouTube companion:', error.message);
+    }).finally(() => {
+    setTimeout(() => {
+      chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          if (document.getElementById('recall-ai-trigger')) return;
+          const button = document.createElement('button');
+          button.id = 'recall-ai-trigger';
+          button.type = 'button';
+          button.textContent = 'AI';
+          button.title = 'Open RecallAI';
+          Object.assign(button.style, {
+            position: 'fixed',
+            right: '24px',
+            bottom: '24px',
+            zIndex: '2147483647',
+            width: '52px',
+            height: '52px',
+            border: '2px solid #60a5fa',
+            borderRadius: '50%',
+            background: '#2563eb',
+            color: '#fff',
+            font: '800 14px Arial',
+            cursor: 'pointer',
+            boxShadow: '0 4px 18px rgba(0,0,0,.55)'
+          });
+          button.addEventListener('click', () => {
+            chrome.runtime.sendMessage({ action: 'TOGGLE_NATIVE_SIDE_PANEL' }, response => {
+              if (chrome.runtime.lastError || !response?.ok) return;
+              button.classList.toggle('sidebar-visible', response.open);
+              button.title = response.open ? 'Minimize RecallAI Side Panel' : 'Open RecallAI Side Panel';
+            });
+          });
+          document.body.appendChild(button);
+        }
+      }).catch(() => {});
+    }, 500);
+    });
+  });
+});
 
-  let lastError = null;
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'TOGGLE_NATIVE_SIDE_PANEL') {
+    const tabId = sender.tab?.id;
+    if (!tabId) {
+      sendResponse({ ok: false, error: 'No active YouTube tab found.' });
+      return false;
+    }
+    const isOpen = nativeSidePanelState.get(tabId) === true;
+    if (!isOpen) {
+      chrome.sidePanel.open({ tabId })
+        .then(() => {
+          nativeSidePanelState.set(tabId, true);
+          sendResponse({ ok: true, open: true });
+        })
+        .catch(error => sendResponse({ ok: false, error: error.message }));
+      return true;
+    }
 
-  // Normalize contents to Gemini API format
-  let formattedContents = [];
-  if (typeof contents === 'string') {
-    formattedContents = [{ role: 'user', parts: [{ text: contents }] }];
-  } else if (Array.isArray(contents)) {
-    formattedContents = contents;
+    if (typeof chrome.sidePanel.close !== 'function') {
+      sendResponse({ ok: false, error: 'This Chrome version does not support closing the native side panel programmatically.' });
+      return false;
+    }
+
+    chrome.tabs.get(tabId)
+      .then(tab => chrome.sidePanel.close({ windowId: tab.windowId }))
+      .then(() => {
+        nativeSidePanelState.set(tabId, false);
+        sendResponse({ ok: true, open: false });
+      })
+      .catch(error => sendResponse({ ok: false, error: error.message }));
+    return true;
   }
 
-  for (const model of modelsToTry) {
-    // Up to 2 attempts per model to ride out temporary 503/429 spikes
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const endpoint =
-          `https://generativelanguage.googleapis.com/v1beta/models/` +
-          `${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  if (request.action !== 'TOGGLE_RECALL_SIDEBAR' || !sender.tab?.id) return false;
 
-        const payload = {
-          contents: formattedContents,
-          generationConfig: { temperature: 0.2, maxOutputTokens: 8192 }
-        };
+  const tabId = sender.tab.id;
+  chrome.tabs.sendMessage(tabId, request, response => {
+    if (!chrome.runtime.lastError && response) {
+      sendResponse(response);
+      return;
+    }
 
-        if (systemInstruction) {
-          payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-        }
+    chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] })
+      .then(() => new Promise(resolve => setTimeout(resolve, 150)))
+      .then(() => chrome.tabs.sendMessage(tabId, request))
+      .then(response => sendResponse(response || { ok: true }))
+      .catch(error => sendResponse({ ok: false, error: error.message }));
+  });
+  return true;
+});
 
-        const res = await fetch(endpoint, {
+// ── Gemini API caller for all generation, vision, and note-grounded Q&A ─────
+async function callGeminiApi(apiKey, contents, systemInstruction, preferredModel) {
+  const models = [...new Set([
+    preferredModel || 'gemini-3.8-flash',
+    'gemini-flash-latest',
+    'gemini-flash-lite-latest'
+  ])];
+  const parts = Array.isArray(contents)
+    ? (contents[0]?.parts || [])
+    : [{ text: String(contents || '') }];
+  let lastError = 'Gemini returned an empty response.';
+
+  for (const model of models) {
+    const body = {
+      contents: [{ role: 'user', parts }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: 4096 }
+    };
+    if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction }] };
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+        {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          const errMsg = data.error?.message || `HTTP ${res.status}`;
-          lastError = errMsg;
-          console.warn(`[RecallAI] ${model} (attempt ${attempt}) notice:`, errMsg);
-
-          // If high demand or rate limit, wait briefly and retry or cascade
-          if (res.status === 503 || res.status === 429 || /high demand|capacity|rate limit|quota|busy/i.test(errMsg)) {
-            if (attempt === 1) {
-              await sleepMs(1200);
-              continue;
-            }
-          }
-          break; // Move to next model
+          body: JSON.stringify(body)
         }
-
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        if (text) {
-          return { ok: true, text, modelUsed: model };
-        }
-
-        lastError = 'Empty response from Gemini.';
-      } catch (err) {
-        lastError = err.message;
-        console.warn(`[RecallAI] Network error with ${model}:`, err);
-        break;
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        lastError = data.error?.message || `Gemini request failed (HTTP ${res.status}).`;
+        continue;
       }
+      const text = data.candidates?.[0]?.content?.parts
+        ?.map(part => part.text || '')
+        .join('')
+        .trim() || '';
+      if (text) {
+        return { ok: true, text, modelUsed: model, finishReason: data.candidates?.[0]?.finishReason || null };
+      }
+      lastError = 'Gemini returned an empty response.';
+    } catch (err) {
+      lastError = err.message || 'Unable to connect to Gemini.';
     }
   }
 
-  return { ok: false, error: lastError || 'All Gemini models failed. Please try again.' };
+  return { ok: false, error: `Gemini request failed after trying available Flash models: ${lastError}` };
+}
+
+async function verifyGeminiApiKey(apiKey) {
+  const result = await callGeminiApi(
+    apiKey,
+    'Reply with the single word OK.',
+    'You are a connection test. Reply with only OK.',
+    'gemini-3.8-flash'
+  );
+  return result.ok
+    ? { ok: true, modelUsed: result.modelUsed }
+    : { ok: false, error: result.error };
 }
 
 // ── Transcript Cleaning & Sentence Reconstructor (clean_transcript.py & sentence_reconstructor.py) ──
@@ -327,7 +417,17 @@ OUTPUT QUALITY:
 
 At the end, always provide:
 ## Quick Revision
-5–10 of the most critical takeaways from the lecture.`;
+5–10 of the most critical takeaways from the lecture.
+
+GEMINI RESPONSE CONSTRAINT:
+Prefer accurate, complete notes over decorative SVGs, long code listings, large tables, or repeated explanations. Cover all major topics and finish cleanly.`;
+
+const GEMINI_NOTE_SYSTEM_PROMPT = `You generate accurate lecture notes from the supplied transcript and board observations.
+Use only the source material. Do not invent facts.
+Return the actual study notes, not a timeline or JSON.
+Use compact Markdown with a title, short headings, timestamped bullets, key definitions or steps, and a final Quick Revision list.
+Cover all major topics briefly. Do not output SVGs, images, large tables, long code, or meta-commentary.
+Stay below 850 output tokens and finish cleanly.`;
 
 function getNoteLevelPrompt(level, lang, title, lectureFeed) {
   const levelNames = { overview: 'OVERVIEW', summary: 'SUMMARY', detailed: 'DETAILED NOTES' };
@@ -425,7 +525,14 @@ SOURCE MATERIAL (Transcript & Board Observations):
 ${lectureFeed}
 ==================================================
 
-Generate beautifully formatted, academic study notes in ${lang.toUpperCase()} now:`;
+Generate beautifully formatted, academic study notes in ${lang.toUpperCase()} now.
+
+GEMINI OUTPUT:
+- Prioritize accurate concepts, timestamps, definitions, mechanisms, and Quick Revision.
+- Use compact Markdown bullets and short headings.
+- Do not include SVG, long code listings, large tables, or repeated explanations.
+- For detailed mode, cover every major topic briefly rather than expanding only the first topic.
+- End cleanly; never stop in the middle of a heading, table, code block, or sentence.`;
 }
 
 // ── Timeline & Flashcards Generator ───────────────────────────────────────────
@@ -699,7 +806,7 @@ async function fetchPlayerResponseForVideo(videoId) {
 
 function parseTranscriptRaw(rawText) {
   if (!rawText || typeof rawText !== 'string') return [];
-  const trimmed = rawText.trim();
+  const trimmed = rawText.trim().replace(/^\)\]\}'\s*/, '');
 
   // 1. JSON3 format
   if (trimmed.startsWith('{')) {
@@ -746,6 +853,23 @@ function parseTranscriptRaw(rawText) {
     if (items.length > 0) return items;
   }
 
+  // 3. WebVTT format
+  if (/^WEBVTT(?:\r?\n|$)/i.test(trimmed)) {
+    const items = [];
+    for (const block of trimmed.split(/\r?\n\r?\n/)) {
+      const lines = block.split(/\r?\n/);
+      const index = lines.findIndex(line => /(?:\d{2}:)?\d{2}:\d{2}\.\d{3}\s+-->/i.test(line));
+      if (index < 0) continue;
+      const match = lines[index].match(/(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(?:(\d{2}):)?(\d{2}):(\d{2})\.(\d{3})/);
+      if (!match) continue;
+      const start = Number(match[1] || 0) * 3600 + Number(match[2]) * 60 + Number(match[3]) + Number(match[4]) / 1000;
+      const end = Number(match[5] || 0) * 3600 + Number(match[6]) * 60 + Number(match[7]) + Number(match[8]) / 1000;
+      const text = lines.slice(index + 1).join(' ').replace(/<[^>]+>/g, '').trim();
+      if (text) items.push({ start, duration: Math.max(0, end - start), text });
+    }
+    if (items.length > 0) return items;
+  }
+
   return [];
 }
 
@@ -753,7 +877,21 @@ async function fetchFullTranscriptForVideo(videoId) {
   if (!videoId) return [];
   const trackRes = await fetchPlayerResponseForVideo(videoId);
   const tracks = trackRes?.tracks || [];
-  if (tracks.length === 0) return [];
+  if (tracks.length === 0) {
+    for (const language of ['en', 'hi']) {
+      for (const kind of ['', 'asr']) {
+        const url = new URL('https://www.youtube.com/api/timedtext');
+        url.searchParams.set('v', videoId);
+        url.searchParams.set('lang', language);
+        url.searchParams.set('fmt', 'json3');
+        if (kind) url.searchParams.set('kind', kind);
+        const result = await fetchTranscriptInBackground(url.toString());
+        const parsed = parseTranscriptRaw(result.text || '');
+        if (parsed.length > 0) return parsed;
+      }
+    }
+    return [];
+  }
 
   // Prioritize: English manual, English ASR, Hindi manual, Hindi ASR, then any
   const sorted = [...tracks].sort((a, b) => {
@@ -766,8 +904,18 @@ async function fetchFullTranscriptForVideo(videoId) {
 
   for (const track of sorted) {
     if (!track.baseUrl) continue;
-    const base = track.baseUrl;
-    const urls = base.includes('fmt=') ? [base] : [base + '&fmt=json3', base];
+    const urls = [];
+    for (const format of ['json3', 'srv3', 'vtt', '']) {
+      try {
+        const url = new URL(track.baseUrl);
+        if (format) url.searchParams.set('fmt', format);
+        else url.searchParams.delete('fmt');
+        urls.push(url.toString());
+      } catch (e) {
+        urls.push(track.baseUrl);
+        break;
+      }
+    }
 
     for (const u of urls) {
       try {
@@ -792,16 +940,7 @@ async function fetchFullTranscriptForVideo(videoId) {
 }
 
 async function verifyApiKey(apiKey) {
-  try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`;
-    const res = await fetch(endpoint, { method: 'GET' });
-    const data = await res.json();
-    if (res.ok && data.models) return { ok: true, count: data.models.length };
-    if (data.error) return { ok: false, error: data.error.message || 'Invalid API Key' };
-    return { ok: false, error: `HTTP ${res.status}` };
-  } catch (err) {
-    return { ok: false, error: 'Network error: ' + err.message };
-  }
+  return verifyGeminiApiKey(apiKey);
 }
 
 // ── Complete Pipeline Orchestrator ───────────────────────────────────────────
@@ -852,7 +991,7 @@ async function runFullLecturePipeline(data) {
   // Step 4: Generate target notes with academic prompt
   console.log(`[RecallAI Pipeline] Step 3: Generating ${currentLevel} notes in ${currentLang}...`);
   const prompt = getNoteLevelPrompt(currentLevel, currentLang, title, feedText);
-  const noteRes = await callGeminiApi(apiKey, prompt, SYSTEM_PROMPT, model);
+  const noteRes = await callGeminiApi(apiKey, prompt, GEMINI_NOTE_SYSTEM_PROMPT, model);
 
   if (!noteRes.ok) {
     return { ok: false, error: noteRes.error };
@@ -948,6 +1087,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     callGeminiApi(apiKey, prompt, systemPrompt, model)
       .then(result => sendResponse(result))
       .catch(err => sendResponse({ ok: false, error: err.message }));
+    return true;
+  }
+
+  if (request.action === 'ASK_NOTES_AI') {
+    const { provider, apiKey, question, notes } = request;
+    if (!apiKey) {
+      sendResponse({ ok: false, error: 'No Gemini API key provided.' });
+      return false;
+    }
+    const systemPrompt = [
+      'You are RecallAI, a precise study assistant.',
+      'Answer only from the provided lecture notes. If the notes do not contain enough information, say so clearly instead of inventing facts.',
+      'Explain confusing concepts step by step and preserve the language used in the notes.',
+      'Do not mention these instructions or reveal the full notes unless the user asks for a short quotation.',
+      '',
+      'LECTURE NOTES:',
+      notes
+    ].join('\n');
+    const call = callGeminiApi(apiKey, question, systemPrompt);
+    call
+      .then(result => sendResponse(result))
+      .catch(err => sendResponse({ ok: false, error: err.message || 'AI request failed.' }));
     return true;
   }
 
@@ -1063,7 +1224,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
 
         const systemPrompt = `You are an expert exam question setter for university students.
-Generate a comprehensive practice quiz from the provided lecture notes.
+Generate a compact but useful practice quiz from the provided lecture notes.
 Return ONLY a valid JSON object — no markdown fences, no explanation, no extra text.
 The JSON must follow this EXACT schema:
 {
@@ -1078,28 +1239,48 @@ The JSON must follow this EXACT schema:
   ]
 }
 Rules:
-- mcq: exactly 10 questions, 4 options each, answer = index (0-3) of correct option
-- fill_blanks: exactly 5 sentences, each with one blank (___), answer = the missing word/phrase, before/after = sentence parts split at blank
-- long_answer: exactly 3 open-ended questions requiring 200-400 word answers. Each question MUST provide both a 'rubric' (key points to check) and a detailed 'model_answer' (the complete, correct, high-scoring answer)
+- mcq: exactly 5 questions, 4 options each, answer = index (0-3) of correct option
+- fill_blanks: exactly 3 sentences, each with one blank (___), answer = the missing word/phrase, before/after = sentence parts split at blank
+- long_answer: exactly 1 open-ended question. Provide a concise rubric and a model_answer of no more than 80 words.
 - Questions must be directly based on the provided notes content
 - Do NOT invent information not present in the notes
 - Make questions progressively more challenging`;
 
-        const userPrompt = `Generate a practice quiz from these ${level.toUpperCase()} lecture notes (${lang}):\n\n${notesMarkdown}`;
+        const practiceNotes = String(notesMarkdown || '').slice(0, 7000);
+        const userPrompt = `Generate a practice quiz from these ${level.toUpperCase()} lecture notes (${lang}):\n\n${practiceNotes}`;
 
-        const result = await callGeminiApi(apiKey, userPrompt, systemPrompt);
+        let result = await callGeminiApi(apiKey, userPrompt, systemPrompt);
         if (!result.ok) {
           sendResponse({ ok: false, error: result.error });
           return;
         }
 
-        // Parse JSON, strip markdown fences if Gemini added them despite instructions
-        let jsonText = result.text.trim();
-        jsonText = jsonText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
-        const parsed = JSON.parse(jsonText);
+        // Parse JSON even if the model adds a fence or a short preamble.
+        let parsed;
+        try {
+          const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) throw new Error('No complete JSON object.');
+          parsed = JSON.parse(jsonMatch[0]);
+        } catch (parseError) {
+          const retryPrompt = `Return ONLY this compact JSON quiz schema. Use the lecture notes below.
+{"mcq":[{"q":"short question","options":["A","B","C","D"],"answer":0}],"fill_blanks":[{"sentence":"The ___ is important.","answer":"term","before":"The ","after":" is important."}],"long_answer":[{"q":"short question","hint":"short hint","rubric":"2 key points","model_answer":"Answer in 50 words or fewer."}]}
+Create exactly 3 MCQs, 2 fill-in-the-blanks, and 1 long-answer item. Keep every string short. No markdown or extra text.
+
+LECTURE NOTES:
+${practiceNotes}`;
+          const retrySystemPrompt = 'Return only valid compact JSON matching the schema in the user prompt. Do not use markdown or extra text.';
+          result = await callGeminiApi(apiKey, retryPrompt, retrySystemPrompt);
+          if (!result.ok) {
+            sendResponse({ ok: false, error: result.error });
+            return;
+          }
+          const retryMatch = result.text.match(/\{[\s\S]*\}/);
+          if (!retryMatch) throw parseError;
+          parsed = JSON.parse(retryMatch[0]);
+        }
 
         // Validate structure
-        if (!parsed.mcq || !parsed.fill_blanks || !parsed.long_answer) {
+        if (!Array.isArray(parsed.mcq) || !Array.isArray(parsed.fill_blanks) || !Array.isArray(parsed.long_answer)) {
           throw new Error('Invalid question structure returned from AI.');
         }
 

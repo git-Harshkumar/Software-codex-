@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveKeyBtn       = document.getElementById('save-key-btn');
   const keyStatus        = document.getElementById('key-status');
   const tabStatus        = document.getElementById('tab-status');
-  const openSidebarBtn   = document.getElementById('open-sidebar-btn');
   const openSidepanelBtn = document.getElementById('open-sidepanel-btn');
   const openStudioBtn    = document.getElementById('open-studio-btn');
   const usageCard        = document.getElementById('usage-card');
@@ -208,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           await chrome.storage.local.set({ last_verified_model: res.modelUsed });
           usageModel.textContent = res.modelUsed;
         }
-        statusEl.textContent = `Key verified. Using ${res.modelUsed || 'Gemini Flash'}`;
+        statusEl.textContent = `Key verified. Using ${res.modelUsed || 'Gemini'}`;
         statusEl.className = 'status-msg success';
         setTimeout(() => {
           showView('main');
@@ -257,36 +256,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   keyInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') saveKeyBtn.click();
-  });
-
-  // ── Open Sidebar on YouTube ───────────────────────────────────
-  openSidebarBtn?.addEventListener('click', async () => {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) return;
-
-      const isYouTube = tab.url && (
-        tab.url.includes('youtube.com/watch') ||
-        tab.url.includes('youtube.com/live/') ||
-        tab.url.includes('youtube.com/shorts/')
-      );
-
-      if (isYouTube) {
-        chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func: () => {
-            const sidebar = document.getElementById('recall-ai-sidebar');
-            if (sidebar) sidebar.classList.add('open');
-          }
-        });
-        window.close();
-      } else {
-        chrome.tabs.create({ url: 'https://www.youtube.com' });
-        window.close();
-      }
-    } catch (e) {
-      console.warn('[RecallAI Popup] Sidebar open failed:', e);
-    }
   });
 
   // ── Open Native Side Panel ────────────────────────────────────

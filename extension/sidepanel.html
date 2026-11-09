@@ -18,6 +18,7 @@
         <button id="sp-cloud-save-btn" class="sp-icon-btn" style="color:var(--cyan);font-weight:700;" title="Save Note to AWS DynamoDB Cloud">☁️ Save</button>
         <button id="sp-studio-btn" class="sp-icon-btn" style="color:var(--purple);font-weight:700;" title="Open Notes Studio">Studio</button>
         <button id="sp-timeline-toggle-btn" class="sp-icon-btn" title="Toggle Video Timeline">TL</button>
+        <button id="sp-ask-ai-btn" class="sp-icon-btn sp-ask-ai-btn" title="Ask AI about these notes">Ask AI</button>
         <button id="sp-key-btn" class="sp-icon-btn" title="API Key Settings">Key</button>
       </div>
     </header>
@@ -88,6 +89,27 @@
         <span>Generate Structured Notes</span>
       </button>
     </div>
+
+    <!-- Note-grounded Q&A -->
+    <section id="sp-ask-ai-panel" class="sp-ask-ai-panel hidden" aria-label="Ask AI about your notes">
+      <div class="sp-ask-ai-header">
+        <div>
+          <div class="sp-ask-ai-title">Ask AI about these notes</div>
+          <div class="sp-ask-ai-subtitle">Answers use the currently selected note as reference.</div>
+        </div>
+        <button id="sp-ask-ai-close" class="sp-icon-btn" title="Close Ask AI">x</button>
+      </div>
+      <div id="sp-ask-ai-messages" class="sp-ask-ai-messages">
+        <div class="sp-ask-ai-empty">Ask for an explanation, summary, example, or clarification.</div>
+      </div>
+      <div class="sp-ask-ai-controls">
+        <select id="sp-ask-ai-provider" aria-label="AI provider">
+          <option value="gemini">Gemini</option>
+        </select>
+        <textarea id="sp-ask-ai-input" rows="2" placeholder="What is confusing about this note?"></textarea>
+        <button id="sp-ask-ai-send" class="sp-action-btn">Ask</button>
+      </div>
+    </section>
 
     <!-- Notes View -->
     <main class="sp-body" id="sp-body">

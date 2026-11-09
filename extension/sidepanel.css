@@ -89,6 +89,40 @@ body {
   color: var(--text);
   border-color: var(--border2);
 }
+.sp-ask-ai-btn { color: var(--cyan); border-color: rgba(74, 159, 168, 0.45); }
+
+.sp-ask-ai-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 48vh;
+  padding: 10px 12px;
+  background: #10191b;
+  border-bottom: 1px solid var(--border);
+}
+.sp-ask-ai-panel.hidden { display: none; }
+.sp-ask-ai-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.sp-ask-ai-title { color: #d7f4f4; font-weight: 700; font-size: 12px; }
+.sp-ask-ai-subtitle { color: var(--muted); font-size: 10px; margin-top: 2px; }
+.sp-ask-ai-messages {
+  min-height: 48px;
+  max-height: 190px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.sp-ask-ai-empty { color: var(--muted); font-size: 11px; padding: 8px; text-align: center; }
+.sp-ask-ai-message { padding: 7px 9px; border-radius: 5px; font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
+.sp-ask-ai-message.user { background: rgba(74, 144, 217, 0.14); color: #c9e2ff; align-self: flex-end; max-width: 90%; }
+.sp-ask-ai-message.assistant { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.sp-ask-ai-controls { display: grid; grid-template-columns: 105px 1fr; gap: 6px; }
+.sp-ask-ai-controls select, .sp-ask-ai-controls textarea {
+  background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 7px; font: inherit; font-size: 11px; outline: none;
+}
+.sp-ask-ai-controls textarea { grid-column: 1 / -1; resize: vertical; min-height: 42px; }
+.sp-ask-ai-controls .sp-action-btn { grid-column: 1 / -1; padding: 7px; }
 
 /* Tracker */
 .sp-tracker {
@@ -2052,6 +2086,5 @@ body {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
-
 
 
