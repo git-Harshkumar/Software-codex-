@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RecallAI Companion</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="popup-container">
+
+    <!-- ONBOARDING VIEW -->
+    <div id="view-onboarding" class="view hidden">
+      <div class="onboard-header">
+        <div class="brand">
+          <div class="brand-name">RecallAI</div>
+        </div>
+        <span class="onboard-step-badge">Setup</span>
+      </div>
+
+      <div class="onboard-hero">
+        <div class="onboard-hero-title">Welcome to RecallAI</div>
+        <div class="onboard-hero-sub">AI-powered lecture notes while you watch YouTube &mdash; free &amp; private.</div>
+      </div>
+
+      <div class="onboard-steps">
+        <div class="step-title">Get your free Gemini API key (takes 30 sec)</div>
+        <ol class="steps-list">
+          <li>
+            <span class="step-num">1</span>
+            <div>
+              Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link">Google AI Studio</a>
+              <div class="step-note">Sign in with your Google account</div>
+            </div>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <div>
+              Click <b>"Create API key"</b>
+              <div class="step-note">Choose "Create API key in new project" for simplicity</div>
+            </div>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <div>
+              Copy the key (starts with <code>AIzaSy&hellip;</code>) and paste below
+              <div class="step-note">Free tier: 1,500 requests/day &mdash; more than enough!</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <label class="section-label" for="onboard-api-key">Paste your Gemini API Key</label>
+        <div class="input-row">
+          <input type="password" id="onboard-api-key" placeholder="AIzaSy&hellip;" spellcheck="false" autocomplete="off">
+          <button id="onboard-show-key-btn" class="btn btn-ghost" title="Toggle visibility">Show</button>
+        </div>
+        <div id="onboard-key-status" class="status-msg"></div>
+      </div>
+
+      <button id="onboard-save-btn" class="btn btn-primary btn-full">
+        <span>Verify &amp; Save API Key</span>
+      </button>
+
+      <div class="onboard-links">
+        <a href="https://ai.google.dev/gemini-api/docs/quota" target="_blank" class="link">Quota limits</a>
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link">AI Studio</a>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW -->
+    <div id="view-main" class="view hidden">
+
+      <div class="header">
+        <div class="brand">
+          <div class="brand-name">RecallAI</div>
+        </div>
+        <span class="badge" id="key-badge">Checking&hellip;</span>
+      </div>
+
+      <div class="section">
+        <div class="key-row" id="key-display-row">
+          <span class="section-label">Gemini API Key</span>
+          <button id="change-key-btn" class="btn btn-ghost btn-sm">Change</button>
+        </div>
+        <div id="key-edit-area" class="hidden">
+          <div class="input-row" style="margin-top:6px;">
+            <input type="password" id="api-key" placeholder="AIzaSy&hellip;" spellcheck="false">
+            <button id="save-key-btn" class="btn btn-primary">Save</button>
+          </div>
+          <div id="key-status" class="status-msg"></div>
+        </div>
+      </div>
+
+      <div id="usage-card" class="usage-card hidden">
+        <div class="usage-row">
+          <span class="usage-label">Free Quota</span>
+          <span class="usage-val">1,500 req / day</span>
+        </div>
+        <div class="usage-row">
+          <span class="usage-label">Model</span>
+          <span class="usage-val" id="usage-model">gemini-flash</span>
+        </div>
+        <div class="usage-row">
+          <span class="usage-label">Status</span>
+          <span class="usage-val usage-ok" id="usage-status">Ready</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="key-row">
+          <span class="section-label">AWS Cloud Backend</span>
+          <button id="change-backend-btn" class="btn btn-ghost btn-sm">Configure</button>
+        </div>
+        <div id="backend-edit-area" class="hidden" style="margin-top:6px;">
+          <div class="input-row">
+            <input type="text" id="aws-backend-input" placeholder="http://100.58.169.40" spellcheck="false" style="font-size:11px;">
+            <button id="save-backend-btn" class="btn btn-primary" style="padding:4px 10px;font-size:11px;">Save</button>
+          </div>
+          <div id="backend-status-msg" style="font-size:10.5px;color:var(--muted);margin-top:3px;">AWS Cloud Server: http://100.58.169.40</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Active Tab</div>
+        <div id="tab-status" class="tab-status-box">Detecting current tab&hellip;</div>
+      </div>
+
+      <div class="actions">
+        <button id="open-studio-btn" class="btn btn-primary btn-full" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:#a78bfa;">
+          <span>✏️ Open Notes Studio &amp; Whiteboard</span>
+        </button>
+        <button id="open-sidebar-btn" class="btn btn-secondary btn-full">
+          <span>Open Parallel Notes on YouTube</span>
+        </button>
+        <button id="open-sidepanel-btn" class="btn btn-secondary btn-full">
+          <span>Open Chrome Native Side Panel</span>
+        </button>
+      </div>
+
+      <div class="footer">
+        <span>RecallAI Companion v1.0.0</span>
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link">Get Free Key</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

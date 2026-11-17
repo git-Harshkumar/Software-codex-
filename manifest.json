@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "RecallAI — YouTube Parallel Lecture Notes",
+  "version": "1.0.0",
+  "description": "Generate structured AI lecture notes parallelly while watching YouTube videos in Overview, Summary, or Detailed formats (EN/HI/Hinglish).",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "sidePanel",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://image.pollinations.ai/*",
+    "https://*.pollinations.ai/*",
+    "http://localhost:5000/*",
+    "http://127.0.0.1:5000/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "RecallAI Companion",
+    "default_icon": "icons/icon.svg"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["player_bridge.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["player_bridge.js", "content.css", "print.html", "studio.html", "studio.js", "studio.css", "icons/*"],
+      "matches": ["https://www.youtube.com/*"]
+    }
+  ]
+}

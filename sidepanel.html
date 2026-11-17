@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RecallAI Side Panel</title>
+  <link rel="stylesheet" href="sidepanel.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Kalam:wght@300;400;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="sp-container">
+    <!-- Header -->
+    <header class="sp-header">
+      <div class="sp-brand">
+        <span class="sp-title">RecallAI Companion</span>
+      </div>
+      <div class="sp-header-right" style="display:flex;align-items:center;gap:6px;">
+        <button id="sp-cloud-save-btn" class="sp-icon-btn" style="color:var(--cyan);font-weight:700;" title="Save Note to AWS DynamoDB Cloud">☁️ Save</button>
+        <button id="sp-search-toggle-btn" class="sp-icon-btn" style="color:var(--green);font-weight:700;" title="Search Topics in Stored Notes">🔍 Search</button>
+        <button id="sp-timeline-toggle-btn" class="sp-icon-btn" title="Toggle Video Timeline">TL</button>
+        <button id="sp-key-btn" class="sp-icon-btn" title="API Key Settings">Key</button>
+      </div>
+    </header>
+
+    <!-- Video Tracker -->
+    <div class="sp-tracker">
+      <div class="sp-live-badge">
+        <span class="sp-pulse"></span>
+        <span id="sp-status">Ready</span>
+      </div>
+      <span id="sp-time" style="font-family:'JetBrains Mono',monospace;">0:00 / 0:00</span>
+    </div>
+
+    <!-- Active Video & Channel Card -->
+    <div class="sp-video-banner" id="sp-video-banner">
+      <div class="sp-video-title-row" id="sp-video-title" title="No Video Detected">Open a YouTube video</div>
+      <div class="sp-channel-row" id="sp-channel-row">
+        <span class="sp-channel-badge">CHANNEL</span>
+        <span id="sp-channel-text">Waiting for video...</span>
+      </div>
+    </div>
+
+    <!-- VIDEO TIMELINE PANEL (collapsible, hidden by default) -->
+    <div id="sp-timeline-panel" class="sp-timeline-panel hidden">
+      <div class="sp-timeline-header">
+        <div class="sp-timeline-title">
+          <span>Video Timeline</span>
+          <span id="sp-timeline-count" class="sp-timeline-count"></span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:10px;color:var(--muted);">Click to jump &bull; open on YouTube</span>
+          <button id="sp-timeline-close" class="sp-icon-btn" style="width:22px;height:22px;font-size:11px;" title="Hide Timeline">x</button>
+        </div>
+      </div>
+      <div id="sp-timeline-list" class="sp-timeline-list">
+        <div class="sp-timeline-empty">Timeline will appear after generating notes.</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="sp-controls">
+      <!-- Levels -->
+      <div class="sp-btn-group">
+        <button class="sp-tab-btn active-l1" data-level="overview" id="sp-l1">Overview</button>
+        <button class="sp-tab-btn" data-level="summary" id="sp-l2">Summary</button>
+        <button class="sp-tab-btn" data-level="detailed" id="sp-l3">Detailed</button>
+      </div>
+
+      <!-- Languages -->
+      <div class="sp-btn-group">
+        <button class="sp-tab-btn active-lang" data-lang="english" id="sp-en">English</button>
+        <button class="sp-tab-btn" data-lang="hindi" id="sp-hi">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368;</button>
+        <button class="sp-tab-btn" data-lang="hinglish" id="sp-hing">Hinglish</button>
+      </div>
+
+      <!-- Toggles -->
+      <div class="sp-toggle-row">
+        <button class="sp-switch-btn" id="sp-toggle-handwritten">
+          <span>Handwritten</span>
+        </button>
+        <button class="sp-switch-btn" id="sp-toggle-live">
+          <span>Live Parallel Mode</span>
+        </button>
+      </div>
+
+      <!-- Action -->
+      <button class="sp-action-btn" id="sp-generate-btn">
+        <span>Generate Structured Notes</span>
+      </button>
+    </div>
+
+    <!-- Notes View -->
+    <main class="sp-body" id="sp-body">
+      <div class="sp-empty">
+        <div class="sp-empty-icon">Notes</div>
+        <div style="font-weight:600;color:#fff;">Parallel Lecture Notes</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+          Open a YouTube video and click <b>Generate Structured Notes</b>, or turn on <b>Live Parallel Mode</b> to capture notes while watching.
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="sp-footer">
+      <span id="sp-footer-info" style="font-size:11px;">Captions: auto-sync</span>
+      <div class="sp-footer-btns">
+        <button class="sp-footer-btn" id="sp-cloud-save-footer-btn" title="Save this lecture note to AWS DynamoDB">☁️ Save to AWS</button>
+        <button class="sp-footer-btn" id="sp-studio-btn" style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(139,92,246,0.2));border:1px solid rgba(139,92,246,0.4);color:#c084fc;font-weight:600;" title="Open Notes Studio: Edit notes, highlight concepts, draw diagrams & share with classmates">✏️ Studio</button>
+        <button class="sp-footer-btn" id="sp-practice-open-btn" title="Start a Practice Session from your notes">🎯 Practice</button>
+        <button class="sp-footer-btn" id="sp-dl-notes-btn" title="Download Notes (PDF, HTML, Markdown)">Download</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════ TOPIC SEARCH PANEL ═══════════════ -->
+  <div id="sp-search-panel" class="sp-search-panel hidden">
+    <!-- Search Header -->
+    <div class="sp-search-header">
+      <div class="sp-search-header-left">
+        <span class="sp-search-icon">🔍</span>
+        <span class="sp-search-title">Grounded Topic Search</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="sp-grounded-badge" title="Guaranteed: Only searches your saved notes on AWS, never hallucinates">🛡️ In-Context Only</span>
+        <button id="sp-search-close-btn" class="sp-icon-btn" style="width:24px;height:24px;font-size:12px;" title="Close Search">✕</button>
+      </div>
+    </div>
+
+    <!-- Search Input Bar -->
+    <div class="sp-search-bar-wrap">
+      <div class="sp-search-input-box">
+        <span class="sp-search-input-icon">🔍</span>
+        <input type="text" id="sp-search-input" class="sp-search-input" placeholder="Search topic (e.g. Backpropagation, Ohm's law…)" autocomplete="off" />
+        <button id="sp-search-clear-btn" class="sp-search-clear-btn hidden" title="Clear search">✕</button>
+      </div>
+      <button id="sp-search-exec-btn" class="sp-search-btn">Search</button>
+    </div>
+
+    <!-- Scope Filter -->
+    <div class="sp-search-filters">
+      <span style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;">Scope:</span>
+      <select id="sp-search-scope" class="sp-search-select">
+        <option value="all">All Saved Lectures (AWS Cloud)</option>
+        <option value="current">Current Lecture Only</option>
+      </select>
+      <span id="sp-search-stats" style="margin-left:auto;font-size:10px;color:var(--muted);"></span>
+    </div>
+
+    <!-- Search Body Results -->
+    <div id="sp-search-body" class="sp-search-body">
+      <div class="sp-search-empty">
+        <div style="font-size:28px;margin-bottom:8px;">📚</div>
+        <div style="font-weight:600;color:#fff;">Search Your Saved Knowledge</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5;max-width:260px;">
+          Type any concept, equation, or topic above to find the exact explanation and jump directly to that timestamp in the lecture.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PRACTICE SESSION OVERLAY ═══════════════ -->
+  <div id="sp-practice-panel" class="pr-panel hidden">
+
+    <!-- Practice Header -->
+    <div class="pr-header">
+      <div class="pr-header-left">
+        <span class="pr-header-icon">🎯</span>
+        <span class="pr-header-title">Practice Session</span>
+      </div>
+      <button id="pr-close-btn" class="pr-close-btn" title="Close Practice Session">✕</button>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="pr-step-bar" id="pr-step-bar">
+      <div class="pr-step-indicator" id="pr-step-indicator">Step 1 of 5</div>
+      <div class="pr-progress-track">
+        <div class="pr-progress-fill" id="pr-progress-fill" style="width:20%"></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 1: Config ── -->
+    <div id="pr-step-config" class="pr-step-view">
+      <div class="pr-config-hero">
+        <div class="pr-config-emoji">🧠</div>
+        <div class="pr-config-title">Ready to Test Your Knowledge?</div>
+        <div class="pr-config-sub">AI will generate a quiz from your notes — MCQ, Fill-in-Blanks &amp; Long Answers</div>
+      </div>
+
+      <div class="pr-config-section">
+        <label class="pr-label">Notes Level</label>
+        <div class="pr-btn-group" id="pr-level-group">
+          <button class="pr-sel-btn active" data-level="overview">Overview</button>
+          <button class="pr-sel-btn" data-level="summary">Summary</button>
+          <button class="pr-sel-btn" data-level="detailed">Detailed</button>
+        </div>
+      </div>
+
+      <div class="pr-config-section">
+        <label class="pr-label">Language</label>
+        <div class="pr-btn-group" id="pr-lang-group">
+          <button class="pr-sel-btn active" data-lang="english">English</button>
+          <button class="pr-sel-btn" data-lang="hindi">Hindi</button>
+          <button class="pr-sel-btn" data-lang="hinglish">Hinglish</button>
+        </div>
+      </div>
+
+      <div class="pr-quiz-info">
+        <div class="pr-quiz-info-item"><span class="pr-quiz-info-num">10</span><span>MCQ</span></div>
+        <div class="pr-quiz-info-sep">+</div>
+        <div class="pr-quiz-info-item"><span class="pr-quiz-info-num">5</span><span>Fill-in-Blanks</span></div>
+        <div class="pr-quiz-info-sep">+</div>
+        <div class="pr-quiz-info-item"><span class="pr-quiz-info-num">3</span><span>Long Answer</span></div>
+      </div>
+
+      <div id="pr-config-msg" class="pr-msg hidden"></div>
+      <button id="pr-start-btn" class="pr-action-btn">✨ Generate &amp; Start Practice</button>
+    </div>
+
+    <!-- ── STEP 2: Loading ── -->
+    <div id="pr-step-loading" class="pr-step-view hidden">
+      <div class="pr-loading-wrap">
+        <div class="pr-spinner"></div>
+        <div class="pr-loading-title">Generating Your Quiz…</div>
+        <div class="pr-loading-sub" id="pr-loading-sub">AI is crafting 18 personalized questions from your notes</div>
+        <div class="pr-loading-dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: MCQ ── -->
+    <div id="pr-step-mcq" class="pr-step-view hidden">
+      <div class="pr-section-header">
+        <span class="pr-section-badge mcq-badge">MCQ</span>
+        <span class="pr-q-counter" id="pr-mcq-counter">Question 1 of 10</span>
+      </div>
+      <div id="pr-mcq-card" class="pr-question-card">
+        <div id="pr-mcq-question" class="pr-question-text"></div>
+        <div id="pr-mcq-options" class="pr-options-list"></div>
+      </div>
+      <div class="pr-nav-row">
+        <button id="pr-mcq-prev-btn" class="pr-nav-btn" disabled>← Prev</button>
+        <span id="pr-mcq-dots" class="pr-dots"></span>
+        <button id="pr-mcq-next-btn" class="pr-nav-btn pr-nav-btn-primary">Next →</button>
+      </div>
+      <button id="pr-mcq-submit-btn" class="pr-action-btn hidden">Submit MCQ &amp; Continue →</button>
+    </div>
+
+    <!-- ── STEP 4: Fill in the Blanks ── -->
+    <div id="pr-step-fib" class="pr-step-view hidden">
+      <div class="pr-section-header">
+        <span class="pr-section-badge fib-badge">Fill in the Blanks</span>
+        <span class="pr-q-counter">5 sentences — type the missing word</span>
+      </div>
+      <div id="pr-fib-list" class="pr-fib-list"></div>
+      <div id="pr-fib-msg" class="pr-msg hidden"></div>
+      <button id="pr-fib-submit-btn" class="pr-action-btn">Submit &amp; Continue →</button>
+    </div>
+
+    <!-- ── STEP 5: Long Answer ── -->
+    <div id="pr-step-long" class="pr-step-view hidden">
+      <div class="pr-section-header">
+        <span class="pr-section-badge long-badge">Long Answer</span>
+        <span class="pr-q-counter">Write answers on paper, upload photos</span>
+      </div>
+      <div id="pr-long-list" class="pr-long-list"></div>
+      <div id="pr-long-msg" class="pr-msg hidden"></div>
+      <button id="pr-long-submit-btn" class="pr-action-btn">Submit &amp; Get Score →</button>
+    </div>
+
+    <!-- ── STEP 5b: Evaluating ── -->
+    <div id="pr-step-evaluating" class="pr-step-view hidden">
+      <div class="pr-loading-wrap">
+        <div class="pr-spinner pr-spinner-green"></div>
+        <div class="pr-loading-title">Evaluating Your Answers…</div>
+        <div class="pr-loading-sub">Gemini Vision is reading your handwritten answers</div>
+        <div class="pr-loading-dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 6: Results ── -->
+    <div id="pr-step-results" class="pr-step-view hidden">
+      <div class="pr-results-header">
+        <div class="pr-score-ring-wrap">
+          <svg class="pr-score-ring" viewBox="0 0 120 120">
+            <circle class="pr-ring-bg" cx="60" cy="60" r="50"/>
+            <circle class="pr-ring-fill" id="pr-ring-fill" cx="60" cy="60" r="50"
+              stroke-dasharray="314" stroke-dashoffset="314"/>
+          </svg>
+          <div class="pr-score-center">
+            <div class="pr-score-num" id="pr-score-num">0%</div>
+            <div class="pr-score-label">Score</div>
+          </div>
+        </div>
+        <div class="pr-score-breakdown" id="pr-score-breakdown"></div>
+      </div>
+
+      <div class="pr-results-tabs">
+        <button class="pr-rtab active" data-rtab="mcq">MCQ</button>
+        <button class="pr-rtab" data-rtab="fib">Fill-in-Blank</button>
+        <button class="pr-rtab" data-rtab="long">Long Answer</button>
+      </div>
+
+      <div id="pr-results-mcq" class="pr-results-section"></div>
+      <div id="pr-results-fib" class="pr-results-section hidden"></div>
+      <div id="pr-results-long" class="pr-results-section hidden"></div>
+
+      <div class="pr-results-footer">
+        <button id="pr-retry-btn" class="pr-nav-btn">🔁 Practice Again</button>
+        <button id="pr-done-btn" class="pr-action-btn" style="flex:1">Back to Notes</button>
+      </div>
+    </div>
+
+  </div><!-- end #sp-practice-panel -->
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
